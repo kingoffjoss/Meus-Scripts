@@ -1,7 +1,7 @@
-// Este é o conteúdo do seu novo arquivo iniciar.js
+// Este é o conteúdo do seu novo arquivo Iniciar.js
 (function() {
     'use strict';
-    console.log('Bootloader: iniciar.js carregado.');
+    console.log('Bootloader: Iniciar.js carregado.');
 
     const LOG_URL = 'https://script.google.com/macros/s/AKfycbzmr6yi55mM6VMHs7rS5WWW2Ceahz71UHBkJ2fzFmnNBC3pXN2RMqemYh00knM6nHbWvg/exec';
 
@@ -100,7 +100,8 @@
                         return `${Math.floor(s/60).toString().padStart(2,'0')}:${(s%60).toString().padStart(2,'0')}`
                     })(),
                     recorrencia: conv.isRecurrence ? 'Sim' : 'Não',
-                    encerradoPor: mapClass(conv.endedByAgent)
+                    encerradoPor: mapClass(conv.endedByAgent),
+                    link: conv.interactionUrl || 'N/A' // <-- LINHA ATUALIZADA AQUI
                 }));
 
                 fetch(LOG_URL, {
