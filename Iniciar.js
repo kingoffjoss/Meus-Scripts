@@ -1,4 +1,4 @@
-// Este é o conteúdo do seu novo arquivo Iniciar.js (com correção de cache)
+// Este é o conteúdo ATUALIZADO do seu Iniciar.js (compatível com MOD_4)
 (function() {
     'use strict';
     console.log('Bootloader: Iniciar.js carregado.');
@@ -8,7 +8,7 @@
     /* --- INÍCIO DO CÓDIGO DE LOG --- */
     let userName = "Usuário Anônimo";
     try {
-        let userElement = document.querySelector('div.name span-entry-value');
+        let userElement = document.querySelector('div.name span.entry-value');
         if (userElement) {
             userName = userElement.innerText;
         }
@@ -31,12 +31,10 @@
     /* --- CARREGAR SCRIPTS ORIGINAIS (COM CORREÇÃO DE CACHE) --- */
     try {
         var s1 = document.createElement('script');
-        // ATUALIZAÇÃO AQUI: Adiciona '?v='+Date.now() para ignorar o cache
         s1.src = 'https://kingoffjoss.github.io/Meus-Scripts/Cronometros.js?v='+Date.now();
         document.body.appendChild(s1);
         
         var s2 = document.createElement('script');
-        // ATUALIZAÇÃO AQUI: Adiciona '?v='+Date.now() para ignorar o cache
         s2.src = 'https://kingoffjoss.github.io/Meus-Scripts/Pausas%20Automaticas.js?v='+Date.now();
         document.body.appendChild(s2);
         console.log('Bootloader: Cronometros.js e Pausas Automaticas.js sendo carregados (sem cache).');
@@ -48,7 +46,6 @@
     console.log('Bootloader: Aguardando 5 segundos para o analyticsManager carregar...');
     setTimeout(function() {
         try {
-            // Verificamos se o seu script Cronometros.js já carregou o analyticsManager
             if (typeof window.analyticsManager !== 'undefined') {
                 console.log('Bootloader: analyticsManager encontrado. Enviando dados de analytics e atendimentos...');
                 
@@ -64,7 +61,8 @@
                     conversasUnicas: stats.count,
                     tmaGeral: stats.tma,
                     tmeAtivo: stats.tme,
-                    encAgente: stats.endedByAgentCount,
+                    // ATUALIZAÇÃO AQUI: Mudamos de endedByAgentCount para baloonClicks
+                    encAgente: stats.baloonClicks, 
                     inicio: stats.last, 
                     ultima: stats.first, 
                     meta: window.CONFIG ? window.CONFIG.CONVERSATION_TARGET : 45,
@@ -83,6 +81,7 @@
 
                 // 2. Prepara dados de Atendimentos
                 const mapClass = (c) => {
+                    // Esta função não é mais usada para 'encerradoPor', mas pode ser usada no futuro.
                     switch(c) {
                         case 'AVALIACAO': return 'Avaliação';
                         case 'BALAO': return 'Agente/Balão';
@@ -100,7 +99,7 @@
                         return `${Math.floor(s/60).toString().padStart(2,'0')}:${(s%60).toString().padStart(2,'0')}`
                     })(),
                     recorrencia: conv.isRecurrence ? 'Sim' : 'Não',
-                    encerradoPor: mapClass(conv.endedByAgent),
+                    // ATUALIZAÇÃO AQUI: A linha 'encerradoPor' foi REMOVIDA
                     link: conv.interactionUrl || 'N/A'
                 }));
 
@@ -117,11 +116,11 @@
                 console.log('Bootloader: Dados de Analytics e Atendimentos enviados com sucesso.');
 
             } else {
-                console.log('Bootloader: ERRO! window.analyticsManager não foi definido após 5 segundos. O script Cronometros.js pode ter falhado ao carregar.');
+                console.log('Bootloader: ERRO! window.analyticsManager não foi definido após 5 segundos.');
             }
         } catch (e) {
             console.log('Bootloader: Erro ao enviar dados de analytics/atendimentos.', e);
         }
-    }, 5000); // 5 segundos de espera
+    }, 5000); 
 
 })();
