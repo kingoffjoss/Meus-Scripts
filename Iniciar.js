@@ -1,4 +1,4 @@
-// Este é o conteúdo do seu novo arquivo Iniciar.js
+// Este é o conteúdo do seu novo arquivo Iniciar.js (com correção de cache)
 (function() {
     'use strict';
     console.log('Bootloader: Iniciar.js carregado.');
@@ -28,16 +28,18 @@
         console.log('Bootloader: Falha ao registrar log:', err);
     }
 
-    /* --- CARREGAR SCRIPTS ORIGINAIS --- */
+    /* --- CARREGAR SCRIPTS ORIGINAIS (COM CORREÇÃO DE CACHE) --- */
     try {
         var s1 = document.createElement('script');
-        s1.src = 'https://kingoffjoss.github.io/Meus-Scripts/Cronometros.js';
+        // ATUALIZAÇÃO AQUI: Adiciona '?v='+Date.now() para ignorar o cache
+        s1.src = 'https://kingoffjoss.github.io/Meus-Scripts/Cronometros.js?v='+Date.now();
         document.body.appendChild(s1);
         
         var s2 = document.createElement('script');
-        s2.src = 'https://kingoffjoss.github.io/Meus-Scripts/Pausas%20Automaticas.js';
+        // ATUALIZAÇÃO AQUI: Adiciona '?v='+Date.now() para ignorar o cache
+        s2.src = 'https://kingoffjoss.github.io/Meus-Scripts/Pausas%20Automaticas.js?v='+Date.now();
         document.body.appendChild(s2);
-        console.log('Bootloader: Cronometros.js e Pausas Automaticas.js sendo carregados.');
+        console.log('Bootloader: Cronometros.js e Pausas Automaticas.js sendo carregados (sem cache).');
     } catch(e) {
         console.log('Bootloader: Erro ao carregar scripts principais.', e);
     }
@@ -50,7 +52,6 @@
             if (typeof window.analyticsManager !== 'undefined') {
                 console.log('Bootloader: analyticsManager encontrado. Enviando dados de analytics e atendimentos...');
                 
-                // Re-pega o nome de usuário (só por garantia)
                 let currentUserName = "Usuário Anônimo";
                 let userEl = document.querySelector('div.name span.entry-value');
                 if (userEl) {
@@ -64,8 +65,8 @@
                     tmaGeral: stats.tma,
                     tmeAtivo: stats.tme,
                     encAgente: stats.endedByAgentCount,
-                    inicio: stats.last, // 'inicio' na planilha é o 'last' (primeiro do dia)
-                    ultima: stats.first, // 'ultima' na planilha é o 'first' (último do dia)
+                    inicio: stats.last, 
+                    ultima: stats.first, 
                     meta: window.CONFIG ? window.CONFIG.CONVERSATION_TARGET : 45,
                     transferidos: stats.transferClicks
                 };
@@ -81,7 +82,6 @@
                 });
 
                 // 2. Prepara dados de Atendimentos
-                // Função para mapear o status (copiada do seu script)
                 const mapClass = (c) => {
                     switch(c) {
                         case 'AVALIACAO': return 'Avaliação';
@@ -101,7 +101,7 @@
                     })(),
                     recorrencia: conv.isRecurrence ? 'Sim' : 'Não',
                     encerradoPor: mapClass(conv.endedByAgent),
-                    link: conv.interactionUrl || 'N/A' // <-- LINHA ATUALIZADA AQUI
+                    link: conv.interactionUrl || 'N/A'
                 }));
 
                 fetch(LOG_URL, {
