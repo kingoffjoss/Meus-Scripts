@@ -1,8 +1,8 @@
 // ==UserScript==
-// @name         Gerenciador de Contagem e Produtividade (v1.0.27_UI_FIX)
+// @name         Gerenciador de Contagem e Produtividade (v1.0.27_MOD_4)
 // @namespace    http://tampermonkey.net/
 // @version      1.0.27
-// @description  Script focado em Analytics. [FIX v1.0.27: Corrige layout da aba 'Geral', move 'Recorrências' do Mini-Dashboard para a aba 'Atendimentos']
+// @description  Script focado em Analytics. [v1.0.27_MOD_4: Aba 'Encerrados' padronizada em formato de Tabela e exportação de dados Balão.]
 // @author       Parceiro de Programação
 // @match        https://apps.mypurecloud.com/*
 // @match        https://apps.mypurecloud.de/*
@@ -17,15 +17,13 @@
 
     // --- ATUALIZADO ---
     // v1.0.27: Pacote de Correção de Layout e UI
-    // 1. [FIX] Layout da Aba "Geral": Corrigido o bug visual onde os campos de alerta
-    //    sobrepunham os toggles de Modo Escuro e Alertas Sonoros.
-    // 2. [UI] Mini-Dashboard: Removido o campo "Recorrências" do Mini-Dashboard.
-    //    O layout agora é um grid 2x2 (Contagem, TMA, TME, Enc. Agente).
-    // 3. [UI] Aba "Atendimentos": Adicionado o contador "Recorrências Hoje: X"
-    //    ao topo da aba, ao lado do total de atendimentos.
+    // 4. [MOD] Aba "Atendimentos": Removida a coluna "Encerrado por" (MOD_1).
+    // 5. [MOD] Mini-Dashboard: "Enc. Agente" substituído por "Balão (Término)".
+    // 6. [NEW] Nova aba "Encerrados" para detalhes do log de encerramento.
+    // 7. [FIX] Mini-Dashboard Expandido: Removida a opção de redimensionamento.
+    // 8. [MOD] Aba "Encerrados": Layout alterado para tabela padronizada (MOD_4).
     //
-    // v1.0.26: Ícones na Tabela de Atendimentos (📞/💬)
-    const SCRIPT_VERSION = '1.0.27_UI_FIX';
+    const SCRIPT_VERSION = '1.0.27_MOD_4'; // Versão Atualizada
     // --- FIM DA ATUALIZAÇÃO ---
 
     // Flag de Carregamento
@@ -76,6 +74,8 @@
     const LOCKDOWN_CONFIG = {
         REQUIRED_CLICKS: 5,
         END_CHAT_BUTTON_SELECTOR: ['button[aria-label="Mensagens de término"]'],
+        // Selector do v4.0 para fins de compatibilidade na detecção
+        BALAO_BUTTON_SELECTOR_V4: 'button[aria-label="Mensagens de término"]',
     };
 
     const initialQuickReplies = [
@@ -176,6 +176,34 @@
         exportAnalytics: { title: "Exportar Dados de Atendimentos", description: "Permite exportar o histórico detalhado de atendimentos (TMA, TME, cliente, hora) para um arquivo JSON." },
     };
 
+    // --- LÓGICA DE COLETA DE ENCERRAMENTO (INTEGRAÇÃO V4.0) ---
+    let v4_counters = { balao: [] };
+    const V4_STORAGE_KEY = 'encerramentoCounters_v4_balao';
+
+    function loadV4Counters() {
+        const today = getBrazilTime(new Date()).toLocaleDateString('pt-BR');
+        const storedData = JSON.parse(localStorage.getItem(V4_STORAGE_KEY) || '{}');
+
+        if (storedData.date === today) {
+            v4_counters.balao = storedData.balao || [];
+            log("V4 Counter: Históricos carregados.", v4_counters);
+        } else {
+            log("V4 Counter: Novo dia detectado. Resetando contadores.");
+            v4_counters = { balao: [] };
+        }
+    }
+
+    function saveV4Counters() {
+        const today = getBrazilTime(new Date()).toLocaleDateString('pt-BR');
+        const dataToSave = { date: today, balao: v4_counters.balao };
+        try {
+            localStorage.setItem(V4_STORAGE_KEY, JSON.stringify(dataToSave));
+            log("V4 Counter: Históricos salvos.");
+        } catch(e) {
+            log("V4 Counter: Erro ao salvar dados no localStorage:", e);
+        }
+    }
+
     // Funções utilitárias
     const validateConfigValue = (key, value) => {
         const parsed = parseInt(value, 10);
@@ -225,6 +253,7 @@
             sessionStorage.setItem('popupPositions', JSON.stringify(CONFIG.POPUP_POSITIONS));
             sessionStorage.setItem('miniDashboardVisible', CONFIG.MINI_DASHBOARD_VISIBLE);
             sessionStorage.setItem('miniDashboardMaximized', CONFIG.MINI_DASHBOARD_MAXIMIZED);
+            saveV4Counters(); // Salva o novo contador V4 junto
             log("Configurações salvas.");
         } catch (e) {
             if (e.name === 'QuotaExceededError') {
@@ -275,8 +304,8 @@
             CONFIG.POPUP_POSITIONS[popupName] = {
                 top: safePos.top + 'px',
                 left: safePos.left + 'px',
-                width: CONFIG.MINI_DASHBOARD_MAXIMIZED ? popup.style.width : (CONFIG.POPUP_POSITIONS[popupName]?.width || '300px'),
-                height: CONFIG.MINI_DASHBOARD_MAXIMIZED ? popup.style.height : (CONFIG.POPUP_POSITIONS[popupName]?.height || 'auto')
+                width: CONFIG.MINI_DASHBOARD_MAXIMIZED ? '300px' : (CONFIG.POPUP_POSITIONS[popupName]?.width || '300px'), // Tamanho fixo
+                height: CONFIG.MINI_DASHBOARD_MAXIMIZED ? 'auto' : (CONFIG.POPUP_POSITIONS[popupName]?.height || 'auto') // Tamanho fixo
             };
             sessionStorage.setItem('popupPositions', JSON.stringify(CONFIG.POPUP_POSITIONS)); saveData();
         };
@@ -295,11 +324,7 @@
                 };
             };
         }
-        const resizeObserver = new ResizeObserver(entries => {
-            if (!CONFIG.MINI_DASHBOARD_MAXIMIZED) return;
-            for (let entry of entries) { if (entry.target === popup) { saveCurrentPositionAndSize(); } }
-        });
-        resizeObserver.observe(popup);
+        // REMOVIDO: ResizeObserver para fixar o tamanho no modo expandido/maximizado.
     };
 
     const analyticsManager = {
@@ -341,22 +366,31 @@
             });
             this.saveData(data); this._updateDashboard();
         },
-        logBaloonClick() { const data = this.getData(); data.baloonClicks = (data.baloonClicks || 0) + 1; this.saveData(data); this._updateDashboard(); },
+        logBaloonClick() { 
+            const data = this.getData(); 
+            data.baloonClicks = (data.baloonClicks || 0) + 1; 
+            this.saveData(data); 
+            this._updateDashboard(); 
+        },
         logTransferClick() { const data = this.getData(); data.transferClicks = (data.transferClicks || 0) + 1; this.saveData(data); this._updateDashboard(); },
         logEvaluatedClick() { const data = this.getData(); data.evaluatedClicks = (data.evaluatedClicks || 0) + 1; this.saveData(data); this._updateDashboard(); },
         _updateDashboard() { if (document.getElementById('purecloud-script-mini-dashboard')) { document.getElementById('purecloud-script-mini-dashboard')._updateStatsInternal(); } },
         calculateStats() {
-            const data = this.getData(); const conversations = data.conversations; let completedConvos = conversations.filter(c => c.duration >= CONFIG.CHECKMARK_THRESHOLD_MS);
-            const consolidatedConvos = completedConvos.filter(conv => !conv.isRecurrence); const uniqueCount = consolidatedConvos.length;
+            const data = this.getData(); 
+            const conversations = data.conversations; 
+            let completedConvos = conversations.filter(c => c.duration >= CONFIG.CHECKMARK_THRESHOLD_MS);
+            const consolidatedConvos = completedConvos.filter(conv => !conv.isRecurrence); 
+            const uniqueCount = consolidatedConvos.length;
             
             const recurrenceCount = completedConvos.filter(conv => conv.isRecurrence).length;
-            const endedByAgentCount = completedConvos.filter(conv => conv.endedByAgent === 'BALAO' || conv.endedByAgent === 'AVALIACAO').length;
+            const baloonClicksCount = v4_counters.balao.length; // Usa o novo contador V4
 
             if (completedConvos.length === 0) { 
                 return { 
                     count: 0, tma: '00:00', tme: '00:00', perHour: {}, first: 'N/A', last: 'N/A', 
                     docCopies: data.docCopies, hotkeysUsed: (data.hotkeysUsed || []).length, 
-                    baloonClicks: data.baloonClicks, transferClicks: data.transferClicks, evaluatedClicks: data.evaluatedClicks, 
+                    baloonClicks: baloonClicksCount, // Usa o novo contador
+                    transferClicks: data.transferClicks, evaluatedClicks: data.evaluatedClicks, 
                     allConversations: conversations, 
                     endedByAgentCount: 0, recurrenceCount: 0 
                 }; 
@@ -374,12 +408,21 @@
             return { 
                 count: uniqueCount, tma, tme, perHour, first, last, 
                 docCopies: data.docCopies, hotkeysUsed: (data.hotkeysUsed || []).length, 
-                baloonClicks: data.baloonClicks, transferClicks: data.transferClicks, evaluatedClicks: data.evaluatedClicks, 
-                endedByAgentCount: endedByAgentCount, recurrenceCount: recurrenceCount, 
+                baloonClicks: baloonClicksCount, // Usa o novo contador
+                transferClicks: data.transferClicks, evaluatedClicks: data.evaluatedClicks, 
+                endedByAgentCount: 0, recurrenceCount: recurrenceCount, 
                 allConversations: conversations 
             };
         },
-        clearAllData() { localStorage.removeItem('dailyAnalytics_v2_data'); localStorage.removeItem('achievements_v2'); UI.createMiniDashboard(); }
+        clearAllData() { 
+            localStorage.removeItem('dailyAnalytics_v2_data'); 
+            localStorage.removeItem('achievements_v2'); 
+            // Limpa também o contador v4
+            v4_counters = { balao: [] };
+            saveV4Counters();
+
+            UI.createMiniDashboard(); 
+        }
     };
     window.analyticsManager = analyticsManager;
     const documentExtractor = {
@@ -395,7 +438,46 @@
         getInteractionId: (parentEl = document) => { const el = findEl(CONFIG.PURECLOUD_SELECTORS.INTERACTION_ID_EL, parentEl); return el?.textContent.trim().replace(/#/g, ''); },
     };
     async function copyTextToClipboard(text) { try { await navigator.clipboard.writeText(text); return true; } catch (err) { log('❌ FALHA AO COPIAR para a área de transferência (API Clipboard).', err); return false; } }
-    async function getNativeInteractionUrl() { const btn = findEl(CONFIG.PURECLOUD_SELECTORS.NATIVE_COPY_BUTTON); if (!btn) return null; btn.click(); return new Promise(resolve => { setTimeout(async () => { try { const url = await navigator.clipboard.readText(); if (url && url.includes('interactions/')) { resolve(url); } else { resolve(null); } } catch (e) { log("Erro ao ler clipboard para obter link da interação.", e); resolve(null); } }, 150); }); }
+    async function getNativeInteractionUrl() { 
+        const btn = findEl(CONFIG.PURECLOUD_SELECTORS.NATIVE_COPY_BUTTON); 
+        if (!btn) return null; 
+        
+        // Tentativa de obter o clipboard original para restaurar depois
+        let originalClipboard = '';
+        try {
+            originalClipboard = await navigator.clipboard.readText();
+        } catch (e) {
+            log("WARN: Não foi possível ler o clipboard original (permissão?).");
+        }
+        
+        btn.click(); 
+        
+        return new Promise(resolve => { 
+            setTimeout(async () => { 
+                let url = null;
+                try { 
+                    url = await navigator.clipboard.readText(); 
+                    if (!url || !(url.includes('interactions/') || url.includes('conversations/'))) { 
+                        url = null;
+                    }
+                } catch (e) { 
+                    log("Erro ao ler clipboard para obter link da interação.", e); 
+                    url = null;
+                } 
+
+                // Tenta restaurar o clipboard original
+                if (originalClipboard && url) { 
+                     try {
+                        await navigator.clipboard.writeText(originalClipboard); 
+                     } catch(e) {
+                        log("WARN: Não foi possível restaurar o clipboard.", e);
+                     }
+                }
+
+                resolve(url); 
+            }, 200); // Aumentado ligeiramente para dar tempo da cópia nativa
+        }); 
+    }
 
     const actions = {
         copyInteraction: async () => {
@@ -406,7 +488,7 @@
                 return;
             }
             const url = await getNativeInteractionUrl();
-            if (url && url.includes('interactions/')) {
+            if (url && (url.includes('interactions/') || url.includes('conversations/'))) {
                 const tData = conversationTimers.get(selectedConvEl);
                 if (tData) {
                     tData.interactionUrl = url;
@@ -438,7 +520,49 @@
         pasteReplies: () => { UI.createNotification("Função Colar Respostas Rápidas removida do modo minimalista.", 'info', 1000); },
         openReplies: () => { UI.createNotification("Função Respostas Rápidas removida do modo minimalista.", 'info', 1000); },
     };
+    
+    // --- LÓGICA DO CLIQUE DO BALÃO (V4.0) ---
+    async function handleBalaoClick(e) {
+        log("Botão 'Balão' clicado! Coletando dados (V4.0)...");
+        // Verifica se o botão está desabilitado pelo lockdown
+        const endChatButton = findEl(LOCKDOWN_CONFIG.END_CHAT_BUTTON_SELECTOR);
+        if (endChatButton && endChatButton.disabled) {
+            log("Clique ignorado: Botão Balão está bloqueado pelo Lockdown.");
+            return;
+        }
 
+        const { participantName, phoneNumber } = documentExtractor.getNameAndNumber(document.body);
+        
+        let interactionUrl = 'N/A';
+        try {
+            const urlFromButton = await getNativeInteractionUrl();
+            if (urlFromButton) {
+                interactionUrl = urlFromButton;
+            } else {
+                 const id = documentExtractor.getInteractionId(document.body);
+                 if (id && id !== 'N/A') {
+                     interactionUrl = `${window.location.origin}/directory/conversations/${id}`;
+                 } else {
+                     interactionUrl = window.location.href.includes('/conversations/') ? window.location.href : 'N/A';
+                 }
+            }
+        } catch (error) {
+            log("Erro ao tentar obter link na função handleBalaoClick:", error);
+        }
+        
+        v4_counters.balao.push({ 
+            timestamp: Date.now(), 
+            participantName: participantName, 
+            phoneNumber: phoneNumber, 
+            interactionUrl: interactionUrl 
+        });
+        
+        saveV4Counters();
+        analyticsManager._updateDashboard();
+        // Não mostra notificação de sucesso aqui, pois o clique pode ser cancelado
+        // A lógica de notificação é melhor na função 'actions.copyInteraction' (Ctrl+Shift+I)
+    }
+    
     const conversationLockManager = {
         states: new Map(),
         toggleLock: (selectedConvEl) => {
@@ -482,24 +606,17 @@
             };
 
             const scriptDoc = getScriptIframeDoc();
-
-            const addListener = (btn, type) => {
+            
+            // Adiciona listener para o botão de transferência e avaliação (Ainda rastreado pelo analyticsManager)
+            const addAnalyticsListener = (btn, type) => {
                 if (btn.dataset.gmListenerAdded) return;
                 
                 btn.addEventListener('click', (e) => {
                     if (btn.disabled) return;
-                    
                     const id = documentExtractor.getInteractionId(); 
-                    if (!id || id === 'N/A') {
-                        log(`[Listener] ERRO: Não foi possível obter o InteractionID no clique.`);
-                        return;
-                    }
+                    if (!id || id === 'N/A') { log(`[Listener] ERRO: Não foi possível obter o InteractionID no clique.`); return; }
                     
-                    if (type === 'BALAO') {
-                        analyticsManager.logBaloonClick();
-                        CONFIG.LAST_ENDED_INTERACTIONS.set(id, { type: 'BALAO', timestamp: Date.now() });
-                        log(`Clique em Mensagens de Término (BALAO) rastreado para ID: ${id}`);
-                    } else if (type === 'TRANSFERIDO') {
+                    if (type === 'TRANSFERIDO') {
                         analyticsManager.logTransferClick();
                         CONFIG.LAST_ENDED_INTERACTIONS.set(id, { type: 'TRANSFERIDO', timestamp: Date.now() });
                         log(`Clique em Transferir (TRANSFERIDO) rastreado para ID: ${id}`);
@@ -512,19 +629,27 @@
                 btn.dataset.gmListenerAdded = true;
             };
 
+            // Adiciona listener para o botão Balão (usa o novo rastreamento V4)
+            const addBalaoListener = (btn) => {
+                 if (btn.dataset.gmBalaoListenerAdded) return;
+                 btn.addEventListener('click', handleBalaoClick);
+                 btn.dataset.gmBalaoListenerAdded = true;
+                 log("Listener do Balão V4 adicionado.");
+            };
+
             document.querySelectorAll(LOCKDOWN_CONFIG.END_CHAT_BUTTON_SELECTOR.join(','))
-                .forEach(btn => addListener(btn, 'BALAO'));
+                .forEach(btn => addBalaoListener(btn));
 
             document.querySelectorAll(CONFIG.PURECLOUD_SELECTORS.TRANSFER_BUTTON_SELECTOR.join(','))
-                .forEach(btn => addListener(btn, 'TRANSFERIDO'));
+                .forEach(btn => addAnalyticsListener(btn, 'TRANSFERIDO'));
 
             document.querySelectorAll(CONFIG.PURECLOUD_SELECTORS.EVALUATION_BUTTON_SELECTOR.join(','))
-                .forEach(btn => addListener(btn, 'AVALIACAO')); 
+                .forEach(btn => addAnalyticsListener(btn, 'AVALIACAO')); 
 
             if (scriptDoc) {
                 log("[Listener] Procurando botões de avaliação dentro do Iframe do Script...");
                 scriptDoc.querySelectorAll(CONFIG.PURECLOUD_SELECTORS.EVALUATION_BUTTON_SELECTOR.join(','))
-                    .forEach(btn => addListener(btn, 'AVALIACAO'));
+                    .forEach(btn => addAnalyticsListener(btn, 'AVALIACAO'));
             }
         },
         initLockState: (conv) => { if (!conversationLockManager.states.has(conv)) { conversationLockManager.states.set(conv, { isLocked: true, unlockClicks: 0 }); } }
@@ -694,6 +819,8 @@
                         }
                         const duration = Date.now() - timerData.creationTime;
                         const currentTime = Date.now();
+                        
+                        // Lógica de classificação baseada em interações recentes (para manter a coleta de Transferido/Avaliação)
                         const clickData = CONFIG.LAST_ENDED_INTERACTIONS.get(timerData.interactionId);
                         let classification = 'HIBERNADO';
                         if (clickData && (currentTime - clickData.timestamp) < AGENT_END_WINDOW_MS) {
@@ -865,17 +992,8 @@
             container.innerHTML = ''; if (Object.keys(perHourData).length === 0) { container.innerHTML = '<div class="chart-placeholder">Nenhuma conversa para exibir gráfico.</div>'; return; } const maxCount = Math.max(...Object.values(perHourData)); const chartWrapper = document.createElement('div'); chartWrapper.className = 'chart-bars-wrapper'; for (let hour = 0; hour < 24; hour++) { const count = perHourData[hour] || 0; const height = (count / (maxCount || 1)) * 90; const barWrapper = document.createElement('div'); barWrapper.className = 'chart-bar-wrapper'; barWrapper.title = `${count} conversas às ${String(hour).padStart(2, '0')}h`; barWrapper.style.height = '100%'; barWrapper.style.position = 'relative'; barWrapper.innerHTML = `<div class="chart-bar building-bar" style="height: ${height}%; position: absolute; bottom: 0; width: 90%;"><span class="bar-count">${count > 0 ? count : ''}</span></div><span class="bar-label">${String(hour).padStart(2, '0')}h</span>`; chartWrapper.appendChild(barWrapper); } container.innerHTML = `<div class="chart-scroll-container">${chartWrapper.outerHTML}</div>`;
         },
         renderAnalyticsContent(container) {
-            const stats = analyticsManager.calculateStats(); container.innerHTML = `<div class="stats-grid"><div class="stat-item"><span>Conversas (Únicas)</span><strong id="analytics-total-count">${stats.count}</strong></div><div class="stat-item"><span>TMA (Geral)</span><strong id="analytics-tma">${stats.tma}</strong></div><div class="stat-item"><span>TME (Ativo)</span><strong id="analytics-tme">${stats.tme}</strong></div><div class="stat-item"><span>Enc. Agente*</span><strong id="analytics-ended-agent-count">${stats.endedByAgentCount}</strong></div> <div class="stat-item"><span>Início</span><strong id="analytics-first">${stats.first}</strong></div><div class="stat-item"><span>Última</span><strong id="analytics-last">${stats.last}</strong></div><div class="stat-item"><span>Meta</span><strong id="analytics-target">${CONFIG.CONVERSATION_TARGET}</strong></div><div class="stat-item"><span>Transferidos</span><strong id="analytics-transfer-count">${stats.transferClicks}</strong></div></div><p style="font-size: 0.8em; color: var(--purecloud-script-text-secondary); margin-top: 5px;">* Encerrados Agente = Balão / Avaliação.</p><h4>Conversas/Hora (Todas Completas)</h4><div class="analytics-chart-container-main"></div>`; UI.renderBarChart(container.querySelector('.analytics-chart-container-main'), stats.perHour);
+            const stats = analyticsManager.calculateStats(); container.innerHTML = `<div class="stats-grid"><div class="stat-item"><span>Conversas (Únicas)</span><strong id="analytics-total-count">${stats.count}</strong></div><div class="stat-item"><span>TMA (Geral)</span><strong id="analytics-tma">${stats.tma}</strong></div><div class="stat-item"><span>TME (Ativo)</span><strong id="analytics-tme">${stats.tme}</strong></div><div class="stat-item"><span>Balão (Término)</span><strong id="analytics-balao-clicks">${stats.baloonClicks}</strong></div> <div class="stat-item"><span>Início</span><strong id="analytics-first">${stats.first}</strong></div><div class="stat-item"><span>Última</span><strong id="analytics-last">${stats.last}</strong></div><div class="stat-item"><span>Meta</span><strong id="analytics-target">${CONFIG.CONVERSATION_TARGET}</strong></div><div class="stat-item"><span>Transferidos</span><strong id="analytics-transfer-count">${stats.transferClicks}</strong></div></div><p style="font-size: 0.8em; color: var(--purecloud-script-text-secondary); margin-top: 5px;">* Balão (Término) usa o contador integrado (v4.0).</p><h4>Conversas/Hora (Todas Completas)</h4><div class="analytics-chart-container-main"></div>`; UI.renderBarChart(container.querySelector('.analytics-chart-container-main'), stats.perHour);
         },
-        mapClassificationForTable: (classification) => {
-            switch (classification) {
-                case 'AVALIACAO': return 'Avaliação';
-                case 'BALAO': return 'Agente/Balão';
-                case 'TRANSFERIDO': return 'Transferido';
-                default: return 'Agente/Hibernado';
-            }
-        },
-        // --- INÍCIO DA ATUALIZAÇÃO (v1.0.27) ---
         renderDetailsContent(container) {
             const stats = analyticsManager.calculateStats(); 
             const conversations = stats.allConversations.filter(c => c.duration >= CONFIG.CHECKMARK_THRESHOLD_MS).sort((a, b) => b.timestamp - a.timestamp);
@@ -894,7 +1012,7 @@
 
             const conversationsAsc = conversations.reverse();
             const totalCount = conversationsAsc.length;
-            const recurrenceCount = stats.recurrenceCount; // Pega a contagem de recorrências
+            const recurrenceCount = stats.recurrenceCount;
 
             detailsList.innerHTML = `
                 <div class="details-header" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
@@ -910,10 +1028,7 @@
                     .recurrence-tag, .first-tag { padding: 2px 6px; border-radius: 3px; font-weight: bold; font-size: 0.8em; display: inline-block; }
                     .recurrence-tag { background-color: var(--purecloud-script-warn-color); color: #222; }
                     .first-tag { background-color: var(--purecloud-script-success-color); color: #fff; }
-                    .ended-agent-tag-BALAO { background-color: var(--purecloud-script-error-color); color: white; }
-                    .ended-agent-tag-AVALIACAO { background-color: var(--purecloud-script-success-color); color: white; }
-                    .ended-agent-tag-TRANSFERIDO { background-color: var(--purecloud-script-warn-color); color: #222; }
-                    .ended-agent-tag-AGENTE-HIBERNADO { background-color: var(--purecloud-script-info-color); color: white; }
+                    /* REMOVIDO: Classes ended-agent-tag */
                     .is-recurrence-row { opacity: 0.8; font-style: italic; }
                     .details-table th.col-num, .details-table td.col-num { 
                         text-align: right; 
@@ -937,7 +1052,6 @@
                             <th>Cliente</th>
                             <th>TME</th>
                             <th>Recorrência</th>
-                            <th>Encerrado por</th>
                             <th>Link</th>
                         </tr>
                     </thead>
@@ -947,8 +1061,6 @@
                             const tmeSeconds = Math.floor(conv.activeDuration / 1000); 
                             const tme = `${formatTime(Math.floor(tmeSeconds / 60))}:${formatTime(tmeSeconds % 60)}`; 
                             const recurrenceLabel = conv.isRecurrence ? '<span class="recurrence-tag">Sim</span>' : '<span class="first-tag">Não</span>'; 
-                            const classificationKey = UI.mapClassificationForTable(conv.endedByAgent); 
-                            const endedByTagHTML = `<span class="ended-agent-tag-${classificationKey.toUpperCase().replace('/', '-')}" title="${conv.endedByAgent}">${classificationKey}</span>`; 
                             const urlLink = conv.interactionUrl && conv.interactionUrl !== 'N/A' ? `<a href="${conv.interactionUrl}" target="_blank" title="Abrir Interação">🔗</a>` : 'N/A'; 
                             
                             let typeIcon = '❔';
@@ -965,7 +1077,6 @@
                                 <td>${conv.participantName || 'N/A'}</td>
                                 <td>${tme}</td>
                                 <td>${recurrenceLabel}</td>
-                                <td>${endedByTagHTML}</td>
                                 <td>${urlLink}</td>
                             </tr>`; 
                         }).join('')}
@@ -990,7 +1101,66 @@
                 }; 
             }
         },
-        // --- FIM DA ATUALIZAÇÃO (v1.0.27) ---
+        // FUNÇÃO ATUALIZADA: Layout de Tabela para Encerrados
+        renderClosedDetailsContent(container) {
+            const balaoRecords = v4_counters.balao.slice().reverse(); // Copia e inverte para mostrar o mais recente primeiro
+
+            container.innerHTML = `
+                <h4 style="margin-top:0;">Histórico de Cliques: Balão (Mensagens de Término)</h4>
+                <p style="font-size: 0.85em; color: var(--purecloud-script-text-secondary); margin-bottom: 15px;">
+                    Total de Cliques de Balão Hoje: <strong style="color: var(--purecloud-script-error-color);">${balaoRecords.length}</strong>
+                </p>
+                <div id="closed-interactions-list" class="details-table-wrapper" style="max-height: 400px; overflow-y: auto;">
+                    ${balaoRecords.length === 0 ? '<p>Nenhum clique de Balão registrado hoje.</p>' : ''}
+                    
+                    <table class="details-table">
+                        <thead>
+                            <tr>
+                                <th style="width: 20%;">Hora</th>
+                                <th style="width: 45%;">Cliente</th>
+                                <th style="width: 25%;">Telefone</th>
+                                <th style="width: 10%; text-align: center;">Link</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            ${balaoRecords.map(item => {
+                                // Formatação da Hora: Mostra Hora e Minuto
+                                const time = getBrazilTime(new Date(item.timestamp)).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
+                                const urlLink = (item.interactionUrl && item.interactionUrl !== 'N/A')
+                                    ? `<a href="${item.interactionUrl}" target="_blank" title="Abrir Interação">🔗</a>`
+                                    : 'N/A';
+                                    
+                                return `<tr>
+                                    <td>${time}</td>
+                                    <td>${item.participantName || 'N/A'}</td>
+                                    <td>${item.phoneNumber || 'N/A'}</td>
+                                    <td style="text-align: center;">${urlLink}</td>
+                                </tr>`;
+                            }).join('')}
+                        </tbody>
+                    </table>
+                </div>
+                <button id="export-balao-details-btn" class="purecloud-script-button" style="margin-top: 15px;">Exportar Detalhes de Balão (JSON)</button>
+            `;
+
+            // Adicionando a função de exportação de dados V4
+            const exportDetailsBtn = container.querySelector('#export-balao-details-btn'); 
+            if (exportDetailsBtn) { 
+                exportDetailsBtn.onclick = () => { 
+                    const dataToExport = v4_counters.balao; 
+                    const filename = `purecloud_script_balao_closures_${getBrazilTime(new Date()).toISOString().split('T')[0]}.json`; 
+                    const blob = new Blob([JSON.stringify(dataToExport, null, 2)], { type: 'application/json' }); 
+                    const url = URL.createObjectURL(blob); 
+                    const a = document.createElement('a'); 
+                    a.href = url; a.download = filename; 
+                    document.body.appendChild(a); 
+                    a.click(); 
+                    document.body.removeChild(a); 
+                    URL.revokeObjectURL(url); 
+                    UI.createNotification("Dados de encerramento Balão exportados com sucesso!", "success"); 
+                }; 
+            }
+        },
         renderThemeContent(container, tempThemeColors) {
             const colorGroups = { "Interface Geral": { bgPrimary: "Fundo Principal", bgSecondary: "Fundo Secundário", textPrimary: "Texto Principal", textSecondary: "Texto Secundário", borderColor: "Cor da Borda", }, "Timers e Números (Bolhas)": { timerBg: "Fundo Padrão", accent: "Fundo (Selecionado)", timerNormalText: "Texto (Novo/Completo)", timerActiveText: "Texto (Contando)", timerPausedText: "Texto (Pausado)", timerInactiveClientText: "Texto (Cliente Inativo)", timerInactiveOperatorText: "Texto (Operador Inativo)", }, "Cores de Alerta e Status": { success: "Sucesso (Verde)", error: "Erro (Vermelho)", warn: "Aviso (Amarelo)", info: "Informação (Azul)", }, "Outros": { miniDashboardProgress: "Progresso (Mini Dashboard)" } };
             container.innerHTML = `<h3>Configurações de Tema</h3><p>Altere as cores da interface do script. As alterações serão aplicadas após salvar.</p><div id="theme-color-sections"></div><button id="reset-theme-btn" class="purecloud-script-button button-danger" style="margin-top: 25px;">Resetar Cores Padrão</button>`;
@@ -1005,25 +1175,52 @@
             panel.className = 'purecloud-script-settings-panel purecloud-script-popup';
             panel.classList.toggle('pc-script-dark-mode', CONFIG.DARK_MODE);
             let tempHotkeysConfig = { ...CONFIG.HOTKEYS }; let tempThemeColors = JSON.parse(JSON.stringify(CONFIG.THEME_COLORS));
-            panel.innerHTML = `<div class="panel-header" style="cursor: move;"><h2>Config. Contador</h2><div class="panel-header-buttons"><button class="panel-header-btn minimize-btn" title="Minimizar">-</button><button class="panel-header-btn purecloud-script-popup-close-btn" id="closeSettingsPanelBtn" title="Fechar">X</button></div></div><div class="purecloud-script-tabs"><button class="purecloud-script-tab-button active" data-tab="analytics">Analytics</button><button class="purecloud-script-tab-button" data-tab="details">Atendimentos</button><button class="purecloud-script-tab-button" data-tab="general">Geral</button><button class="purecloud-script-tab-button" data-tab="theme">Aparência</button><button class="purecloud-script-tab-button" data-tab="hotkeys">Atalhos</button></div><div class="panel-content"><div class="purecloud-script-tab-content active" data-tab-content="analytics"></div><div class="purecloud-script-tab-content" data-tab-content="details"></div><div class="purecloud-script-tab-content" data-tab-content="general"></div><div class="purecloud-script-tab-content" data-tab-content="theme"></div><div class="purecloud-script-tab-content" data-tab-content="hotkeys"></div></div><div class="panel-footer"><button id="save-settings-btn" class="purecloud-script-button">Salvar e Fechar</button></div>`;
+            // ABA 'closed' ADICIONADA AQUI
+            panel.innerHTML = `<div class="panel-header" style="cursor: move;"><h2>Config. Contador</h2><div class="panel-header-buttons"><button class="panel-header-btn minimize-btn" title="Minimizar">-</button><button class="panel-header-btn purecloud-script-popup-close-btn" id="closeSettingsPanelBtn" title="Fechar">X</button></div></div><div class="purecloud-script-tabs"><button class="purecloud-script-tab-button active" data-tab="analytics">Analytics</button><button class="purecloud-script-tab-button" data-tab="details">Atendimentos</button><button class="purecloud-script-tab-button" data-tab="closed">Encerrados</button><button class="purecloud-script-tab-button" data-tab="general">Geral</button><button class="purecloud-script-tab-button" data-tab="theme">Aparência</button><button class="purecloud-script-tab-button" data-tab="hotkeys">Atalhos</button></div><div class="panel-content"><div class="purecloud-script-tab-content active" data-tab-content="analytics"></div><div class="purecloud-script-tab-content" data-tab-content="details"></div><div class="purecloud-script-tab-content" data-tab-content="closed"></div><div class="purecloud-script-tab-content" data-tab-content="general"></div><div class="purecloud-script-tab-content" data-tab-content="theme"></div><div class="purecloud-script-tab-content" data-tab-content="hotkeys"></div></div><div class="panel-footer"><button id="save-settings-btn" class="purecloud-script-button">Salvar e Fechar</button></div>`;
             document.body.appendChild(panel); makeDraggable(panel, panel.querySelector('.panel-header'), 'settingsPanel'); panel.querySelector('#closeSettingsPanelBtn').onclick = () => panel.remove();
             const renderHotkeys = (container) => { container.innerHTML = '<h3>Atalhos de Teclado</h3><p>Clique no campo de atalho e pressione o combo de teclas desejado (ex: Ctrl + Shift + I). Use ESC para cancelar a gravação.</p><div id="hotkey-list"></div>'; const hotkeyList = container.querySelector('#hotkey-list'); for (const actionKey in tempHotkeysConfig) { const feature = featureDescriptions[actionKey]; if (!feature) continue; const hotkeyGroup = document.createElement('div'); hotkeyGroup.className = 'settings-group hotkey-group'; hotkeyGroup.innerHTML = `<label for="hotkey-${actionKey}">${feature.title}:</label><input type="text" id="hotkey-${actionKey}" data-action="${actionKey}" value="${tempHotkeysConfig[actionKey]}" readonly class="hotkey-input">`; hotkeyList.appendChild(hotkeyGroup); } hotkeyList.querySelectorAll('.hotkey-input').forEach(input => { document.removeEventListener('keydown', input._captureHotkey, true); const captureHotkey = (e) => { if (!input.classList.contains('listening')) return; e.preventDefault(); e.stopPropagation(); if (e.key === 'Escape') { input.classList.remove('listening'); input.value = tempHotkeysConfig[input.dataset.action]; input.title = ''; document.removeEventListener('keydown', input._captureHotkey, true); return; } const newCombo = getHotkeyCombo(e); if (['Control', 'Shift', 'Alt'].includes(e.key) && newCombo.split('+').length < 2) { return; } const existingAction = Object.keys(tempHotkeysConfig).find(key => tempHotkeysConfig[key] === newCombo && key !== input.dataset.action); if (existingAction) { UI.createNotification(`Conflito! O atalho '${newCombo}' já está em uso por ${featureDescriptions[existingAction].title}.`, 'error', 5000); input.value = tempHotkeysConfig[input.dataset.action]; } else if (newCombo.split('+').length < 2) { UI.createNotification("O atalho deve conter pelo menos um modificador (Ctrl, Shift, Alt) e uma tecla.", 'warn', 4000); input.value = tempHotkeysConfig[input.dataset.action]; } else { tempHotkeysConfig[input.dataset.action] = newCombo; input.value = newCombo; UI.createNotification(`Atalho para ${feature.title} salvo temporariamente. Clique em 'Salvar e Fechar' para confirmar.`, 'info', 3000); } input.classList.remove('listening'); input.title = ''; document.removeEventListener('keydown', input._captureHotkey, true); }; input._captureHotkey = captureHotkey; input.addEventListener('click', () => { if (input.classList.contains('listening')) { input.classList.remove('listening'); input.value = tempHotkeysConfig[input.dataset.action]; input.title = ''; document.removeEventListener('keydown', input._captureHotkey, true); return; } hotkeyList.querySelectorAll('.hotkey-input.listening').forEach(i => { i.classList.remove('listening'); i.value = tempHotkeysConfig[i.dataset.action]; i.title = ''; document.removeEventListener('keydown', i._captureHotkey, true); }); input.classList.add('listening'); input.value = 'Pressione o atalho...'; input.title = 'Pressione ESC para cancelar'; document.addEventListener('keydown', input._captureHotkey, true); }); }); };
-            const switchTab = (tabId) => { panel.querySelectorAll('.purecloud-script-tab-button').forEach(btn => btn.classList.remove('active')); panel.querySelectorAll('.purecloud-script-tab-content').forEach(content => content.classList.remove('active')); const targetTabBtn = panel.querySelector(`.purecloud-script-tab-button[data-tab="${tabId}"]`); const targetTabContent = panel.querySelector(`[data-tab-content="${tabId}"]`); if (targetTabBtn) targetTabBtn.classList.add('active'); if (targetTabContent) targetTabContent.classList.add('active'); if (tabId === 'general') { panel.querySelector('#conversation-target').value = CONFIG.CONVERSATION_TARGET; panel.querySelector('#dark-mode-toggle').checked = CONFIG.DARK_MODE; panel.querySelector('#sound-alerts-toggle').checked = CONFIG.SOUND_ALERTS_ENABLED; panel.querySelector('#inactivity-client-alert-seconds').value = CONFIG.INACTIVITY_CLIENT_ALERT_SECONDS; panel.querySelector('#inactivity-operator-alert-seconds').value = CONFIG.INACTIVITY_OPERATOR_ALERT_SECONDS; panel.querySelector('#long-convo-alert-min').value = CONFIG.LONG_CONVO_ALERT_MIN; } else if (tabId === 'analytics') { UI.renderAnalyticsContent(targetTabContent); } else if (tabId === 'details') { UI.renderDetailsContent(targetTabContent); } else if (tabId === 'hotkeys') { renderHotkeys(targetTabContent); } else if (tabId === 'theme') { UI.renderThemeContent(targetTabContent, tempThemeColors); } if (tabId !== 'hotkeys') { panel.querySelectorAll('.hotkey-input.listening').forEach(i => { i.classList.remove('listening'); i.value = tempHotkeysConfig[i.dataset.action]; i.title = ''; document.removeEventListener('keydown', i._captureHotkey, true); }); } };
+            const switchTab = (tabId) => { 
+                panel.querySelectorAll('.purecloud-script-tab-button').forEach(btn => btn.classList.remove('active')); 
+                panel.querySelectorAll('.purecloud-script-tab-content').forEach(content => content.classList.remove('active')); 
+                const targetTabBtn = panel.querySelector(`.purecloud-script-tab-button[data-tab="${tabId}"]`); 
+                const targetTabContent = panel.querySelector(`[data-tab-content="${tabId}"]`); 
+                if (targetTabBtn) targetTabBtn.classList.add('active'); 
+                if (targetTabContent) targetTabContent.classList.add('active'); 
+                
+                if (tabId === 'general') { 
+                    panel.querySelector('#conversation-target').value = CONFIG.CONVERSATION_TARGET; 
+                    panel.querySelector('#dark-mode-toggle').checked = CONFIG.DARK_MODE; 
+                    panel.querySelector('#sound-alerts-toggle').checked = CONFIG.SOUND_ALERTS_ENABLED; 
+                    panel.querySelector('#inactivity-client-alert-seconds').value = CONFIG.INACTIVITY_CLIENT_ALERT_SECONDS; 
+                    panel.querySelector('#inactivity-operator-alert-seconds').value = CONFIG.INACTIVITY_OPERATOR_ALERT_SECONDS; 
+                    panel.querySelector('#long-convo-alert-min').value = CONFIG.LONG_CONVO_ALERT_MIN; 
+                } else if (tabId === 'analytics') { 
+                    UI.renderAnalyticsContent(targetTabContent); 
+                } else if (tabId === 'details') { 
+                    UI.renderDetailsContent(targetTabContent); 
+                } else if (tabId === 'closed') { 
+                    UI.renderClosedDetailsContent(targetTabContent); // NOVO: Carrega conteúdo da aba Encerrados
+                } else if (tabId === 'hotkeys') { 
+                    renderHotkeys(targetTabContent); 
+                } else if (tabId === 'theme') { 
+                    UI.renderThemeContent(targetTabContent, tempThemeColors); 
+                } 
+                
+                if (tabId !== 'hotkeys') { panel.querySelectorAll('.hotkey-input.listening').forEach(i => { i.classList.remove('listening'); i.value = tempHotkeysConfig[i.dataset.action]; i.title = ''; document.removeEventListener('keydown', i._captureHotkey, true); }); } 
+            };
             panel.querySelectorAll('.purecloud-script-tab-button').forEach(btn => { btn.onclick = () => switchTab(btn.dataset.tab); });
             const generalTab = panel.querySelector('[data-tab-content="general"]');
             
-            // --- INÍCIO DA ATUALIZAÇÃO (v1.0.27) ---
-            // Corrigido o layout que estava quebrado
+            // --- ABA GERAL (v1.0.27) ---
             generalTab.innerHTML = `<div class="settings-group"><label for="conversation-target">Meta Conversas Diárias:</label><input type="number" id="conversation-target" value="${CONFIG.CONVERSATION_TARGET}" min="1"></div>
             <div class="settings-group"><label>Modo Escuro:</label><label class="switch"><input type="checkbox" id="dark-mode-toggle" ${CONFIG.DARK_MODE ? 'checked' : ''}><span class="slider round"></span></label></div>
             <div class="settings-group"><label>Alertas Sonoros (Inatividade):</label><label class="switch"><input type="checkbox" id="sound-alerts-toggle" ${CONFIG.SOUND_ALERTS_ENABLED ? 'checked' : ''}><span class="slider round"></span></label></div>
             <div class="settings-group"><label for="inactivity-client-alert-seconds">Alerta Inatividade CLIENTE (seg, min 30):</label><input type="number" id="inactivity-client-alert-seconds" value="${CONFIG.INACTIVITY_CLIENT_ALERT_SECONDS}" min="30"></div>
             <div class="settings-group"><label for="inactivity-operator-alert-seconds">Alerta Inatividade OPERADOR (seg, min 10):</label><input type="number" id="inactivity-operator-alert-seconds" value="${CONFIG.INACTIVITY_OPERATOR_ALERT_SECONDS}" min="10"></div>
             <div class="settings-group"><label for="long-convo-alert-min">Alerta Conversa Longa (min, min 5):</label><input type="number" id="long-convo-alert-min" value="${CONFIG.LONG_CONVO_ALERT_MIN}" min="5"></div>
-            <div class="settings-group"><h4>Contadores Diários:</h4><button id="reset-counter-btn" class="purecloud-script-button button-danger">Resetar Contadores/Dados do Dia</button><p style="font-size: 0.85em; margin-top: 5px; color: var(--purecloud-script-text-secondary);">Zera contagem, TMA, TME e lista de atendimentos.</p></div>`; 
-            // --- FIM DA ATUALIZAÇÃO (v1.0.27) ---
+            <div class="settings-group"><h4>Contadores Diários:</h4><button id="reset-counter-btn" class="purecloud-script-button button-danger">Resetar Contadores/Dados do Dia</button><p style="font-size: 0.85em; margin-top: 5px; color: var(--purecloud-script-text-secondary);">Zera contagem, TMA, TME, lista de atendimentos e histórico de encerramentos.</p></div>`; 
             
-            panel.querySelector('#reset-counter-btn').onclick = () => { if (confirm("Tem certeza?")) { analyticsManager.clearAllData(); UI.renderDetailsContent(panel.querySelector('[data-tab-content="details"]')); UI.renderAnalyticsContent(panel.querySelector('[data-tab-content="analytics"]')); } };
+            panel.querySelector('#reset-counter-btn').onclick = () => { if (confirm("Tem certeza?")) { analyticsManager.clearAllData(); UI.renderDetailsContent(panel.querySelector('[data-tab-content="details"]')); UI.renderAnalyticsContent(panel.querySelector('[data-tab-content="analytics"]')); UI.renderClosedDetailsContent(panel.querySelector('[data-tab-content="closed"]')); } };
             panel.querySelector('[data-tab-content="analytics"]').innerHTML = `<div id="analytics-content-main"><button id="load-stats-btn" class="purecloud-script-button">Carregar Estatísticas</button><p style="margin-top: 10px;">Atualize as estatísticas.</p></div>`; panel.querySelector('#load-stats-btn').onclick = () => { UI.renderAnalyticsContent(panel.querySelector('[data-tab-content="analytics"]')); };
             
             panel.querySelector('#save-settings-btn').onclick = () => {
@@ -1047,7 +1244,6 @@
             };
             switchTab('analytics');
         },
-        // --- INÍCIO DA ATUALIZAÇÃO (v1.0.27) ---
         createMiniDashboard() {
             if (!CONFIG.MINI_DASHBOARD_VISIBLE) {
                 const dashboard = document.getElementById('purecloud-script-mini-dashboard');
@@ -1061,14 +1257,15 @@
                 dashboard.className = 'purecloud-script-popup';
                 dashboard.classList.toggle('pc-script-dark-mode', CONFIG.DARK_MODE);
                 document.body.appendChild(dashboard);
-                // HTML Atualizado (removido "Recorrências")
+                
+                // HTML Atualizado (Métrica Balão)
                 dashboard.innerHTML = `<div class="mini-dashboard-header"><div class="counter-display"><span class="counter-text">--/--</span><div class="progress-bar-container-compact"><div class="progress-bar-compact"></div></div></div><div class="mini-dashboard-controls"><button id="mini-dashboard-adjust-attended-btn" class="compact-btn adjust-btn" title="Ajustar Contagem"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width: 14px; height: 14px;"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg></button><button class="compact-btn toggle-expand-btn" title="Expandir/Recolher"><svg class="expand-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width: 14px; height: 14px;"><path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3"></path></svg><svg class="collapse-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width: 14px; height: 14px; display: none;"><path d="M8 3v3a2 2 0 0 1-2 2H3m18 0h-3a2 2 0 0 1-2-2V3m0 18v-3a2 2 0 0 1 2-2h3M3 16h3a2 2 0 0 1 2 2v3"></path></svg></button><button class="compact-btn close-btn" id="closeMiniDashboardBtn" title="Fechar">X</button></div></div>
                 <div class="mini-dashboard-content">
                     <div class="stats-grid-original mini-dashboard-stats-grid">
                         <div class="stat-item-original"><span>Conversas (Únicas)</span><strong id="dashboard-conv-count">--</strong></div>
                         <div class="stat-item-original"><span>TMA</span><strong id="dashboard-tma">--:--</strong></div>
                         <div class="stat-item-original"><span>TME</span><strong id="dashboard-tme">--:--</strong></div>
-                        <div class="stat-item-original" title="Encerrados por Balão ou Avaliação"><span>Enc. (Agente)</span><strong id="dashboard-agent-ended">--</strong></div>
+                        <div class="stat-item-original" title="Cliques no botão 'Mensagens de Término' (Balão)"><span>Balão (Término)</span><strong id="dashboard-balao-clicks">--</strong></div>
                     </div>
                 </div>`;
                 
@@ -1097,12 +1294,9 @@
                         const tmeElement = dashboard.querySelector('#dashboard-tme'); 
                         if (tmeElement) tmeElement.textContent = stats.tme; 
                         
-                        const agentEndedElement = dashboard.querySelector('#dashboard-agent-ended'); 
-                        if (agentEndedElement) agentEndedElement.textContent = stats.endedByAgentCount;
-                        
-                        // "Recorrências" removido
-                        // const recurrenceElement = dashboard.querySelector('#dashboard-recurrence'); 
-                        // if (recurrenceElement) recurrenceElement.textContent = stats.recurrenceCount;
+                        // NOVO: Atualiza a métrica Balão
+                        const baloonClicksElement = dashboard.querySelector('#dashboard-balao-clicks'); 
+                        if (baloonClicksElement) baloonClicksElement.textContent = stats.baloonClicks;
                     }
                 };
                 
@@ -1113,9 +1307,28 @@
                     const shouldExpand = forceState !== null ? forceState : !CONFIG.MINI_DASHBOARD_MAXIMIZED; CONFIG.MINI_DASHBOARD_MAXIMIZED = shouldExpand;
                     dashboard.classList.toggle('expanded', shouldExpand); dashboard.classList.toggle('collapsed', !shouldExpand);
                     expandIcon.style.display = shouldExpand ? 'none' : 'inline-block'; collapseIcon.style.display = shouldExpand ? 'inline-block' : 'none'; toggleButton.title = shouldExpand ? "Recolher" : "Expandir";
-                    if (!shouldExpand) { dashboard.style.width = ''; dashboard.style.height = ''; dashboard.style.resize = 'none'; } else {
-                        const savedPosition = CONFIG.POPUP_POSITIONS['miniDashboard']; if (savedPosition && savedPosition.top && savedPosition.top !== 'auto') { dashboard.style.top = savedPosition.top; dashboard.style.left = savedPosition.left; dashboard.style.bottom = 'auto'; dashboard.style.right = 'auto'; dashboard.style.transform = 'none'; dashboard.style.width = savedPosition.width || '300px'; dashboard.style.height = savedPosition.height || 'auto'; } else { dashboard.style.top = '50%'; dashboard.style.left = '50%'; dashboard.style.transform = 'translate(-50%, -50%)'; dashboard.style.bottom = 'auto'; dashboard.style.right = 'auto'; dashboard.style.width = '300px'; dashboard.style.height = 'auto'; } dashboard.style.resize = 'both';
-                    } saveData(); dashboard._updateStatsInternal();
+                    
+                    if (!shouldExpand) { 
+                        dashboard.style.width = ''; dashboard.style.height = ''; dashboard.style.resize = 'none'; 
+                    } else {
+                        const savedPosition = CONFIG.POPUP_POSITIONS['miniDashboard']; 
+                        if (savedPosition && savedPosition.top && savedPosition.top !== 'auto') { 
+                            dashboard.style.top = savedPosition.top; dashboard.style.left = savedPosition.left; 
+                            dashboard.style.bottom = 'auto'; dashboard.style.right = 'auto'; 
+                            dashboard.style.transform = 'none'; 
+                        } else { 
+                            dashboard.style.top = '50%'; dashboard.style.left = '50%'; 
+                            dashboard.style.transform = 'translate(-50%, -50%)'; 
+                            dashboard.style.bottom = 'auto'; dashboard.style.right = 'auto'; 
+                        } 
+                        // Impõe tamanho fixo e impede redimensionamento (Solicitação do usuário)
+                        dashboard.style.width = '300px'; 
+                        dashboard.style.height = 'auto'; 
+                        dashboard.style.resize = 'none'; 
+                    } 
+                    
+                    saveData(); 
+                    dashboard._updateStatsInternal();
                 };
                 dashboard._toggleFloatingDashboard = toggleFloatingDashboard;
                 dashboardHeader.onclick = (e) => {
@@ -1138,7 +1351,6 @@
                 dashboard.classList.toggle('pc-script-dark-mode', CONFIG.DARK_MODE);
             }
         },
-        // --- FIM DA ATUALIZAÇÃO (v1.0.27) ---
     };
 
     function injectCss() {
@@ -1257,7 +1469,7 @@
             div.interaction-group{position:relative!important;} 
             #purecloud-script-mini-dashboard { padding: 0; background-color: var(--purecloud-script-bg-secondary) !important; box-shadow: 0 4px 10px var(--purecloud-script-shadow-color); border: 1px solid var(--purecloud-script-border-color); resize: none; }
             #purecloud-script-mini-dashboard.collapsed { width: auto; min-width: 70px; height: 35px; border-radius: 50px; cursor: move; overflow: hidden; padding: 0 12px; }
-            #purecloud-script-mini-dashboard.expanded { min-width: 280px; min-height: 150px; border-radius: 8px; cursor: default; resize: both; bottom: auto; left: auto; padding: 0; }
+            #purecloud-script-mini-dashboard.expanded { min-width: 300px; max-width: 300px; border-radius: 8px; cursor: default; resize: none; bottom: auto; left: auto; padding: 0; }
             .mini-dashboard-header { background-color: transparent; padding: 0; display: flex; align-items: center; justify-content: center; height: 100%; cursor: move; border-bottom: none; border-radius: inherit; transition: background-color 0.2s, justify-content 0.2s; }
             #purecloud-script-mini-dashboard.collapsed .mini-dashboard-header { cursor: move; }
             #purecloud-script-mini-dashboard.expanded .mini-dashboard-header { background-color: var(--purecloud-script-bg-secondary); border-bottom: 1px solid var(--purecloud-script-border-color); cursor: move; height: 35px; padding: 5px 10px; justify-content: space-between; }
@@ -1274,9 +1486,8 @@
             #purecloud-script-mini-dashboard.expanded .mini-dashboard-controls { display: flex; }
             .compact-btn { background: var(--purecloud-script-bg-primary); border: 1px solid var(--purecloud-script-border-color); color: var(--purecloud-script-text-secondary); border-radius: 4px; cursor: pointer; height: 25px; width: 25px; display: flex; align-items: center; justify-content: center; font-size: 0.8em; padding: 0; }
             .compact-btn:hover { color: var(--purecloud-script-text-primary); background-color: var(--purecloud-script-border-color); }
-            /* --- INÍCIO DA ATUALIZAÇÃO (v1.0.27) --- Grid 2x2 do Mini-Dashboard */
+            /* --- Grid 2x2 do Mini-Dashboard --- */
             .stats-grid-original.mini-dashboard-stats-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 8px; margin: 0; }
-            /* --- FIM DA ATUALIZAÇÃO --- */
             .stat-item-original { text-align: center; background-color: var(--purecloud-script-bg-secondary); padding: 8px; border-radius: 4px; margin: 0; display: block; font-size: 0.8em; line-height: 1.2; } .stat-item-original span { display: block; color: var(--purecloud-script-text-secondary); font-size: 0.9em; } .stat-item-original strong { font-size: 1.1em; color: var(--purecloud-script-text-primary); }
             .hotkey-group { display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px; padding: 5px; border: 1px solid var(--purecloud-script-border-color); border-radius: 4px; } .hotkey-group label { flex-grow: 1; margin-right: 10px; font-weight: bold; } .hotkey-input { padding: 5px 8px; border: 1px solid var(--purecloud-script-border-color); border-radius: 4px; text-align: center; cursor: pointer; background: var(--purecloud-script-bg-secondary); color: var(--purecloud-script-text-primary); transition: background-color 0.2s, border-color 0.2s; } .hotkey-input.listening { background-color: var(--purecloud-script-warn-color); color: #222; border-color: var(--purecloud-script-warn-color); cursor: wait; box-shadow: 0 0 5px var(--purecloud-script-warn-color); }
             .switch { position: relative; display: inline-block; width: 44px; height: 24px; }
@@ -1292,7 +1503,14 @@
         const style = document.createElement('style'); style.id = 'purecloud-script-injected-style'; document.head.appendChild(style); style.textContent = css;
     }
     function initializeDailyCounters(forceReset = false) {
-        const today = getBrazilTime(new Date()).toLocaleDateString('pt-BR'); if (localStorage.getItem('purecloudScript_lastActivityDate') !== today || forceReset) { localStorage.setItem('purecloudScript_lastActivityDate', today); analyticsManager.clearAllData(); } else { analyticsManager.getData(); }
+        const today = getBrazilTime(new Date()).toLocaleDateString('pt-BR'); 
+        if (localStorage.getItem('purecloudScript_lastActivityDate') !== today || forceReset) { 
+            localStorage.setItem('purecloudScript_lastActivityDate', today); 
+            analyticsManager.clearAllData(); 
+        } else { 
+            analyticsManager.getData(); 
+            loadV4Counters(); // Carrega os contadores V4 ao iniciar
+        }
     }
 
     const initialize = () => {
