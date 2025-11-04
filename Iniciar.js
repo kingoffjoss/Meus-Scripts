@@ -8,7 +8,7 @@
     /* --- INÍCIO DO CÓDIGO DE LOG --- */
     let userName = "Usuário Anônimo";
     try {
-        let userElement = document.querySelector('div.name span.entry-value');
+        let userElement = document.querySelector('div.name span-entry-value');
         if (userElement) {
             userName = userElement.innerText;
         }
