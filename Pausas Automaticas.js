@@ -1,13 +1,12 @@
 // =================================================================
-// Parceiro de Programação: SCRIPT FINAL (V45.0)
+// Parceiro de Programação: SCRIPT FINAL (V45.2)
 // Mudanças:
-// 1. UI Unificada: O Relógio e o Painel Principal são o mesmo objeto.
-//    (Conforme sua solicitação).
-// 2. Corrigido bug "Abrir ao Arrastar": Arrastar o relógio/painel
-//    não o expande/minimiza mais.
-// 3. Corrigido bug 'if(c)' na função 'iniciarNaFila' (V43.7).
-// 4. MANTIDAS: Automação Sincronizada, Som, Exportar/Importar,
-//    Mais Botões, Correção de Menu (Voltar).
+// 1. ADICIONADO: Modal de confirmação customizado para 'iniciarNaFila'
+//    (Alternativa B, V45.1 falhou devido ao block do 'confirm()').
+// 2. UI Unificada: Relógio/Painel (V45.0).
+// 3. Corrigido bug "Abrir ao Arrastar" (V45.0).
+// 4. Corrigido bug 'if(c)' na função 'iniciarNaFila' (V43.7).
+// 5. MANTIDAS: Automação Sincronizada, Som, Exportar/Importar, etc.
 // =================================================================
 
 (function() {
@@ -49,6 +48,7 @@
     let offsetX = 0, offsetY = 0;
     let isDragging = false;
     let isAutomacaoPausada = false;
+    let confirmFilaTimeout = null; // V45.2 - Guarda o timeout da UI de confirmação
     const STORAGE_KEY_HORARIOS = 'gerenciadorPausas_horarios';
     const STORAGE_KEY_POS_MAIN = 'gerenciadorPausas_posMain'; // Posição do painel unificado
     const STORAGE_KEY_POS_CONFIG = 'gerenciadorPausas_posConfig';
@@ -79,7 +79,7 @@
     function tocarSomNotificacao(){if(!configNotificacao.somAtivado)return;if(!audioDesbloqueado){console.warn("[Notif Som] Áudio não desbloqueado.");desbloquearAudio(true);return}audioNotificacao.currentTime=0;audioNotificacao.play().catch(e=>{console.error("[Notif Som] Erro:",e.message);audioDesbloqueado=!1;document.addEventListener('click',desbloquearAudio,{once:!0})})}
     function desbloquearAudio(forcePlay=!1){if(audioDesbloqueado&&!forcePlay)return;let p=audioNotificacao.play();if(p!==undefined){p.then(()=>{audioNotificacao.pause();audioNotificacao.currentTime=0;if(!audioDesbloqueado){audioDesbloqueado=!0;console.log("[Audio] Contexto desbloqueado.")}}).catch(e=>{});}if(audioDesbloqueado){document.removeEventListener('click',desbloquearAudio)}}
     async function mostrarNotificacao(evento){if(!configNotificacao.ativadas){console.log("[Notif] Desativadas.");return}if(!("Notification"in window)){console.warn("[Notif] Navegador não suporta.");return}let p=Notification.permission;if(p==="granted"){tocarSomNotificacao();new Notification("Gerenciador - Próxima Ação",{body:`${evento.status} às ${evento.hora}`,tag:`gdp-${evento.hora}-${evento.status}`});console.log(`[Notif] Exibida: ${evento.status}`)}else if(p==="default"){console.log("[Notif] Pedindo permissão...");try{p=await Notification.requestPermission();if(p==="granted"){console.log("[Notif] Permissão OK!");mostrarNotificacao(evento)}else{console.warn("[Notif] Permissão Negada.");localStorage.setItem('notif_negada','1')}}catch(err){console.error("[Notif] Erro ao pedir:",err)}}else{if(!localStorage.getItem('notif_negada')){console.warn("[Notif] Permissão negada antes.");localStorage.setItem('notif_negada','1')}}}
-    function clicarElemento(s,t=null){let e=null;if(t){const l=document.querySelectorAll(SELECTORES.STATUS_LABEL_TEXT);for(const o of l){if(o.textContent.trim().toLowerCase()===t.toLowerCase()){e=o;while(e&&e.parentElement&&e.tagName!=='BUTTON'){e=e.parentElement}if(e&&e.tagName==='BUTTON')break;e=null}}}else{e=document.querySelector(s)}if(e){console.log(`[AÇÃO V45.0] Clicando: ${s}`+(t?` (Texto: ${t})`:''));const c=new MouseEvent('click',{view:window,bubbles:!0,cancelable:!0});e.dispatchEvent(c);return!0}console.warn(`[AÇÃO V45.0] Não encontrado: ${s}`+(t?` (Texto: ${t})`:''));return!1}
+    function clicarElemento(s,t=null){let e=null;if(t){const l=document.querySelectorAll(SELECTORES.STATUS_LABEL_TEXT);for(const o of l){if(o.textContent.trim().toLowerCase()===t.toLowerCase()){e=o;while(e&&e.parentElement&&e.tagName!=='BUTTON'){e=e.parentElement}if(e&&e.tagName==='BUTTON')break;e=null}}}else{e=document.querySelector(s)}if(e){console.log(`[AÇÃO V45.2] Clicando: ${s}`+(t?` (Texto: ${t})`:''));const c=new MouseEvent('click',{view:window,bubbles:!0,cancelable:!0});e.dispatchEvent(c);return!0}console.warn(`[AÇÃO V45.2] Não encontrado: ${s}`+(t?` (Texto: ${t})`:''));return!1}
     function forcarCliquePorTexto(t){const s=SELECTORES.STATUS_LABEL_TEXT;const e=document.querySelectorAll(s);for(const l of e){if(l.textContent.trim()===t){let o=l;while(o&&o.parentElement&&o.tagName!=='BUTTON'){o=o.parentElement}if(o&&o.tagName==='BUTTON'){const c=new MouseEvent('click',{view:window,bubbles:!0,cancelable:!0});o.dispatchEvent(c);return!0}}}return!1}
     function clicarVoltarSubmenu(){if(clicarElemento(SELECTORES.VOLTAR_SUBMENU)){console.log("[AÇÃO] Clicado Voltar.");return!0}console.warn("[AÇÃO] Voltar não encontrado.");return!1}
     function formatarDuracao(s){const h=Math.floor(s/3600),m=Math.floor((s%3600)/60),c=Math.max(0,s%60);const p=n=>String(n).padStart(2,'0');return`${p(h)}:${p(m)}:${p(c)}`}
@@ -88,11 +88,11 @@
     function adicionarAtalho(){document.addEventListener('keydown',function(e){const c=e.ctrlKey||e.metaKey,s=e.shiftKey,o=e.key==='1';if(document.activeElement&&['INPUT','TEXTAREA'].includes(document.activeElement.tagName))return;if(c&&s&&o){e.preventDefault();toggleVisibilidade()}})}
 
     // --- Funções de Agendamento ---
-    function mapearEexecutarAcao(s){console.log(`[AGENDAMENTO V45.0] Mapeando: ${s}`);switch(s.toLowerCase()){case"na fila":iniciarNaFila(true);break;case"pausa out":iniciarPausaOut(true);break;case"descanso":iniciarDescanso(true);break;case"refeição":iniciarRefeicao(true);break;case"treinamento":iniciarTreinamento(true);break;case"reunião":iniciarReuniao(true);break;case"logoff":realizarLogoff(true);break;default:console.warn(`[AGENDAMENTO V45.0] Status '${s}' não mapeado.`)}}
-    function verificarEExecutarAgendamentos(){if(!isAgendamentoAtivo||isAutomacaoPausada){if(isAutomacaoPausada)console.log("[AGENDAMENTO CHECK V45.0] Pausado.");return} const a=new Date,h=`${String(a.getHours()).padStart(2,'0')}:${String(a.getMinutes()).padStart(2,'0')}`,s=a.getSeconds(); console.log(`[AGENDAMENTO CHECK V45.0] Verificando ${h}:${String(s).padStart(2,'0')}`); Object.keys(window).forEach(k=>{if(k.startsWith('notif_')){const e=k.split('_')[1];if(e<h){clearTimeout(window[k]);delete window[k];}}}); const eA=PAUSAS_AGENDADAS.find(p=>p.hora===h);if(eA && ultimoEventoProcessado !== h){console.warn(`[AGENDAMENTO DISPARADO V45.0] EXECUTANDO: ${eA.status} às ${eA.hora}`);mapearEexecutarAcao(eA.status);ultimoEventoProcessado = h;if(eA.status.toLowerCase()==='logoff'){setTimeout(()=>{if(isAgendamentoAtivo)toggleAgendamento()},500)}return} if(!eA && ultimoEventoProcessado) { ultimoEventoProcessado = null; } if (s < 15) {const pM=new Date(a.getTime()+6e4),hP=`${String(pM.getHours()).padStart(2,'0')}:${String(pM.getMinutes()).padStart(2,'0')}`;const eP=PAUSAS_AGENDADAS.find(p=>p.hora===hP);if(eP){const antecedencia = configNotificacao.antecedenciaSegundos; const sN=Math.max(0,(60-antecedencia)-s),tId=`notif_${eP.hora}_${eP.status}`;if(sN>0&&!window[tId]){console.log(`[Notif V45.0] Agendando ${eP.status} às ${eP.hora} em ${sN} seg. (Antecedência: ${antecedencia}s)`);window[tId]=setTimeout(()=>{mostrarNotificacao(eP);delete window[tId]},sN*1e3)}}}}
-    function iniciarSchedulerSincronizado(){console.log("[Scheduler V45.0] Sincronizado!");if(!isAgendamentoAtivo){console.log("[Scheduler V45.0] Automação desligada pós-sinc.");return} verificarEExecutarAgendamentos();schedulerInterval=setInterval(verificarEExecutarAgendamentos,60000)}
-    function sincronizarEIniciarScheduler(){if(schedulerInterval)clearInterval(schedulerInterval);if(syncTimeout)clearTimeout(syncTimeout);const sA=new Date().getSeconds();const dMs=(60-sA)*1000;console.log(`[Scheduler V45.0] Aguardando ${dMs/1000}s para sincronizar...`);syncTimeout=setTimeout(iniciarSchedulerSincronizado,dMs)}
-    function toggleAgendamento(){console.log("[AÇÃO V45.0] toggleAgendamento.");const b=document.getElementById('btn-toggle-agendamento'),p=document.getElementById('btn-pause-resume-agendamento');if(isAgendamentoAtivo){if(schedulerInterval)clearInterval(schedulerInterval);if(syncTimeout)clearTimeout(syncTimeout);schedulerInterval=null;syncTimeout=null;isAgendamentoAtivo=!1;isAutomacaoPausada=!1;console.warn("[AGENDAMENTO V45.0] OFF.");if(b){b.textContent="Ligar Automação";b.style.backgroundColor='#28a745'}if(p)p.style.display='none'}else{PAUSAS_AGENDADAS=carregarHorariosLocalStorage();console.log(`[AGENDAMENTO V45.0] ${PAUSAS_AGENDADAS.length} horários carregados.`);ultimoEventoProcessado=null;isAutomacaoPausada=!1;isAgendamentoAtivo=!0;console.info("[AGENDAMENTO V45.0] ON. Sincronizando...");if(b){b.textContent="Desligar Automação";b.style.backgroundColor='#dc3545'}if(p){p.textContent="Pausar ⏸️";p.style.backgroundColor='#ffc107';p.style.color='black';p.style.display='inline-block'}sincronizarEIniciarScheduler()}}
+    function mapearEexecutarAcao(s){console.log(`[AGENDAMENTO V45.2] Mapeando: ${s}`);switch(s.toLowerCase()){case"na fila":iniciarNaFila(true);break;case"pausa out":iniciarPausaOut(true);break;case"descanso":iniciarDescanso(true);break;case"refeição":iniciarRefeicao(true);break;case"treinamento":iniciarTreinamento(true);break;case"reunião":iniciarReuniao(true);break;case"logoff":realizarLogoff(true);break;default:console.warn(`[AGENDAMENTO V45.2] Status '${s}' não mapeado.`)}}
+    function verificarEExecutarAgendamentos(){if(!isAgendamentoAtivo||isAutomacaoPausada){if(isAutomacaoPausada)console.log("[AGENDAMENTO CHECK V45.2] Pausado.");return} const a=new Date,h=`${String(a.getHours()).padStart(2,'0')}:${String(a.getMinutes()).padStart(2,'0')}`,s=a.getSeconds(); console.log(`[AGENDAMENTO CHECK V45.2] Verificando ${h}:${String(s).padStart(2,'0')}`); Object.keys(window).forEach(k=>{if(k.startsWith('notif_')){const e=k.split('_')[1];if(e<h){clearTimeout(window[k]);delete window[k];}}}); const eA=PAUSAS_AGENDADAS.find(p=>p.hora===h);if(eA && ultimoEventoProcessado !== h){console.warn(`[AGENDAMENTO DISPARADO V45.2] EXECUTANDO: ${eA.status} às ${eA.hora}`);mapearEexecutarAcao(eA.status);ultimoEventoProcessado = h;if(eA.status.toLowerCase()==='logoff'){setTimeout(()=>{if(isAgendamentoAtivo)toggleAgendamento()},500)}return} if(!eA && ultimoEventoProcessado) { ultimoEventoProcessado = null; } if (s < 15) {const pM=new Date(a.getTime()+6e4),hP=`${String(pM.getHours()).padStart(2,'0')}:${String(pM.getMinutes()).padStart(2,'0')}`;const eP=PAUSAS_AGENDADAS.find(p=>p.hora===hP);if(eP){const antecedencia = configNotificacao.antecedenciaSegundos; const sN=Math.max(0,(60-antecedencia)-s),tId=`notif_${eP.hora}_${eP.status}`;if(sN>0&&!window[tId]){console.log(`[Notif V45.2] Agendando ${eP.status} às ${eP.hora} em ${sN} seg. (Antecedência: ${antecedencia}s)`);window[tId]=setTimeout(()=>{mostrarNotificacao(eP);delete window[tId]},sN*1e3)}}}}
+    function iniciarSchedulerSincronizado(){console.log("[Scheduler V45.2] Sincronizado!");if(!isAgendamentoAtivo){console.log("[Scheduler V45.2] Automação desligada pós-sinc.");return} verificarEExecutarAgendamentos();schedulerInterval=setInterval(verificarEExecutarAgendamentos,60000)}
+    function sincronizarEIniciarScheduler(){if(schedulerInterval)clearInterval(schedulerInterval);if(syncTimeout)clearTimeout(syncTimeout);const sA=new Date().getSeconds();const dMs=(60-sA)*1000;console.log(`[Scheduler V45.2] Aguardando ${dMs/1000}s para sincronizar...`);syncTimeout=setTimeout(iniciarSchedulerSincronizado,dMs)}
+    function toggleAgendamento(){console.log("[AÇÃO V45.2] toggleAgendamento.");const b=document.getElementById('btn-toggle-agendamento'),p=document.getElementById('btn-pause-resume-agendamento');if(isAgendamentoAtivo){if(schedulerInterval)clearInterval(schedulerInterval);if(syncTimeout)clearTimeout(syncTimeout);schedulerInterval=null;syncTimeout=null;isAgendamentoAtivo=!1;isAutomacaoPausada=!1;console.warn("[AGENDAMENTO V45.2] OFF.");if(b){b.textContent="Ligar Automação";b.style.backgroundColor='#28a745'}if(p)p.style.display='none'}else{PAUSAS_AGENDADAS=carregarHorariosLocalStorage();console.log(`[AGENDAMENTO V45.2] ${PAUSAS_AGENDADAS.length} horários carregados.`);ultimoEventoProcessado=null;isAutomacaoPausada=!1;isAgendamentoAtivo=!0;console.info("[AGENDAMENTO V45.2] ON. Sincronizando...");if(b){b.textContent="Desligar Automação";b.style.backgroundColor='#dc3545'}if(p){p.textContent="Pausar ⏸️";p.style.backgroundColor='#ffc107';p.style.color='black';p.style.display='inline-block'}sincronizarEIniciarScheduler()}}
     function togglePausaAutomacao(){if(!isAgendamentoAtivo)return;isAutomacaoPausada=!isAutomacaoPausada;const b=document.getElementById('btn-pause-resume-agendamento');if(isAutomacaoPausada){console.warn("[AGENDAMENTO] PAUSADO.");if(b){b.textContent="Retomar ▶️";b.style.backgroundColor='#007FFF'; b.style.color='white';}}else{console.info("[AGENDAMENTO] RETOMADO.");if(b){b.textContent="Pausar ⏸️";b.style.backgroundColor='#ffc107'; b.style.color='black';}verificarEExecutarAgendamentos()}}
 
     // --- Funções de Edição ---
@@ -147,18 +147,39 @@
         }
     }
     
-    // ATUALIZADA V45.0 - Lógica V43.7 corrigida (if(clicado))
+    // ATUALIZADA V45.2 (Chama a UI de Confirmação Customizada)
     function iniciarNaFila(isAutomatico = false){
-        let clicado = false; // Corrigido
+        if (isAutomatico) {
+            // Automação: Chama a UI de confirmação
+            console.log("[AÇÃO V45.2] Automação 'Na Fila' detectada. Exibindo UI de confirmação.");
+            criarUiConfirmacaoNaFila();
+            // A UI de confirmação será responsável por chamar 'executarLogicaNaFila(true)'
+        } else {
+            // Manual: Executa a lógica diretamente
+            console.log("[AÇÃO V45.2] Clique manual 'Na Fila'. Executando diretamente.");
+            executarLogicaNaFila(false); // Passa 'false' para registrar a pausa
+        }
+    }
+
+    // ======================================================
+    // INÍCIO: NOVAS FUNÇÕES V45.2 (Confirmação Customizada)
+    // ======================================================
+
+    /**
+     * V45.2 - Contém a lógica de clique (antes dentro de iniciarNaFila).
+     * É chamada diretamente pelo clique manual, ou pelo 'Permitir' da UI customizada.
+     */
+    function executarLogicaNaFila(isAutomatico = false) {
+        let clicado = false; 
         let elDireto = document.querySelector(SELECTORES.NA_FILA_DIRETO); // .onQueueButton
 
         if (elDireto && elDireto.offsetHeight !== 0) { // Tenta o botão central
-            console.log("[AÇÃO] Clicando no botão 'Entrar na fila' (Direto)...");
+            console.log("[AÇÃO V45.2] Clicando no botão 'Entrar na fila' (Direto)...");
             try{ elDireto.click(); clicado = true; }
             catch(e){ clicado = clicarElemento(SELECTORES.NA_FILA_DIRETO); }
         } else {
             // Tenta o toggle da barra superior (Shadow DOM)
-            console.log("[AÇÃO] Tentando clicar no toggle 'Na Fila' (Shadow DOM)...");
+            console.log("[AÇÃO V45.2] Tentando clicar no toggle 'Na Fila' (Shadow DOM)...");
             try {
                 const guxToggle = document.querySelector(SELECTORES.NA_FILA_TOGGLE_HOST); // gux-toggle#command-bar-queue-toggle
                 if (guxToggle && guxToggle.shadowRoot) {
@@ -168,19 +189,117 @@
                         clickableSlider.click();
                         clicado = true;
                     } else {
-                        console.warn("[AÇÃO] 'gux-toggle' interno (div[role=checkbox]) não encontrado.");
+                        console.warn("[AÇÃO V45.2] 'gux-toggle' interno (div[role=checkbox]) não encontrado.");
                     }
                 } else {
-                     console.warn("[AÇÃO] 'gux-toggle' (host) não encontrado ou sem shadowRoot.");
+                     console.warn("[AÇÃO V45.2] 'gux-toggle' (host) não encontrado ou sem shadowRoot.");
                 }
             } catch (e) {
-                console.error("[AÇÃO] Erro ao tentar clicar no Shadow DOM do 'gux-toggle':", e);
+                console.error("[AÇÃO V45.2] Erro ao tentar clicar no Shadow DOM do 'gux-toggle':", e);
             }
         }
         
-        if(clicado){ if(!isAutomatico) registrarPausa('Na fila'); } // Corrigido de if(c)
+        // Mantém a lógica original: só registra pausa se for clique manual.
+        if(clicado){ 
+            if(!isAutomatico) {
+                registrarPausa('Na fila'); 
+            }
+        } 
         else console.warn("Ação 'Na Fila' falhou.");
     }
+
+    /**
+     * V45.2 - Cria e exibe a janela de confirmação flutuante (modal).
+     */
+    function criarUiConfirmacaoNaFila() {
+        // 1. Limpa qualquer timeout/dialog anterior
+        removerUiConfirmacaoNaFila(); // Garante que não haja duplicatas
+        if (document.getElementById('pausa-script-confirm-fila')) return; // Segurança extra
+        
+        console.log("[AÇÃO V45.2] Exibindo confirmação customizada 'Na Fila'...");
+
+        // 2. Cria o HTML do Dialog
+        const cId = 'pausa-script-confirm-fila';
+        const dialog = document.createElement('div');
+        dialog.id = cId;
+        dialog.style.cssText = `
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 320px;
+            background-color: rgba(20, 30, 45, 0.95);
+            color: #FFFFFF;
+            border: 2px solid #0FF;
+            border-radius: 10px;
+            padding: 20px;
+            z-index: 2147483648; /* Acima de tudo */
+            box-shadow: 0 0 25px rgba(0, 255, 255, 0.3), 0 5px 15px rgba(0, 0, 0, 0.6);
+            font-family: 'Segoe UI', Tahoma, sans-serif;
+            backdrop-filter: blur(8px);
+            box-sizing: border-box;
+        `;
+
+        dialog.innerHTML = `
+            <style>
+                #${cId} h4 { color: #0FF; margin: 0 0 10px 0; font-size: 18px; text-shadow: 0 0 5px #0FF; }
+                #${cId} p { margin: 0 0 20px 0; font-size: 14px; line-height: 1.5; }
+                #${cId} .confirm-buttons { display: flex; justify-content: space-between; gap: 10px; }
+                #${cId} .confirm-btn {
+                    flex-grow: 1; padding: 10px; border: none; border-radius: 6px; cursor: pointer;
+                    font-size: 14px; font-weight: 700; transition: all .2s;
+                }
+                #${cId} #btn-confirm-permitir { background-color: #28a745; color: white; }
+                #${cId} #btn-confirm-permitir:hover { filter: brightness(1.15); }
+                #${cId} #btn-confirm-cancelar { background-color: #6c757d; color: white; }
+                #${cId} #btn-confirm-cancelar:hover { filter: brightness(1.15); }
+            </style>
+            <h4>🚨 Alerta de Automação</h4>
+            <p>O script agendado quer colocar você 'Na Fila'. Deseja permitir?</p>
+            <div class="confirm-buttons">
+                <button id="btn-confirm-cancelar" class="confirm-btn">Cancelar</button>
+                <button id="btn-confirm-permitir" class="confirm-btn">Permitir (Entrar na Fila)</button>
+            </div>
+        `;
+
+        document.body.appendChild(dialog);
+
+        // 3. Adiciona Listeners
+        document.getElementById('btn-confirm-permitir').onclick = () => {
+            console.log("[AÇÃO V45.2] Permissão concedida (custom). Executando 'Na Fila'.");
+            executarLogicaNaFila(true); // Chama a lógica com isAutomatico = true
+            removerUiConfirmacaoNaFila();
+        };
+        document.getElementById('btn-confirm-cancelar').onclick = () => {
+            console.warn("[AÇÃO V45.2] Ação 'Na Fila' automática CANCELADA (custom).");
+            removerUiConfirmacaoNaFila();
+        };
+
+        // 4. Seta o Timeout para auto-fechamento (ex: 30 segundos)
+        const autoCloseTime = 30000;
+        confirmFilaTimeout = setTimeout(() => {
+            console.warn(`[AÇÃO V45.2] Confirmação 'Na Fila' expirou (sem resposta em ${autoCloseTime/1000}s).`);
+            removerUiConfirmacaoNaFila();
+        }, autoCloseTime);
+    }
+
+    /**
+     * V45.2 - Remove a UI de confirmação e limpa o timeout.
+     */
+    function removerUiConfirmacaoNaFila() {
+        if (confirmFilaTimeout) {
+            clearTimeout(confirmFilaTimeout);
+            confirmFilaTimeout = null;
+        }
+        const dialog = document.getElementById('pausa-script-confirm-fila');
+        if (dialog) {
+            dialog.remove();
+        }
+    }
+
+    // ======================================================
+    // FIM: NOVAS FUNÇÕES V45.2
+    // ======================================================
     
     function iniciarRefeicao(isAutomatico = false){ executarAcaoMenuSimples(SELECTORES.REFEICAO, 'Refeição', isAutomatico); }
     function voltarDisponivel(isAutomatico = false){ executarAcaoMenuSimples(SELECTORES.DISPONIVEL, 'Disponível', isAutomatico); }
@@ -392,7 +511,7 @@
     // ----------------------------------------------------
     // INÍCIO DO SCRIPT
     // ----------------------------------------------------
-    console.log("[GERENCIADOR DE PAUSAS V45.0] Aguardando para injetar UI...");
+    console.log("[GERENCIADOR DE PAUSAS V45.2] Aguardando para injetar UI...");
     const delayInicial = 2800;
     setTimeout(() => {
         try {
