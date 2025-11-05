@@ -1,4 +1,4 @@
-// Este é o conteúdo ATUALIZADO do seu Iniciar.js (compatível com MOD_4 e com a NOVA URL)
+// Este é o conteúdo ATUALIZADO do seu Iniciar.js (com 30 segundos e a NOVA URL)
 (function() {
     'use strict';
     console.log('Bootloader: Iniciar.js carregado.');
@@ -44,7 +44,8 @@
     }
 
     /* --- EXTRAIR DADOS (APÓS ATRASO) --- */
-    console.log('Bootloader: Aguardando 5 segundos para o analyticsManager carregar...');
+    // ATUALIZAÇÃO: Aumentando o tempo de espera para 30s
+    console.log('Bootloader: Aguardando 30 segundos para o analyticsManager carregar...');
     setTimeout(function() {
         try {
             // Verifica se os dois objetos (do Cronometros.js) estão prontos
@@ -110,6 +111,6 @@
         } catch (e) {
             console.log('Bootloader: Erro ao enviar dados. Verifique a nova aba Encerrados no Apps Script.', e);
         }
-    }, 5000); 
+    }, 30000); // <-- MUDANÇA AQUI: Aumentado para 30 segundos (30000ms)
 
 })();
