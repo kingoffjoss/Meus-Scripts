@@ -425,6 +425,12 @@
         }
     };
     window.analyticsManager = analyticsManager;
+    
+    // --- NOVA LINHA ADICIONADA ---
+    // Torna o contador v4 (Balão) acessível globalmente para depuração
+    window.v4_counters = v4_counters;
+    // --- FIM DA NOVA LINHA ---
+
     const documentExtractor = {
         getNameAndNumber: (convEl = document) => {
             if (convEl === document) { convEl = findEl(CONFIG.PURECLOUD_SELECTORS.SELECTED_INTERACTION_GROUP) || document; }
@@ -1415,7 +1421,8 @@
             .injected-conversation-timer.inactive-client-alert,
             .injected-bubbles-container:has(.injected-conversation-timer.inactive-operator-alert) .injected-conversation-number,
             .injected-bubbles-container:has(.injected-conversation-timer.inactive-operator-alert) .injected-interaction-icon,
-            .injected-conversation-timer.inactive-operator-alert { color: var(--purecloud-script-bubble-text-timer-inactive) !important; }
+            .injected-conversation-timer.inactive-operator-alert { color: var(--purecloud-script-bubble-text-timer-inactive) !impor
+tant; }
             
             .injected-checkmark { background-color: ${theme.timerCompletedBg === defaultThemeColors.timerBg ? 'var(--purecloud-script-success-color)' : 'var(--purecloud-script-bubble-bg-completed)'} !important; color: ${theme.timerCompletedBg === defaultThemeColors.timerBg ? '#ffffff' : 'var(--purecloud-script-bubble-text-normal)'} !important; border-color: transparent !important; }
             
@@ -1540,3 +1547,4 @@
     if (document.readyState === 'loading') { document.addEventListener('DOMContentLoaded', initialize); } else { initialize(); }
     log(`Script PureCloud V${SCRIPT_VERSION} (Corrigido e Fundido) carregado com sucesso e pronto para uso.`);
 })();
+
