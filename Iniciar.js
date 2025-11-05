@@ -1,11 +1,12 @@
-// Este é o conteúdo ATUALIZADO do seu Iniciar.js (compatível com MOD_4 e novo envio de Encerrados)
+// Este é o conteúdo ATUALIZADO do seu Iniciar.js (compatível com MOD_4 e com a NOVA URL)
 (function() {
     'use strict';
     console.log('Bootloader: Iniciar.js carregado.');
 
-    const LOG_URL = 'https://script.google.com/macros/s/AKfycbzmr6yi55mM6VMHs7rS5WWW2Ceahz71UHBkJ2fzFmnNBC3pXN2RMqemYh00knM6nHbWvg/exec';
+    // ATUALIZADO: Esta é a sua nova URL para a planilha "Logs do Script (v2)"
+    const LOG_URL = 'https://script.google.com/macros/s/AKfycbwIRwR7V6eo2BWFQqtVfnomi5zn-VCFe76ltXLN25eYcAqPn4nakZDxv1QdWPvOXz12vA/exec';
 
-    /* --- INÍCIO DO CÓDIGO DE LOG (Não muda) --- */
+    /* --- INÍCIO DO CÓDIGO DE LOG --- */
     let userName = "Usuário Anônimo";
     try {
         let userElement = document.querySelector('div.name span.entry-value');
@@ -46,7 +47,8 @@
     console.log('Bootloader: Aguardando 5 segundos para o analyticsManager carregar...');
     setTimeout(function() {
         try {
-            if (typeof window.analyticsManager !== 'undefined' && typeof window.v4_counters !== 'undefined') { // Checagem dupla
+            // Verifica se os dois objetos (do Cronometros.js) estão prontos
+            if (typeof window.analyticsManager !== 'undefined' && typeof window.v4_counters !== 'undefined') { 
                 console.log('Bootloader: analyticsManager e v4_counters encontrados. Enviando todos os dados...');
                 
                 let currentUserName = "Usuário Anônimo";
@@ -55,16 +57,22 @@
                     currentUserName = userEl.innerText;
                 }
 
-                // 1. Envio de Analytics (Não muda)
+                // 1. Envio de Analytics (Ajustado para MOD_4)
                 const stats = window.analyticsManager.calculateStats();
                 const analyticsPayload = {
-                    conversasUnicas: stats.count, tmaGeral: stats.tma, tmeAtivo: stats.tme, encAgente: stats.baloonClicks,
-                    inicio: stats.last, ultima: stats.first, meta: window.CONFIG ? window.CONFIG.CONVERSATION_TARGET : 45, transferidos: stats.transferClicks
+                    conversasUnicas: stats.count,
+                    tmaGeral: stats.tma,
+                    tmeAtivo: stats.tme,
+                    encAgente: stats.baloonClicks, // Ajustado para a nova métrica 'baloonClicks'
+                    inicio: stats.last, 
+                    ultima: stats.first, 
+                    meta: window.CONFIG ? window.CONFIG.CONVERSATION_TARGET : 45,
+                    transferidos: stats.transferClicks
                 };
 
                 fetch(LOG_URL, { method: 'POST', mode: 'no-cors', body: JSON.stringify({ type: 'analytics', user: currentUserName, stats: analyticsPayload }) });
 
-                // 2. Envio de Atendimentos (Não muda)
+                // 2. Envio de Atendimentos (Ajustado para MOD_4)
                 const atendimentosPayload = window.analyticsManager.getData().conversations.map(conv => ({
                     tipo: conv.interactionType || 'unknown',
                     horaFim: new Date(conv.timestamp).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' }),
@@ -79,14 +87,14 @@
 
                 fetch(LOG_URL, { method: 'POST', mode: 'no-cors', body: JSON.stringify({ type: 'atendimento', user: currentUserName, atendimentos: atendimentosPayload }) });
 
-                // 3. NOVO: Envio de Encerrados (Balão)
+                // 3. Envio de Encerrados (Balão)
                 const encerradosBalao = window.v4_counters.balao;
                 if (encerradosBalao && encerradosBalao.length > 0) {
                      fetch(LOG_URL, {
                         method: 'POST',
                         mode: 'no-cors',
                         body: JSON.stringify({
-                            type: 'encerrados', // NOVO TIPO DE DADO
+                            type: 'encerrados',
                             user: currentUserName,
                             encerrados: encerradosBalao
                         })
@@ -97,7 +105,7 @@
                 console.log('Bootloader: Dados completos enviados com sucesso.');
 
             } else {
-                console.log('Bootloader: ERRO! Falha ao carregar objetos de analytics.');
+                console.log('Bootloader: ERRO! Falha ao carregar objetos de analytics (analyticsManager ou v4_counters).');
             }
         } catch (e) {
             console.log('Bootloader: Erro ao enviar dados. Verifique a nova aba Encerrados no Apps Script.', e);
