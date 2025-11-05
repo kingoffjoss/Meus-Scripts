@@ -1,8 +1,8 @@
 // ==UserScript==
-// @name         Gerenciador de Contagem e Produtividade (v1.0.27_MOD_4)
+// @name         Gerenciador de Contagem e Produtividade (v1.0.27_MOD_5_FIX)
 // @namespace    http://tampermonkey.net/
 // @version      1.0.27
-// @description  Script focado em Analytics. [v1.0.27_MOD_4: Aba 'Encerrados' padronizada em formato de Tabela e exportação de dados Balão.]
+// @description  Script focado em Analytics. [v1.0.27_MOD_5_FIX: Corrigido bug de reset diário com ISO Date.]
 // @author       Parceiro de Programação
 // @match        https://apps.mypurecloud.com/*
 // @match        https://apps.mypurecloud.de/*
@@ -22,8 +22,9 @@
     // 6. [NEW] Nova aba "Encerrados" para detalhes do log de encerramento.
     // 7. [FIX] Mini-Dashboard Expandido: Removida a opção de redimensionamento.
     // 8. [MOD] Aba "Encerrados": Layout alterado para tabela padronizada (MOD_4).
+    // 9. [FIX] Função de reset diário (initializeDailyCounters) usa ISO Date (YYYY-MM-DD) para robustez.
     //
-    const SCRIPT_VERSION = '1.0.27_MOD_4'; // Versão Atualizada
+    const SCRIPT_VERSION = '1.0.27_MOD_5_FIX'; // Versão Atualizada
     // --- FIM DA ATUALIZAÇÃO ---
 
     // Flag de Carregamento
@@ -430,8 +431,7 @@
     // Torna o contador v4 (Balão) acessível globalmente para depuração
     window.v4_counters = v4_counters;
     // --- FIM DA NOVA LINHA ---
-
-    const documentExtractor = {
+const documentExtractor = {
         getNameAndNumber: (convEl = document) => {
             if (convEl === document) { convEl = findEl(CONFIG.PURECLOUD_SELECTORS.SELECTED_INTERACTION_GROUP) || document; }
             const nameEl = findEl(CONFIG.PURECLOUD_SELECTORS.PARTICIPANT_NAME_BADGE, convEl); const rawText = nameEl?.textContent.trim() || 'N/A';
@@ -1421,8 +1421,7 @@
             .injected-conversation-timer.inactive-client-alert,
             .injected-bubbles-container:has(.injected-conversation-timer.inactive-operator-alert) .injected-conversation-number,
             .injected-bubbles-container:has(.injected-conversation-timer.inactive-operator-alert) .injected-interaction-icon,
-            .injected-conversation-timer.inactive-operator-alert { color: var(--purecloud-script-bubble-text-timer-inactive) !impor
-tant; }
+            .injected-conversation-timer.inactive-operator-alert { color: var(--purecloud-script-bubble-text-timer-inactive) !important; }
             
             .injected-checkmark { background-color: ${theme.timerCompletedBg === defaultThemeColors.timerBg ? 'var(--purecloud-script-success-color)' : 'var(--purecloud-script-bubble-bg-completed)'} !important; color: ${theme.timerCompletedBg === defaultThemeColors.timerBg ? '#ffffff' : 'var(--purecloud-script-bubble-text-normal)'} !important; border-color: transparent !important; }
             
@@ -1509,16 +1508,25 @@ tant; }
         `;
         const style = document.createElement('style'); style.id = 'purecloud-script-injected-style'; document.head.appendChild(style); style.textContent = css;
     }
+
+    // --- FUNÇÃO MODIFICADA (v1.0.27_MOD_5_FIX) ---
     function initializeDailyCounters(forceReset = false) {
-        const today = getBrazilTime(new Date()).toLocaleDateString('pt-BR'); 
-        if (localStorage.getItem('purecloudScript_lastActivityDate') !== today || forceReset) { 
-            localStorage.setItem('purecloudScript_lastActivityDate', today); 
-            analyticsManager.clearAllData(); 
+        // Usa o formato YYYY-MM-DD para evitar problemas de fuso horário na comparação de "novo dia"
+        const todayKey = getBrazilTime(new Date()).toISOString().split('T')[0];
+
+        // Pega a chave que o script salvou pela última vez
+        const lastSavedDate = localStorage.getItem('purecloudScript_lastActivityDate');
+
+        // Se a data de hoje for diferente da data salva, ou se forceReset for true
+        if (lastSavedDate !== todayKey || forceReset) { 
+            localStorage.setItem('purecloudScript_lastActivityDate', todayKey); 
+            analyticsManager.clearAllData(); // ZERA TODOS OS CONTADORES
         } else { 
             analyticsManager.getData(); 
-            loadV4Counters(); // Carrega os contadores V4 ao iniciar
-        }
+            loadV4Counters();
+        } 
     }
+    // --- FIM DA MODIFICAÇÃO ---
 
     const initialize = () => {
         initializeDailyCounters(); 
