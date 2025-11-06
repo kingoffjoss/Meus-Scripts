@@ -393,7 +393,9 @@
                     baloonClicks: baloonClicksCount, // Usa o novo contador
                     transferClicks: data.transferClicks, evaluatedClicks: data.evaluatedClicks, 
                     allConversations: conversations, 
-                    endedByAgentCount: 0, recurrenceCount: 0 
+                    endedByAgentCount: 0, recurrenceCount: 0,
+                    tmaSeconds: 0, // CORREÇÃO: Retorna 0 se não houver conversas
+                    tmeSeconds: 0  // CORREÇÃO: Retorna 0 se não houver conversas
                 }; 
             }
             
@@ -412,7 +414,10 @@
                 baloonClicks: baloonClicksCount, // Usa o novo contador
                 transferClicks: data.transferClicks, evaluatedClicks: data.evaluatedClicks, 
                 endedByAgentCount: 0, recurrenceCount: recurrenceCount, 
-                allConversations: conversations 
+                allConversations: conversations,
+                // *** CORREÇÃO APLICADA (Estava faltando) ***
+                tmaSeconds: tmaSeconds, 
+                tmeSeconds: tmeSeconds
             };
         },
         clearAllData() { 
@@ -526,8 +531,7 @@ const documentExtractor = {
         pasteReplies: () => { UI.createNotification("Função Colar Respostas Rápidas removida do modo minimalista.", 'info', 1000); },
         openReplies: () => { UI.createNotification("Função Respostas Rápidas removida do modo minimalista.", 'info', 1000); },
     };
-    
-    // --- LÓGICA DO CLIQUE DO BALÃO (V4.0) ---
+// --- LÓGICA DO CLIQUE DO BALÃO (V4.0) ---
     async function handleBalaoClick(e) {
         log("Botão 'Balão' clicado! Coletando dados (V4.0)...");
         // Verifica se o botão está desabilitado pelo lockdown
@@ -981,7 +985,8 @@ const documentExtractor = {
             toolbar.prepend(lockButton); 
         }
     }
-// --- UI ---
+
+    // --- UI ---
     const UI = {
         createNotification(message, type = 'info', duration = 3000) {
             let c = document.getElementById('purecloud-script-notification-container');
@@ -1562,7 +1567,10 @@ const documentExtractor = {
                 inicio: stats.last, 
                 ultima: stats.first, 
                 meta: window.CONFIG ? window.CONFIG.CONVERSATION_TARGET : 45,
-                transferidos: stats.transferClicks
+                transferidos: stats.transferClicks,
+                // *** CORREÇÃO APLICADA (Estava faltando) ***
+                tmaGeralSegundos: stats.tmaSeconds || 0,
+                tmeAtivoSegundos: stats.tmeSeconds || 0
             };
             fetch(LOG_URL, { method: 'POST', mode: 'no-cors', body: JSON.stringify({ type: 'analytics', user: currentUserName, stats: analyticsPayload }) });
 
