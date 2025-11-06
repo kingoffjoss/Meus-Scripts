@@ -1,32 +1,36 @@
-// Este é o conteúdo ATUALIZADO do seu Iniciar.js (com 30 segundos e a NOVA URL)
+// Este é o conteúdo ATUALIZADO do seu Iniciar.js (V2 - Simplificado)
 (function() {
     'use strict';
-    console.log('Bootloader: Iniciar.js carregado.');
+    console.log('Bootloader (V2): Iniciar.js carregado.');
 
-    // ATUALIZADO: Esta é a sua nova URL para a planilha "Logs do Script (v2)"
+    // URL DE LOG (Será usada pelo Cronometros.js, mas mantemos aqui para referência)
     const LOG_URL = 'https://script.google.com/macros/s/AKfycbwIRwR7V6eo2BWFQqtVfnomi5zn-VCFe76ltXLN25eYcAqPn4nakZDxv1QdWPvOXz12vA/exec';
 
-    /* --- INÍCIO DO CÓDIGO DE LOG --- */
+    /* --- INÍCIO DO CÓDIGO DE LOG (SÓ ACESSO INICIAL) --- */
     let userName = "Usuário Anônimo";
     try {
-        let userElement = document.querySelector('div.name span.entry-value');
-        if (userElement) {
-            userName = userElement.innerText;
-        }
-        
-        fetch(LOG_URL, {
-            method: 'POST',
-            mode: 'no-cors', 
-            body: JSON.stringify({
-                type: 'log',
-                user: userName,
-                page: window.location.href
-            })
-        });
-        console.log('Bootloader: Log de acesso enviado.');
+        // Espera um pouco para o nome do usuário carregar na UI
+        setTimeout(function() {
+            let userElement = document.querySelector('div.name span.entry-value');
+            if (userElement) {
+                userName = userElement.innerText;
+            }
+            
+            fetch(LOG_URL, {
+                method: 'POST',
+                mode: 'no-cors', 
+                body: JSON.stringify({
+                    type: 'log',
+                    user: userName,
+                    page: window.location.href
+                })
+            });
+            console.log('Bootloader (V2): Log de acesso enviado.');
+
+        }, 5000); // Espera 5s para pegar o nome
 
     } catch (err) {
-        console.log('Bootloader: Falha ao registrar log:', err);
+        console.log('Bootloader (V2): Falha ao registrar log:', err);
     }
 
     /* --- CARREGAR SCRIPTS ORIGINAIS (COM CORREÇÃO DE CACHE) --- */
@@ -38,79 +42,11 @@
         var s2 = document.createElement('script');
         s2.src = 'https://kingoffjoss.github.io/Meus-Scripts/Pausas%20Automaticas.js?v='+Date.now();
         document.body.appendChild(s2);
-        console.log('Bootloader: Cronometros.js e Pausas Automaticas.js sendo carregados (sem cache).');
+        console.log('Bootloader (V2): Cronometros.js e Pausas Automaticas.js sendo carregados.');
     } catch(e) {
-        console.log('Bootloader: Erro ao carregar scripts principais.', e);
+        console.log('Bootloader (V2): Erro ao carregar scripts principais.', e);
     }
 
-    /* --- EXTRAIR DADOS (APÓS ATRASO) --- */
-    // ATUALIZAÇÃO: Aumentando o tempo de espera para 30s
-    console.log('Bootloader: Aguardando 30 segundos para o analyticsManager carregar...');
-    setTimeout(function() {
-        try {
-            // Verifica se os dois objetos (do Cronometros.js) estão prontos
-            if (typeof window.analyticsManager !== 'undefined' && typeof window.v4_counters !== 'undefined') { 
-                console.log('Bootloader: analyticsManager e v4_counters encontrados. Enviando todos os dados...');
-                
-                let currentUserName = "Usuário Anônimo";
-                let userEl = document.querySelector('div.name span.entry-value');
-                if (userEl) {
-                    currentUserName = userEl.innerText;
-                }
-
-                // 1. Envio de Analytics (Ajustado para MOD_4)
-                const stats = window.analyticsManager.calculateStats();
-                const analyticsPayload = {
-                    conversasUnicas: stats.count,
-                    tmaGeral: stats.tma,
-                    tmeAtivo: stats.tme,
-                    encAgente: stats.baloonClicks, // Ajustado para a nova métrica 'baloonClicks'
-                    inicio: stats.last, 
-                    ultima: stats.first, 
-                    meta: window.CONFIG ? window.CONFIG.CONVERSATION_TARGET : 45,
-                    transferidos: stats.transferClicks
-                };
-
-                fetch(LOG_URL, { method: 'POST', mode: 'no-cors', body: JSON.stringify({ type: 'analytics', user: currentUserName, stats: analyticsPayload }) });
-
-                // 2. Envio de Atendimentos (Ajustado para MOD_4)
-                const atendimentosPayload = window.analyticsManager.getData().conversations.map(conv => ({
-                    tipo: conv.interactionType || 'unknown',
-                    horaFim: new Date(conv.timestamp).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' }),
-                    cliente: conv.participantName,
-                    tme: (() => {
-                        const s = Math.floor(conv.activeDuration / 1000);
-                        return `${Math.floor(s/60).toString().padStart(2,'0')}:${(s%60).toString().padStart(2,'0')}`
-                    })(),
-                    recorrencia: conv.isRecurrence ? 'Sim' : 'Não',
-                    link: conv.interactionUrl || 'N/A'
-                }));
-
-                fetch(LOG_URL, { method: 'POST', mode: 'no-cors', body: JSON.stringify({ type: 'atendimento', user: currentUserName, atendimentos: atendimentosPayload }) });
-
-                // 3. Envio de Encerrados (Balão)
-                const encerradosBalao = window.v4_counters.balao;
-                if (encerradosBalao && encerradosBalao.length > 0) {
-                     fetch(LOG_URL, {
-                        method: 'POST',
-                        mode: 'no-cors',
-                        body: JSON.stringify({
-                            type: 'encerrados',
-                            user: currentUserName,
-                            encerrados: encerradosBalao
-                        })
-                    });
-                     console.log(`Bootloader: Enviando ${encerradosBalao.length} logs de encerramento (Balão).`);
-                }
-
-                console.log('Bootloader: Dados completos enviados com sucesso.');
-
-            } else {
-                console.log('Bootloader: ERRO! Falha ao carregar objetos de analytics (analyticsManager ou v4_counters).');
-            }
-        } catch (e) {
-            console.log('Bootloader: Erro ao enviar dados. Verifique a nova aba Encerrados no Apps Script.', e);
-        }
-    }, 30000); // <-- MUDANÇA AQUI: Aumentado para 30 segundos (30000ms)
+    // A LÓGICA DE 'setTimeout(30000)' FOI REMOVIDA DAQUI E MOVIDA PARA O 'Cronometros.js'
 
 })();
