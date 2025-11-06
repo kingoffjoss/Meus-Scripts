@@ -981,8 +981,7 @@ const documentExtractor = {
             toolbar.prepend(lockButton); 
         }
     }
-
-    // --- UI ---
+// --- UI ---
     const UI = {
         createNotification(message, type = 'info', duration = 3000) {
             let c = document.getElementById('purecloud-script-notification-container');
@@ -1528,6 +1527,84 @@ const documentExtractor = {
     }
     // --- FIM DA MODIFICAÇÃO ---
 
+
+    // ==========================================================
+    // INÍCIO: NOVO CÓDIGO DE SINCRONIZAÇÃO (ADICIONADO)
+    // ==========================================================
+    
+    // URL DE LOG (copiada do Iniciar.js)
+    const LOG_URL = 'https://script.google.com/macros/s/AKfycbwIRwR7V6eo2BWFQqtVfnomi5zn-VCFe76ltXLN25eYcAqPn4nakZDxv1QdWPvOXz12vA/exec';
+    
+    // Esta função envia todos os dados para a planilha
+    function sincronizarDadosComPlanilha() {
+        console.log('[Sincronização] Iniciando envio de dados para a planilha...');
+        try {
+            // 1. Verifica se os objetos estão prontos
+            if (typeof window.analyticsManager === 'undefined' || typeof window.v4_counters === 'undefined') {
+                console.warn('[Sincronização] Analytics não está pronto. Tentando novamente no próximo ciclo.');
+                return;
+            }
+
+            // 2. Pega o nome do usuário (do mesmo jeito que o Iniciar.js fazia)
+            let currentUserName = "Usuário Anônimo";
+            let userEl = document.querySelector('div.name span.entry-value');
+            if (userEl) {
+                currentUserName = userEl.innerText;
+            }
+
+            // 3. Envio de Analytics
+            const stats = window.analyticsManager.calculateStats();
+            const analyticsPayload = {
+                conversasUnicas: stats.count,
+                tmaGeral: stats.tma,
+                tmeAtivo: stats.tme,
+                encAgente: stats.baloonClicks, // Métrica MOD_4
+                inicio: stats.last, 
+                ultima: stats.first, 
+                meta: window.CONFIG ? window.CONFIG.CONVERSATION_TARGET : 45,
+                transferidos: stats.transferClicks
+            };
+            fetch(LOG_URL, { method: 'POST', mode: 'no-cors', body: JSON.stringify({ type: 'analytics', user: currentUserName, stats: analyticsPayload }) });
+
+            // 4. Envio de Atendimentos
+            const atendimentosPayload = window.analyticsManager.getData().conversations.map(conv => ({
+                tipo: conv.interactionType || 'unknown',
+                horaFim: new Date(conv.timestamp).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' }),
+                cliente: conv.participantName,
+                tme: (() => {
+                    const s = Math.floor(conv.activeDuration / 1000);
+                    return `${Math.floor(s/60).toString().padStart(2,'0')}:${(s%60).toString().padStart(2,'0')}`
+                })(),
+                recorrencia: conv.isRecurrence ? 'Sim' : 'Não',
+                link: conv.interactionUrl || 'N/A'
+            }));
+            fetch(LOG_URL, { method: 'POST', mode: 'no-cors', body: JSON.stringify({ type: 'atendimento', user: currentUserName, atendimentos: atendimentosPayload }) });
+
+            // 5. Envio de Encerrados (Balão)
+            const encerradosBalao = window.v4_counters.balao;
+            if (encerradosBalao && encerradosBalao.length > 0) {
+                 fetch(LOG_URL, {
+                    method: 'POST',
+                    mode: 'no-cors',
+                    body: JSON.stringify({
+                        type: 'encerrados',
+                        user: currentUserName,
+                        encerrados: encerradosBalao
+                    })
+                });
+            }
+
+            console.log(`[Sincronização] Dados de ${currentUserName} enviados com sucesso.`);
+
+        } catch (e) {
+            console.error('[Sincronização] Erro ao enviar dados:', e);
+        }
+    }
+    // ==========================================================
+    // FIM: NOVO CÓDIGO DE SINCRONIZAÇÃO
+    // ==========================================================
+
+
     const initialize = () => {
         initializeDailyCounters(); 
         saveData(); 
@@ -1550,6 +1627,24 @@ const documentExtractor = {
                 UI.createNotification("Script operacional. Ctrl+Shift+S para Config.", 'info', 4000); 
             }, 4000); 
         }
+
+        // ==========================================================
+        // INÍCIO: MODIFICAÇÃO (ADICIONADO O INTERVALO)
+        // ==========================================================
+        
+        // Espera 45 segundos para a primeira sincronização (para garantir que tudo carregou)
+        setTimeout(sincronizarDadosComPlanilha, 45000); 
+
+        // Define um loop (Interval) para sincronizar a cada 10 minutos
+        // (10 minutos * 60 segundos * 1000 milissegundos)
+        const DEZ_MINUTOS = 10 * 60 * 1000;
+        setInterval(sincronizarDadosComPlanilha, DEZ_MINUTOS);
+        
+        console.log(`[Sincronização] Configurada. Os dados serão enviados para a planilha a cada 10 minutos.`);
+        
+        // ==========================================================
+        // FIM: MODIFICAÇÃO
+        // ==========================================================
     };
 
     if (document.readyState === 'loading') { document.addEventListener('DOMContentLoaded', initialize); } else { initialize(); }
