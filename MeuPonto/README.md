@@ -21,3 +21,7 @@ O navegador deve ficar aberto, com uma única aba ativa, e o computador acordado
 Somente código e instruções são publicados. Horários e histórico ficam no armazenamento local do navegador. O carregador busca código público do GitHub sem cookies nem cabeçalho Referer; não envia dados do Meu RH. O navegador precisa permitir bookmarklets, acesso ao domínio raw.githubusercontent.com e execução do código recebido. Não há tentativa de contornar políticas de segurança.
 
 O teste de um minuto passou no Meu RH sem bater ponto. O duplo clique real ainda não foi validado. A lógica passou em 14 verificações locais; isso não comprova aceitação do registro pelo servidor.
+
+## Falha no download
+
+O favorito inclui uma cópia do painel como alternativa. Se o download ou a execução da atualização falhar, ele abre essa cópia e indica que a atualização online está indisponível. Nesse caso a versão incluída não se atualiza até o acesso ao GitHub voltar ou o favorito ser substituído. Não altera políticas de segurança do navegador.
