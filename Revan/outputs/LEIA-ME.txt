@@ -1,0 +1,105 @@
+MINIDASHBOARD REVAN — VERSÃO 4.4.0
+
+INSTALAR / ATUALIZAR FAVORITO
+Importe revan-favoritos.html no gerenciador de favoritos do Chrome ou Edge.
+Mova ⚙ Revan — Equipamentos para a barra e remova o favorito antigo.
+Outra opção: abra instalar-favorito-revan.html no navegador e arraste o botão azul para a barra.
+Abra um atendimento e clique no favorito. Ele reconhece os nomes curtos e longos das abas.
+Se a versão antiga tiver uma edição em andamento, salve ou cancele antes de atualizar.
+O código está embutido no favorito, sem hospedagem ou envio a serviços externos.
+
+RECUPERAR PAINEL
+O botão ↻ ao lado de minimizar relê a tela do Revan e recupera os controles.
+Funciona mesmo enquanto o painel aguarda um seletor que travou.
+Não recarrega a página nem salva configurações. Uma edição real é preservada.
+Cancelar recupera a interface quando a edição já foi encerrada no sistema.
+Recarregar opções também relocaliza a seção e sincroniza os estados da edição.
+Uma versão antiga presa mostrando Salvar/Cancelar pode ser substituída pelo
+favorito atualizado quando não há uma edição real aberta no Revan.
+
+COMPACTO / COMANDOS
+Painel com espaçamento menor e bandas 2.4GHz/5.8GHz lado a lado.
+Dentro de cada banda, os rótulos e seletores ficam alinhados em linhas curtas.
+Em telas estreitas, as bandas voltam a ficar uma abaixo da outra para manter a leitura.
+Nas abas ONU e CPE, Comandos do equipamento lê a seção COMANDOS do Revan.
+Os comandos listados ficam destacados; sem dados, mostra Nenhum comando listado no Revan.
+Atualizar aciona apenas a atualização da consulta original. O painel acompanha mudanças
+da seção; não executa automaticamente comandos da fila nem confirma ações sensíveis.
+
+CABEÇALHO E ABAS
+Mostra atendimento, nome completo, IP fixo dos serviços marcados como ativos e tecnologia.
+Ao final do cabeçalho, mostra a situação financeira lida da tela do Revan.
+Ativo/Ativa fica verde; Bloqueado/Suspenso/Inativo fica vermelho. Outros estados mantêm
+o texto original com destaque neutro. O painel não altera a situação financeira.
+Fibra: ONU, Roteador, Rede, Testes, Autenticação.
+FWA: CPE, Rede, Testes, Autenticação.
+O endereço IP do CPE não é tratado como IP fixo contratado.
+Sem roteador em Fibra, o painel abre Rede. FWA abre CPE.
+
+REDE
+Clique em Editar. Altere SSID, modo, largura ou canal, depois Salvar ou Cancelar.
+Na edição, Rede unificada, Rede visível e Ativar UPnP aparecem como controles
+independentes quando o Revan os disponibiliza. Seguem os bloqueios da tela original.
+Habilitar rede / Desabilitar rede aciona a opção original disponível, com o painel aberto.
+Quando houver confirmação do Revan, o usuário confirma no diálogo original.
+
+CONFIGURAÇÃO AUTOMÁTICA — 2.4GHz E 5.8GHz
+Disponível quando o equipamento oferece o botão nativo Otimizar canal.
+Comece fora da edição e clique em Configuração automática. O painel solicita
+a otimização dos canais ao Revan. Se abrir um diálogo, conclua no sistema e clique
+em Continuar configuração automática no painel.
+Depois o painel entra em Editar e prepara as duas bandas: prefere modos automáticos
+ou mistos compatíveis, usa 20MHz em 2.4GHz e Auto/larguras combinadas em 5GHz.
+Se não houver Auto em 5GHz, preserva a largura atual. Não escolhe canal fixo
+como universalmente livre de interferência e não inventa estatísticas locais.
+Revise o relatório e clique em Salvar para modo/largura. A otimização nativa
+pode aplicar os canais diretamente, conforme o comportamento do Revan; Cancelar
+a edição de modo/largura não desfaz uma operação já aplicada pelo sistema.
+Não são alterados SSID, senha, unificação, visibilidade ou UPnP por essa automação.
+Quando o perfil já corresponde à configuração, encerra a edição sem salvar alterações vazias.
+
+Fontes do perfil:
+https://support.apple.com/en-ie/102766 — modos abrangentes, canais automáticos,
+20MHz em 2.4GHz e Auto/todas as larguras em 5GHz.
+https://www.cisco.com/c/en/us/td/docs/wireless/controller/technotes/8-3/b_RRM_White_Paper/dca.html
+— seleção dinâmica considera interferência e condições de rádio locais.
+O perfil é uma adaptação dessas recomendações às opções oferecidas pelo Revan,
+não uma medição de desempenho ou garantia do melhor canal para cada cliente.
+Redes separadas: nomes e senhas independentes em 2.4GHz e 5.8GHz.
+Rede unificada: o formato dos campos segue o Revan.
+Gerar senha captura a nova senha e oferece Copiar senha para o cliente por banda.
+Salve antes de enviar a senha ao cliente. O script não envia mensagens.
+Restaurar SSID aciona o controle original. Prefixos e sufixos fixos são mantidos pelo Revan.
+Minimizar preserva uma edição. Comandos mantêm o dashboard aberto.
+
+TESTES
+Lê a seção RESULTADOS DOS TESTES, organiza os itens por status e mostra detalhes.
+Atualizar leitura relê a tela, sem executar novamente diagnósticos ou corrigir configurações.
+Estados não apresentados pelo Revan não são inventados. FWA pode mostrar contrato não compatível.
+
+AUTENTICAÇÃO
+Mostra o usuário/e-mail de autenticação, que pode diferir do e-mail de contato.
+Gerar nova senha abre a confirmação original do Revan; o usuário confirma por lá.
+Novo e-mail / login abre Criar login. O usuário preenche e conclui o formulário original.
+Nenhuma credencial real foi alterada durante a preparação ou os testes.
+
+VISUAL GLASS / COMPONENTE ÚNICO
+Botão e painel são dois estados de um só componente. Clique no botão para expandir.
+O botão fica oculto enquanto o dashboard está aberto. Clique em − para voltar ao botão.
+O componente mantém a mesma posição ao minimizar, ajustada aos limites da tela.
+Arraste pelo botão quando fechado ou pelo cabeçalho quando aberto.
+O visual usa transparência, desfoque, gradientes e transições, respeitando movimento reduzido.
+As telas têm partições coloridas, cartões de dados e ações com ícones.
+Testes mostram contadores por status e cartões separados para Obtido e Esperado.
+Autenticação tem um cartão de identificação próprio e ações destacadas.
+Somente a posição do componente é gravada no armazenamento local do navegador.
+Senhas capturadas ficam na memória do painel e são limpas ao cancelar ou trocar de atendimento.
+
+VERIFICAÇÃO
+Foram inspecionadas as telas reais de Fibra, IP fixo, FWA e autenticação.
+Testes simulados passaram para o cabeçalho, IP ativo, testes/detalhes, autenticação com
+confirmação, Fibra/FWA, redes separadas, SSID/senha, Salvar/Cancelar e movimentação.
+O favorito foi testado em uma página simulada, inclusive reabrir sem perder edição.
+A proteção do navegador do Codex bloqueou a abertura automática do instalador local.
+Os atendimentos deixados pelo usuário continuam abertos. A instalação atualizada deve ser
+feita pelo usuário no navegador em que vai utilizar o dashboard.
