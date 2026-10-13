@@ -36,6 +36,7 @@
   </style><section class="panel" hidden><div class="eyebrow">MEU RH · ASSISTENTE</div><h2>Seu tempo, organizado.</h2>
   <div id="clock"></div><p id="status">Pausado</p>
   <div class="row"><input type="time" id="time" aria-label="Horário"><button id="add">Adicionar</button></div>
+  <p class="small">Disparo 5 segundos após o horário · exemplo: 19:50:05</p>
   <ul id="times"></ul><div class="days" id="days"></div>
   <label><input type="checkbox" id="simulation" checked> Simulação — não bate ponto</label>
   <div class="row"><button id="test">Testar em 1 minuto</button></div>
@@ -112,7 +113,7 @@
     const date = `${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}-${String(now.getDate()).padStart(2,'0')}`;
     for (const time of config.times) {
       const [hours, minutes] = time.split(':').map(Number);
-      const due = new Date(now); due.setHours(hours, minutes, 0, 0);
+      const due = new Date(now); due.setHours(hours, minutes, 5, 0);
       if (due.getTime() <= armedAt || timestamp < due.getTime() || timestamp - due.getTime() > 10000) continue;
       const key = date + ' ' + time;
       if (simulation) {
