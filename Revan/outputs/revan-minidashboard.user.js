@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Revan — Minidashboard de equipamentos
 // @namespace    local.revan.minidashboard
-// @version      4.5.0
+// @version      4.5.1
 // @updateURL    https://raw.githubusercontent.com/kingoffjoss/Meus-Scripts/main/Revan/outputs/revan-minidashboard.user.js
 // @downloadURL  https://raw.githubusercontent.com/kingoffjoss/Meus-Scripts/main/Revan/outputs/revan-minidashboard.user.js
 // @description  Campos próprios e ações integradas aos controles originais do Revan.
@@ -18,7 +18,7 @@
   });
   const root = document.createElement('section');
   root.id = 'rv-mini';
-  root.dataset.version = '4.5.0';
+  root.dataset.version = '4.5.1';
   root.innerHTML = `<button class="launch" aria-expanded="false"><span class="launch-icon">◈</span> Equipamentos <span class="launch-dot"></span></button><div class="panel" hidden><header><strong><span class="brand-icon">◈</span> Equipamentos <small>REDE & CONEXÃO</small></strong><button class="close" aria-label="Minimizar" title="Minimizar para botão">−</button></header><div class="context"></div><select class="equipment" aria-label="Equipamento"></select><nav></nav><p class="status" role="status"></p><div class="body"></div><footer></footer></div>`;
   const refreshButton=document.createElement('button');refreshButton.className='refresh-panel';refreshButton.type='button';refreshButton.textContent='↻';refreshButton.setAttribute('aria-label','Atualizar painel');refreshButton.title='Atualizar painel e recuperar os controles';
   root.querySelector('header').insertBefore(refreshButton,root.querySelector('.close'));
@@ -724,11 +724,24 @@
       if (!button?.isConnected || button.disabled) throw new Error('Atualização de comandos indisponível no Revan.');
       button.click();await pause(250);note('Consulta de comandos atualizada no Revan.');
     },'',!refresh || refresh.disabled));block.append(header);
-    const content=source?.querySelector('.card-content');
+    const content=source?.querySelector('.card-content,.card-body');
     const value=content?.innerText.trim();
     if (!source) block.append(make('div','command-empty','Seção de comandos não disponível nesta tela.'));
     else if (!value || /^Não há dados$/i.test(value)) block.append(make('div','command-empty','Nenhum comando listado no Revan.'));
-    else {block.append(make('small','',/pendente|fila|aguardando/i.test(value)?'Há comandos aguardando no Revan. Confira a fila antes de repetir uma ação.':'Confira o estado informado pelo Revan para cada comando.'));block.append(make('div','command-content',value));}
+    else {
+      const records=all(content,'.result');
+      if(records.length){
+        block.append(make('small','',`${records.length} comando(s) registrado(s) no Revan. Abra para ver os detalhes.`));
+        for(const record of records){
+          const indicator=record.querySelector('.indicator');
+          const status=indicator?.classList.contains('error')?'Erro':indicator?.classList.contains('success')?'Concluído':indicator?.classList.contains('warning')?'Atenção':'Estado informado abaixo';
+          const details=make('details',`test-result ${status==='Erro'?'test-error':status==='Concluído'?'test-success':'test-warning'}`);
+          details.append(make('summary','',`${status} · ${text(record.querySelector('.description'))||'Comando'}`));
+          const copy=record.cloneNode(true);all(copy,'button,svg').forEach(e=>e.remove());
+          const result=make('div','command-content',text(copy));result.style.overflowWrap='anywhere';result.style.maxHeight='220px';result.style.overflow='auto';details.append(result);block.append(details);
+        }
+      }else block.append(make('div','command-content',value));
+    }
     body.append(block);
   }
   function renderTests(body) {
