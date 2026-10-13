@@ -4,7 +4,7 @@ Código fornecido pelo usuário para o Meu RH da Brisanet, separado da ferrament
 
 ## Instalação
 
-Baixe `outputs/instalar-favorito-meu-ponto.html`, abra no navegador e arraste **◷ Meu ponto** para a barra de favoritos. O favorito carrega o código desta pasta do GitHub.
+Baixe `outputs/instalar-favorito-meu-ponto.html`, abra no navegador e arraste **◷ Meu ponto** para a barra de favoritos. O favorito carrega o código desta pasta do GitHub via jsDelivr como script externo, sem Function ou eval. O CDN pode manter cache das atualizações. A política do Meu RH precisa permitir scripts desse CDN; se bloquear, o favorito informa o erro.
 
 Se o navegador bloquear o carregamento remoto, baixe e abra `outputs/instalar-favorito-meu-ponto-offline.html`. Alternativa: importe `outputs/meu-ponto-favoritos.html` no gerenciador de favoritos.
 
