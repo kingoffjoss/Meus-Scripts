@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Revan — Minidashboard de equipamentos
 // @namespace    local.revan.minidashboard
-// @version      4.5.1
+// @version      4.5.2
 // @updateURL    https://raw.githubusercontent.com/kingoffjoss/Meus-Scripts/main/Revan/outputs/revan-minidashboard.user.js
 // @downloadURL  https://raw.githubusercontent.com/kingoffjoss/Meus-Scripts/main/Revan/outputs/revan-minidashboard.user.js
 // @description  Campos próprios e ações integradas aos controles originais do Revan.
@@ -18,7 +18,7 @@
   });
   const root = document.createElement('section');
   root.id = 'rv-mini';
-  root.dataset.version = '4.5.1';
+  root.dataset.version = '4.5.2';
   root.innerHTML = `<button class="launch" aria-expanded="false"><span class="launch-icon">◈</span> Equipamentos <span class="launch-dot"></span></button><div class="panel" hidden><header><strong><span class="brand-icon">◈</span> Equipamentos <small>REDE & CONEXÃO</small></strong><button class="close" aria-label="Minimizar" title="Minimizar para botão">−</button></header><div class="context"></div><select class="equipment" aria-label="Equipamento"></select><nav></nav><p class="status" role="status"></p><div class="body"></div><footer></footer></div>`;
   const refreshButton=document.createElement('button');refreshButton.className='refresh-panel';refreshButton.type='button';refreshButton.textContent='↻';refreshButton.setAttribute('aria-label','Atualizar painel');refreshButton.title='Atualizar painel e recuperar os controles';
   root.querySelector('header').insertBefore(refreshButton,root.querySelector('.close'));
@@ -836,7 +836,7 @@
         const current=networkSnapshot();const keys=[...new Set([...Object.keys(editBaseline||{}),...Object.keys(current)])];let count=0;
         for(const key of keys){if(editBaseline&&editBaseline[key]===current[key])continue;count++;const secret=/Senha/i.test(key);box.append(make('div','',`${key.replace(/ · \d+$/,'')}: ${secret?'••••••':editBaseline?.[key]??'Não registrado'} → ${secret?'Nova senha':current[key]??'Campo removido'}`));}
         if(!count)box.append(make('small','','Nenhuma diferença detectada nos campos lidos. Confira também a tela original.'));
-        box.append(actionButton('Confirmar salvar',()=>save(true),'primary'),actionButton('Voltar à edição',()=>{reviewRequested=false;note('Continue editando.');}));body.append(box);
+        box.append(make('small','','Use Confirmar salvar no rodapé fixo para aplicar as alterações.'));body.prepend(box);
       }
       const message=make('details','client-message');message.append(make('summary','','Mensagem para o cliente'));
       const config=savedNetwork||networkSnapshot();const lines=Object.entries(config).filter(([k])=>/Nome da rede Wi-Fi|Senha da rede/.test(k));
@@ -846,7 +846,11 @@
     }
     const footer = $('footer'); footer.replaceChildren();
     if (tabName === 'Rede') {
-      if (editing) footer.append(actionButton('Salvar', save, 'primary'), actionButton('Cancelar', cancel), actionButton('Recarregar opções', refreshDashboard));
+      if (editing) {
+        footer.append(actionButton(reviewRequested?'Confirmar salvar':'Salvar',()=>save(reviewRequested),'primary'));
+        if(reviewRequested)footer.append(actionButton('Voltar à edição',()=>{reviewRequested=false;note('Continue editando.');}));
+        footer.append(actionButton('Cancelar', cancel), actionButton('Recarregar opções', refreshDashboard));
+      }
       else footer.append(actionButton('Editar', startEdit, 'primary', !nativeButton('Editar')));
     }
     lock();
