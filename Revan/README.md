@@ -1,6 +1,6 @@
 # Revan — Equipamentos e rede
 
-Minidashboard flutuante para o Revan. Versão 4.4.0.
+Minidashboard flutuante para o Revan. Versão 4.4.1.
 
 ## Instalar o favorito
 

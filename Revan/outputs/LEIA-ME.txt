@@ -1,4 +1,4 @@
-MINIDASHBOARD REVAN — VERSÃO 4.4.0
+MINIDASHBOARD REVAN — VERSÃO 4.4.1
 
 INSTALAR / ATUALIZAR FAVORITO
 Importe revan-favoritos.html no gerenciador de favoritos do Chrome ou Edge.
