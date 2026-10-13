@@ -20,7 +20,7 @@ O navegador deve ficar aberto, com uma única aba ativa, e o computador acordado
 
 Somente código e instruções são publicados. Horários e histórico ficam no armazenamento local do navegador. O carregador busca código público do GitHub sem cookies nem cabeçalho Referer; não envia dados do Meu RH. O navegador precisa permitir bookmarklets, acesso ao domínio raw.githubusercontent.com e execução do código recebido. Não há tentativa de contornar políticas de segurança.
 
-O teste de um minuto passou no Meu RH sem bater ponto. O duplo clique real ainda não foi validado. A lógica passou em 14 verificações locais; isso não comprova aceitação do registro pelo servidor.
+O teste de um minuto passou no Meu RH sem bater ponto. Em um teste real da versão corrigida, o script enviou o duplo clique automaticamente e a plataforma exibiu uma marcação. Houve diferença de um minuto entre o horário local do disparo e o horário exibido no registro; a causa não foi determinada. Não repetir a tentativa automaticamente quando o resultado estiver incerto. A lógica passou em 14 verificações locais. Isso valida esse teste específico, sem garantir execução após suspensão, logout ou bloqueio do navegador.
 
 ## Falha no download
 
