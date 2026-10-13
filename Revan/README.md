@@ -1,6 +1,6 @@
 # Revan — Equipamentos e rede
 
-Minidashboard flutuante para o Revan. Versão 4.4.1.
+Minidashboard flutuante para o Revan. Versão 4.5.0.
 
 ## Instalar o favorito
 
@@ -16,9 +16,12 @@ Os arquivos HTML precisam ser baixados e abertos no navegador; a visualização 
 - Redes unificadas ou separadas, SSID e senha por banda, modo, largura e canal.
 - Editar, salvar e cancelar pelos controles originais do Revan.
 - Painel móvel, minimizar e atualizar para recuperar operações travadas.
+- Revisão antes de salvar e mensagem com SSID/senha de cada banda.
+- Histórico de comandos com confirmação pelo Revan e limite de espera.
+- Diagnóstico com explicações dos testes e destaque de estados.
 - Otimização de canal do próprio Revan quando disponível.
 
-O favorito contém uma cópia do código. Depois de atualizar a ferramenta, substitua o favorito antigo pelo novo. Nenhuma atualização remota é executada automaticamente.
+O favorito principal busca a versão mais recente no GitHub a cada clique e inicia como botão. Instale este novo favorito uma vez para receber as próximas atualizações. Não atualiza durante uma edição. Se o navegador bloquear o carregamento remoto, use outputs/instalar-favorito-revan-offline.html; esse favorito precisa ser substituído manualmente após atualizações.
 
 ## Manutenção
 
