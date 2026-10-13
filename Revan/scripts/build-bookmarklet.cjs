@@ -10,7 +10,7 @@ const wrapper = `void (()=>{
  const installed=document.getElementById("rv-mini");
  if(installed && installed.dataset.version===${JSON.stringify(version)}){
    const panel=installed.querySelector(".panel");
-   if(panel?.hidden)installed.querySelector(".launch")?.click();
+   if(panel && !panel.hidden)installed.querySelector(".close")?.click();
    return;
  }
  const originalEditing=[...document.querySelectorAll('button')].some(b=>!installed?.contains(b)&&b.textContent.trim().toLowerCase()==='cancelar'&&b.getClientRects().length);
@@ -18,7 +18,7 @@ const wrapper = `void (()=>{
    alert('Salve ou cancele a edição em andamento antes de atualizar o dashboard.');return;
  }
  ${source}
- document.getElementById("rv-mini")?.querySelector(".launch")?.click();
+
 })()`;
 new vm.Script(wrapper);
 const safePunctuation={'3B':';','2C':',','3A':':','2F':'/','3D':'=','5B':'[','5D':']','7B':'{','7D':'}'};
