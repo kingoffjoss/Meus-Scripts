@@ -126,7 +126,13 @@
       config.attempts[key] = 'tentativa'; save();
       if (!onPage) { log(`${time}: não executado — página de ponto não está aberta.`); continue; }
       const buttons = [...document.querySelectorAll('#btn-app-swipe-clocking-register .swipe-button')].filter(el => el.getClientRects().length);
-      if (buttons.length !== 1 || document.querySelector('[role="dialog"], .po-modal-overlay')) {
+      const openDialog = [...document.querySelectorAll('[role="dialog"], .po-modal-overlay')].some(el => {
+        if (!el.getClientRects().length) return false;
+        const style = getComputedStyle(el);
+        if (style.display === 'none' || style.visibility === 'hidden') return false;
+        return el.matches('.po-modal-overlay') || !!el.textContent.trim();
+      });
+      if (buttons.length !== 1 || openDialog) {
         log(`${time}: não executado — botão indisponível ou diálogo aberto.`); continue;
       }
       const button = buttons[0];
