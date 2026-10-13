@@ -22,8 +22,12 @@ const wrapper = `void (()=>{
 })()`;
 new vm.Script(wrapper);
 const safePunctuation={'3B':';','2C':',','3A':':','2F':'/','3D':'=','5B':'[','5D':']','7B':'{','7D':'}'};
-const url='javascript:'+encodeURIComponent(wrapper).replace(/%(3B|2C|3A|2F|3D|5B|5D|7B|7D)/g,(_,hex)=>safePunctuation[hex]);
-if(decodeURIComponent(url.slice(11))!==wrapper)throw new Error('Falha na codificação');
+const offlineURL='javascript:'+encodeURIComponent(wrapper).replace(/%(3B|2C|3A|2F|3D|5B|5D|7B|7D)/g,(_,hex)=>safePunctuation[hex]);
+fs.writeFileSync('outputs/revan-favorito-offline.txt',offlineURL+'\n');
+const loader=`void(async()=>{if(location.hostname!=='revan-atendimento.brisanet.net.br'){alert('Abra um atendimento do Revan.');return;}if(window.__rvLoading)return;const old=document.getElementById('rv-mini');const editing=[...document.querySelectorAll('button')].some(b=>!old?.contains(b)&&b.getClientRects().length&&b.textContent.trim().toLowerCase()==='cancelar');if(editing){alert('Salve ou cancele a edição antes de atualizar o painel.');return;}window.__rvLoading=true;const controller=new AbortController();const timer=setTimeout(()=>controller.abort(),12000);try{const response=await fetch('https://raw.githubusercontent.com/kingoffjoss/Meus-Scripts/main/Revan/outputs/revan-minidashboard.user.js?t='+Date.now(),{cache:'no-store',signal:controller.signal});if(!response.ok)throw Error('HTTP '+response.status);const code=await response.text();if(!code.includes('@name         Revan')||!code.includes("root.id = 'rv-mini'"))throw Error('Arquivo inválido');const version=code.match(/@version\\s+(\\S+)/)?.[1];if(old&&old.dataset.version===version){old.querySelector('.close')?.click();return;}Function(code)();}catch(error){alert('Não foi possível atualizar pelo GitHub: '+error.message+'. Use o instalador offline se o navegador bloquear o carregamento.');}finally{clearTimeout(timer);window.__rvLoading=false;}})()`;
+new vm.Script(loader);
+const url='javascript:'+encodeURIComponent(loader);
+if(decodeURIComponent(url.slice(11))!==loader)throw new Error('Falha na codificação');
 fs.writeFileSync('outputs/revan-favorito.txt',url+'\n');
 fs.writeFileSync('outputs/revan-favoritos.html',`<!DOCTYPE NETSCAPE-Bookmark-file-1>
 <META HTTP-EQUIV="Content-Type" CONTENT="text/html; charset=UTF-8">
@@ -41,5 +45,6 @@ fs.writeFileSync('outputs/instalar-favorito-revan.html',`<!doctype html><html la
 <p><small>Segure o botão acima e solte na barra de favoritos do navegador.</small></p>
 <ol><li>Ative a barra de favoritos com <b>Ctrl + Shift + B</b>.</li><li>Arraste o botão azul para a barra.</li><li>Abra um atendimento no Revan e clique no favorito criado.</li></ol>
 <p>Se preferir, importe <b>revan-favoritos.html</b> no gerenciador de favoritos do navegador e mova o favorito para a barra.</p>
-<small>Versão ${version}. O favorito funciona somente no Revan. Preserva as edições em andamento. Após recarregar a página, basta clicar no favorito novamente. O código está dentro do favorito e não depende de hospedagem externa.</small></main></html>`);
+<small>Versão ${version}. Este favorito busca a versão mais recente no seu GitHub a cada clique e inicia como botão. Salve ou cancele edições antes de atualizar. Requer acesso ao GitHub; bloqueios do navegador são informados. A versão offline está em revan-favorito-offline.txt.</small></main></html>`);
+fs.writeFileSync('outputs/instalar-favorito-revan-offline.html',fs.readFileSync('outputs/instalar-favorito-revan.html','utf8').replace(url,offlineURL).replace('Este favorito busca a versão mais recente no seu GitHub a cada clique e inicia como botão. Salve ou cancele edições antes de atualizar. Requer acesso ao GitHub; bloqueios do navegador são informados. A versão offline está em revan-favorito-offline.txt.','Este favorito contém o código completo e não busca atualizações remotas. Arraste um novo favorito após cada atualização. Inicia como botão.'));
 console.log(JSON.stringify({version,urlLength:url.length,syntax:'ok',encoding:'ok'}));

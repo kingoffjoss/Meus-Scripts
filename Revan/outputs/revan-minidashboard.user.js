@@ -1,7 +1,9 @@
 // ==UserScript==
 // @name         Revan — Minidashboard de equipamentos
 // @namespace    local.revan.minidashboard
-// @version      4.4.1
+// @version      4.5.0
+// @updateURL    https://raw.githubusercontent.com/kingoffjoss/Meus-Scripts/main/Revan/outputs/revan-minidashboard.user.js
+// @downloadURL  https://raw.githubusercontent.com/kingoffjoss/Meus-Scripts/main/Revan/outputs/revan-minidashboard.user.js
 // @description  Campos próprios e ações integradas aos controles originais do Revan.
 // @match        https://revan-atendimento.brisanet.net.br/*
 // @grant        none
@@ -16,7 +18,7 @@
   });
   const root = document.createElement('section');
   root.id = 'rv-mini';
-  root.dataset.version = '4.4.1';
+  root.dataset.version = '4.5.0';
   root.innerHTML = `<button class="launch" aria-expanded="false"><span class="launch-icon">◈</span> Equipamentos <span class="launch-dot"></span></button><div class="panel" hidden><header><strong><span class="brand-icon">◈</span> Equipamentos <small>REDE & CONEXÃO</small></strong><button class="close" aria-label="Minimizar" title="Minimizar para botão">−</button></header><div class="context"></div><select class="equipment" aria-label="Equipamento"></select><nav></nav><p class="status" role="status"></p><div class="body"></div><footer></footer></div>`;
   const refreshButton=document.createElement('button');refreshButton.className='refresh-panel';refreshButton.type='button';refreshButton.textContent='↻';refreshButton.setAttribute('aria-label','Atualizar painel');refreshButton.title='Atualizar painel e recuperar os controles';
   root.querySelector('header').insertBefore(refreshButton,root.querySelector('.close'));
@@ -276,11 +278,46 @@
     return [...found].filter(c => ![...found].some(other => other !== c && c.contains(other)));
   };
   let operationEpoch=0;
+  css.textContent += '#rv-mini .command-state,#rv-mini .save-review{padding:10px;border-radius:12px;background:#ffffffb8;margin:5px 0;display:grid;gap:6px}#rv-mini .command-state.good,#rv-mini .diagnostic-good{border-left:3px solid #10b981;background:#10b98114}#rv-mini .command-state.bad,#rv-mini .diagnostic-bad{border-left:3px solid #f43f5e;background:#f43f5e14}#rv-mini .command-state.pending{border-left:3px solid #f59e0b}#rv-mini .save-review{border:1px solid #8b5cf6;color:#293765;font-size:11px;grid-column:1/-1}#rv-mini .client-message{grid-column:1/-1;background:#ffffffaa;border-radius:12px;padding:10px}#rv-mini textarea{width:100%;resize:vertical;font:12px system-ui;border:1px solid #cbd7e7;border-radius:8px;padding:8px;margin:8px 0}#rv-mini .diagnostic-hint{display:block;padding:6px 12px;color:#52617a}';
   const interrupted=()=>Object.assign(new Error('Operação interrompida para atualizar o painel.'),{code:'RV_REFRESH'});
   const pause = ms => {const token=operationEpoch;return new Promise((resolve,reject)=>setTimeout(()=>token===operationEpoch?resolve():reject(interrupted()),ms));};
   let card = null, opened = false, editing = false, busy = false, tabName = 'Rede', route = location.hash;
   let options = new Map(), changed = false, timer;
   const generatedPasswords = new Map();
+  let editBaseline=null, reviewRequested=false, savedNetwork=null, commandWatch=null;
+  const commandHistory=[];
+  function networkSnapshot() {
+    const data={};
+    all(card,'input[placeholder="Nome da rede Wi-Fi"],input[placeholder="Senha da rede"]').forEach((e,i)=>{data[`${headingFor(e)} · ${e.placeholder} · ${i}`]=e.value;});
+    all(card,'ion-select').forEach((e,i)=>{const label=e.parentElement.cloneNode(true);all(label,'ion-select').forEach(n=>n.remove());data[`${headingFor(e)} · ${text(label)} · ${i}`]=selectedValue(e);});
+    all(card,'ion-switch').forEach((e,i)=>{const b=e.querySelector('button');const explicit=b?.getAttribute('aria-checked')??e.getAttribute('aria-checked');data[`Opção ${i+1} · ${text(e.parentElement).slice(0,45)}`]=explicit!==null?explicit:String(b?.classList.contains('ion-switch--active')||e.classList.contains('checked'));});
+    return data;
+  }
+  function commandFeedback() {
+    return all(document,'.ant-message-notice-content,.ant-notification-notice,[role="alert"],.toast-message').filter(e=>!root.contains(e)&&e.getClientRects().length).map(e=>text(e)).join('\n');
+  }
+  function monitorCommand(name) {
+    if(commandWatch)clearInterval(commandWatch);
+    const entry={name,state:'Executando',detail:'Aguardando resposta do Revan.',started:Date.now(),route:location.hash,before:commandFeedback()};commandHistory.unshift(entry);commandHistory.splice(5);
+    commandWatch=setInterval(()=>{
+      if(!root.isConnected||entry.route!==location.hash){clearInterval(commandWatch);commandWatch=null;return;}
+      const feedback=commandFeedback();
+      if(feedback&&feedback!==entry.before){
+        if(/falh|erro|não foi|nao foi|indisponível/i.test(feedback)){entry.state='Falhou';entry.detail=feedback;}
+        else if(/sucesso|concluíd|concluid|realizado|executado/i.test(feedback)){entry.state='Concluído';entry.detail=feedback;}
+        else entry.detail=feedback;
+      }
+      if(Date.now()-entry.started>30000&&entry.state==='Executando'){entry.state='Sem confirmação';entry.detail='Tempo limite de 30s. Confira o resultado e os comandos do Revan antes de repetir.';}
+      if(entry.state!=='Executando'){clearInterval(commandWatch);commandWatch=null;}
+      if(opened&&!busy&&card?.isConnected)render();
+    },700);
+  }
+  function renderCommandHistory(body) {
+    if(!commandHistory.length)return;
+    const block=make('div','command-section');block.append(make('strong','','Últimas ações'));
+    for(const e of commandHistory.filter(e=>e.route===location.hash)){const item=make('div',`command-state ${e.state==='Falhou'?'bad':e.state==='Concluído'?'good':'pending'}`);item.append(make('strong','',`${e.state} · ${e.name}`),make('small','',e.detail));block.append(item);}
+    body.append(block);
+  }
   let autoPending=false, autoReport='';
   const selectedValue = e => text(e.querySelector('.ion-select-item__content'));
   const note = message => { $('.status').textContent = message; };
@@ -326,9 +363,10 @@
     if (busy) return;
     const token=operationEpoch;
     busy = true; lock();
-    try { if(!allowStale)valid(); await action(); }
+    let limit;
+    try { if(!allowStale)valid(); await Promise.race([Promise.resolve().then(action),new Promise((_,reject)=>{limit=setTimeout(()=>reject(Object.assign(new Error('Tempo limite da operação. Use ↻ para reler os controles antes de repetir.'),{code:'RV_TIMEOUT'})),45000);})]); }
     catch (e) { if(token===operationEpoch)note(e.message); }
-    finally { if(token===operationEpoch){busy = false; if (opened && card?.isConnected) render(); lock();} }
+    finally { clearTimeout(limit);if(token===operationEpoch){operationEpoch++;busy = false; if (opened && card?.isConnected) render(); lock();} }
   }
   function lock() {
     all(root, 'button,input,select').forEach(e => {
@@ -419,23 +457,24 @@
     const edit = nativeButton('Editar');
     if (!edit || edit.disabled) throw new Error('O Revan não disponibilizou a edição.');
     edit.click(); await until(() => nativeEditing() && nativeButton('Salvar'));
-    editing = true; changed = false; generatedPasswords.clear();
+    editing = true; changed = false; generatedPasswords.clear();editBaseline=networkSnapshot();reviewRequested=false;savedNetwork=null;
     note('Carregando as opções do Revan…');
     const failures = await loadOptions();
     if (!failures) note('Edite os campos abaixo e clique em Salvar. As alterações ficam em edição até salvar.');
   }
-  async function save() {
+  async function save(confirmed=false) {
     if (!nativeEditing() || !nativeButton('Salvar')) {await refreshDashboard();note('A edição já foi encerrada no Revan. Painel atualizado.');return;}
     const invalid = card.querySelector('input.ng-invalid,input[aria-invalid="true"]');
     if (invalid) throw new Error('Há um campo inválido no Revan. Corrija antes de salvar.');
     if (!changed) { note('Nenhuma alteração para salvar.'); return; }
+    if(!confirmed){reviewRequested=true;note('Confira o resumo e clique em Confirmar salvar.');return;}
     const b = nativeButton('Salvar');
     if (b.disabled) throw new Error('O Revan ainda não liberou Salvar. Confira os campos.');
-    b.click();
+    const prepared=networkSnapshot();b.click();
     note('Salvar acionado no Revan. Aguardando saída do modo de edição…');
     try {
       await until(() => nativeButton('Editar') && !nativeEditing(), 12000);
-      editing = false; changed = false; options.clear();
+      editing = false; changed = false; options.clear();reviewRequested=false;editBaseline=null;savedNetwork=prepared;
       note('O Revan encerrou a edição após Salvar. Confira as mensagens do sistema e a aplicação no equipamento.');
     } catch (e) { if(e.code==='RV_REFRESH')throw e;note('O salvamento não foi confirmado. Confira os avisos do Revan; o painel não reenviará automaticamente.'); }
   }
@@ -444,7 +483,7 @@
     const b = nativeButton('Cancelar');
     if (!b) {await refreshDashboard();note('A edição já não está ativa no Revan. Os controles foram recuperados.');return;}
     b.click(); await until(() => !nativeEditing());
-    editing = false; changed = false; options.clear(); generatedPasswords.clear(); note('Edição cancelada no Revan.');
+    editing = false; changed = false; options.clear(); generatedPasswords.clear();reviewRequested=false;editBaseline=null;savedNetwork=null;note('Edição cancelada no Revan.');
   }
   async function refreshDashboard() {
     const token=++operationEpoch;busy=true;lock();
@@ -637,6 +676,7 @@
     }
   }
   function renderDevice(body) {
+    renderCommandHistory(body);
     if (tabName === 'ONU' || tabName === 'CPE') renderCommands(body);
     const container = card.querySelector('ion-tab-group')?.nextElementSibling;
     if (container) {
@@ -648,7 +688,7 @@
       const used = new Set();
       for (let i=0;i<lines.length-1;i++) {
         if (!keys.includes(lines[i]) || keys.includes(lines[i+1]) || used.has(lines[i])) continue;
-        const item=make('div');item.append(make('span','',lines[i]),make('strong','',lines[i+1]));info.append(item);used.add(lines[i]);
+        const item=make('div');if(/Status/i.test(lines[i]))item.className=/ativa|bom|atualizado/i.test(lines[i+1])?'diagnostic-good':/falha|inativa|ruim|offline/i.test(lines[i+1])?'diagnostic-bad':'diagnostic-neutral';item.append(make('span','',lines[i]),make('strong','',lines[i+1]));info.append(item);used.add(lines[i]);
       }
       if (info.children.length >= 3) summary.append(info);
       else summary.textContent = text(copy).replace(/Operações sensíveis/g,'').trim();
@@ -662,7 +702,7 @@
       const source = nativeButton(name);
       actions.append(actionButton(name, async () => {
         if (!source?.isConnected || source.disabled) throw new Error('Ação indisponível no Revan.');
-        source.click();
+        monitorCommand(name);source.click();
         // Mantém o painel aberto; confirmações originais ficam à frente dele.
         await pause(100); syncDialogs();
         note(`Comando acionado no Revan: ${name}. Confira o resultado ou a confirmação do sistema.`);
@@ -688,7 +728,7 @@
     const value=content?.innerText.trim();
     if (!source) block.append(make('div','command-empty','Seção de comandos não disponível nesta tela.'));
     else if (!value || /^Não há dados$/i.test(value)) block.append(make('div','command-empty','Nenhum comando listado no Revan.'));
-    else block.append(make('div','command-content',value));
+    else {block.append(make('small','',/pendente|fila|aguardando/i.test(value)?'Há comandos aguardando no Revan. Confira a fila antes de repetir uma ação.':'Confira o estado informado pelo Revan para cada comando.'));block.append(make('div','command-content',value));}
     body.append(block);
   }
   function renderTests(body) {
@@ -704,6 +744,8 @@
       const labels = {success:'OK',error:'Falha',warning:'Atenção',unknown:'Sem status'};
       const details = make('details', `test-result test-${status}`); details.open = status === 'error' || status === 'warning';
       details.append(make('summary', '', `${labels[status]} · ${title}`));
+      const hint=status==='success'?'O Revan não identificou falha neste teste.':/vers[aã]o/i.test(title)?'Compare a versão obtida com a esperada. Use a correção original do Revan quando disponível.':/sinal/i.test(title)?'Confira as medições RX/TX e os limites indicados pelo Revan; os limites dependem do equipamento.':/uptime/i.test(title)?'Confira o tempo ligado e possíveis reinicializações.':/rota|olt|manuten/i.test(title)?'Confira os eventos de rota e a situação da OLT antes de reconfigurar o equipamento.':'Abra os detalhes e confira a mensagem do Revan antes de executar uma correção.';
+      details.append(make('small','diagnostic-hint',hint));
       const copy = source.cloneNode(true); all(copy, '.main,button,ion-button,svg').forEach(e => e.remove());
       const content = text(copy).replace(/(Obtido:|Esperado:)/g, '\n$1\n').replace(/(RX Local:|RX Remoto:|TX Local:|TX Remoto:|Temperatura:|Resultado:|Estado:)/g, '\n$1');
       const messages = all(source, '.main-data').map(e => e.innerText).join('\n').replace(title, '').trim();
@@ -737,6 +779,7 @@
     return section.querySelector('button[nztooltiptitle="Criar login"]') || all(section, 'button').find(b => b.querySelector('[data-icon="plus"]'));
   }
   function renderAuthentication(body) {
+    renderCommandHistory(body);
     const section = pageSection('AUTENTICAÇÃO', 'brisanet-auth-card');
     const emailPattern = /^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$/i;
     const email = section && all(section, 'small,span,a,p').map(text).find(value => emailPattern.test(value));
@@ -752,7 +795,7 @@
       actions.append(actionButton(label, async () => {
         const latest = authControl(pageSection('AUTENTICAÇÃO', 'brisanet-auth-card'), mode);
         if (!latest?.isConnected || latest.disabled) throw new Error('Esta ação não está disponível no Revan.');
-        latest.click(); await pause(100); syncDialogs();
+        monitorCommand(label);latest.click(); await pause(100); syncDialogs();
         note(mode === 'password' ? 'Confirme a geração de senha no diálogo do Revan. O painel continua aberto.' : 'Preencha o novo e-mail no formulário Criar login do Revan e conclua por lá.');
       }, '', !native || native.disabled));
     }
@@ -774,6 +817,20 @@
     const body = $('.body'); body.replaceChildren();
     body.classList.toggle('network-layout', tabName === 'Rede');
     if (tabName === 'Rede') renderNetwork(body); else if (tabName === 'Testes') renderTests(body); else if (tabName === 'Autenticação') renderAuthentication(body); else renderDevice(body);
+    if(tabName==='Rede'){
+      if(reviewRequested&&editing){
+        const box=make('div','save-review');box.append(make('strong','','Revisar alterações'));
+        const current=networkSnapshot();const keys=[...new Set([...Object.keys(editBaseline||{}),...Object.keys(current)])];let count=0;
+        for(const key of keys){if(editBaseline&&editBaseline[key]===current[key])continue;count++;const secret=/Senha/i.test(key);box.append(make('div','',`${key.replace(/ · \d+$/,'')}: ${secret?'••••••':editBaseline?.[key]??'Não registrado'} → ${secret?'Nova senha':current[key]??'Campo removido'}`));}
+        if(!count)box.append(make('small','','Nenhuma diferença detectada nos campos lidos. Confira também a tela original.'));
+        box.append(actionButton('Confirmar salvar',()=>save(true),'primary'),actionButton('Voltar à edição',()=>{reviewRequested=false;note('Continue editando.');}));body.append(box);
+      }
+      const message=make('details','client-message');message.append(make('summary','','Mensagem para o cliente'));
+      const config=savedNetwork||networkSnapshot();const lines=Object.entries(config).filter(([k])=>/Nome da rede Wi-Fi|Senha da rede/.test(k));
+      const status=editing?'RASCUNHO — alterações ainda não salvas':savedNetwork?'Salvamento confirmado pela saída do modo de edição do Revan. Confira a aplicação no equipamento.':'Configurações lidas da tela. Salvamento não acompanhado pelo painel.';
+      const payload=[status,...lines.filter(([k,v])=>!/Senha/.test(k)||(v&&!/^[*•]+$/.test(v))).map(([k,v])=>`${k.replace(/ · \d+$/,'')}: ${v}`)].join('\n');
+      const area=make('textarea');area.readOnly=true;area.value=payload;area.rows=5;message.append(area,actionButton('Copiar mensagem',async()=>{await navigator.clipboard.writeText(payload);note(editing?'Rascunho copiado. Salve antes de enviar ao cliente.':'Mensagem copiada.');}));body.append(message);
+    }
     const footer = $('footer'); footer.replaceChildren();
     if (tabName === 'Rede') {
       if (editing) footer.append(actionButton('Salvar', save, 'primary'), actionButton('Cancelar', cancel), actionButton('Recarregar opções', refreshDashboard));
@@ -792,7 +849,7 @@
     list.forEach((c, i) => { const o = make('option','',`Equipamento ${i + 1} · ${text(c.querySelector('ion-tab-group')?.previousElementSibling).slice(0,80)}`); o.value = String(i); picker.append(o); });
     picker.hidden = list.length < 2;
     if (card?.isConnected && route === location.hash && editing && nativeEditing()) { picker.value = String(list.indexOf(card)); render(); return; }
-    if (card !== list[0] || route !== location.hash) generatedPasswords.clear();
+    if (card !== list[0] || route !== location.hash) {generatedPasswords.clear();savedNetwork=null;editBaseline=null;reviewRequested=false;}
     card = list[0]; route = location.hash; editing = false; changed = false;
     if (!card) { $('.context').textContent = `Atendimento ${route.split('/').pop()}`; $('nav').replaceChildren(); $('.body').replaceChildren(); $('footer').replaceChildren(); note('Não localizei as abas dos equipamentos nesta tela. Aguarde o atendimento carregar e abra o painel novamente.'); return; }
     if (nativeEditing()) { tabName = 'Rede'; note('Há edição na tela original. Conclua ou cancele antes de editar pelo painel.'); render(); return; }
@@ -808,9 +865,9 @@
   $('.refresh-panel').addEventListener('click',()=>void refreshDashboard());
   $('.equipment').addEventListener('change', () => {
     if (editing || nativeEditing()) { $('.equipment').value = String(cards().indexOf(card)); note('Salve ou cancele antes de trocar de equipamento.'); return; }
-    generatedPasswords.clear(); autoPending=false;autoReport='';card = cards()[Number($('.equipment').value)]; void run(() => switchTab(technology() === 'FWA' ? 'CPE' : 'ONU'));
+    generatedPasswords.clear(); savedNetwork=null;editBaseline=null;reviewRequested=false;autoPending=false;autoReport='';card = cards()[Number($('.equipment').value)]; void run(() => switchTab(technology() === 'FWA' ? 'CPE' : 'ONU'));
   });
-  window.addEventListener('hashchange', () => { minimize(); card = null; editing = false; changed = false; options.clear(); generatedPasswords.clear();autoPending=false;autoReport='';$('.context').textContent = ''; $('nav').replaceChildren(); $('.body').replaceChildren(); $('footer').replaceChildren(); });
+  window.addEventListener('hashchange', () => { minimize(); savedNetwork=null;editBaseline=null;reviewRequested=false;card = null; editing = false; changed = false; options.clear(); generatedPasswords.clear();autoPending=false;autoReport='';$('.context').textContent = ''; $('nav').replaceChildren(); $('.body').replaceChildren(); $('footer').replaceChildren(); });
   document.addEventListener('keydown', e => { if (e.key === 'Escape') minimize(); });
   new MutationObserver(records => {
     syncDialogs();

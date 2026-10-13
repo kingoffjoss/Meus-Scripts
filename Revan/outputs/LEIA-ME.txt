@@ -1,4 +1,4 @@
-MINIDASHBOARD REVAN — VERSÃO 4.4.1
+MINIDASHBOARD REVAN — VERSÃO 4.5.0
 
 INSTALAR / ATUALIZAR FAVORITO
 Importe revan-favoritos.html no gerenciador de favoritos do Chrome ou Edge.
@@ -6,7 +6,7 @@ Mova ⚙ Revan — Equipamentos para a barra e remova o favorito antigo.
 Outra opção: abra instalar-favorito-revan.html no navegador e arraste o botão azul para a barra.
 Abra um atendimento e clique no favorito. Ele reconhece os nomes curtos e longos das abas.
 Se a versão antiga tiver uma edição em andamento, salve ou cancele antes de atualizar.
-O código está embutido no favorito, sem hospedagem ou envio a serviços externos.
+O favorito principal busca o código atual no GitHub a cada clique. Para operar sem carregamento remoto, use instalar-favorito-revan-offline.html. Nenhum dado do atendimento é enviado ao GitHub.
 
 RECUPERAR PAINEL
 O botão ↻ ao lado de minimizar relê a tela do Revan e recupera os controles.
