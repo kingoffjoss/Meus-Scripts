@@ -1,0 +1,23 @@
+# Meu Ponto
+
+Painel flutuante glass para o Meu RH da Brisanet, carregado por um favorito fixo.
+
+## Instalar
+
+Abra instalar.html e arraste o botão para a barra de favoritos, ou copie favorito.txt inteiro para o endereço de um favorito chamado **✦ Meu Ponto ↗**. Desative o userscript anterior.
+
+## Atualizações
+
+O favorito carrega painel.js da branch main deste repositório a cada abertura em uma página sem painel. A URL do favorito permanece igual quando painel.js muda. Recarregue a página e clique no favorito para carregar uma nova versão; painéis em execução não são substituídos. Pode haver atraso de propagação do GitHub.
+
+## Uso
+
+Começa pausado e em simulação. Testar em 1 minuto registra o disparo e procura o controle sem clicar nele. Selecione dias e horários locais; para o modo real, desmarque Simulação e ative o agendamento. Uma tentativa por horário/dia, sem confirmação automática de diálogos. Confira as batidas no próprio Meu RH.
+
+O navegador deve ficar aberto, com uma única aba ativa, e o computador acordado. Suspensão detectada pausa o agendamento. O clique neutro opcional a cada cinco minutos não garante evitar logout pelo servidor.
+
+## Privacidade e limitações
+
+Somente código e instruções são publicados. Horários e histórico ficam no armazenamento local do navegador. O carregador busca código público do GitHub sem cookies nem cabeçalho Referer; não envia dados do Meu RH. O navegador precisa permitir bookmarklets, acesso ao domínio raw.githubusercontent.com e execução do código recebido. Não há tentativa de contornar políticas de segurança.
+
+O teste de um minuto passou no Meu RH sem bater ponto. O duplo clique real ainda não foi validado. A lógica passou em 14 verificações locais; isso não comprova aceitação do registro pelo servidor.
