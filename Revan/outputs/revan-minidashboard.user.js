@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Revan — Minidashboard de equipamentos
 // @namespace    local.revan.minidashboard
-// @version      4.11.0
+// @version      4.11.1
 // @updateURL    https://raw.githubusercontent.com/kingoffjoss/Meus-Scripts/main/Revan/outputs/revan-minidashboard.user.js
 // @downloadURL  https://raw.githubusercontent.com/kingoffjoss/Meus-Scripts/main/Revan/outputs/revan-minidashboard.user.js
 // @description  Campos próprios e ações integradas aos controles originais do Revan.
@@ -20,7 +20,7 @@
   });
   const root = document.createElement('section');
   root.id = 'rv-mini';
-  root.dataset.version = '4.11.0';
+  root.dataset.version = '4.11.1';
   root.innerHTML = `<button class="launch" aria-expanded="false"><span class="launch-icon">◈</span> Equipamentos <span class="launch-dot"></span></button><div class="panel" hidden><header><strong><span class="brand-icon">◈</span> Revan <small>REDE & CONEXÃO</small></strong><button class="close" aria-label="Minimizar" title="Minimizar para botão">−</button></header><div class="context"></div><select class="equipment" aria-label="Equipamento"></select><nav></nav><p class="status" role="status"></p><div class="body"></div><footer></footer></div>`;
   const refreshButton=document.createElement('button');refreshButton.className='refresh-panel';refreshButton.type='button';refreshButton.textContent='↻';refreshButton.setAttribute('aria-label','Atualizar painel');refreshButton.title='Atualizar painel e recuperar os controles';
   root.querySelector('header').insertBefore(refreshButton,root.querySelector('.close'));
@@ -923,7 +923,7 @@
   const isDashboard=()=>/^#\/yoda\/dashboard(?:[/?]|$)/.test(location.hash);
   const attendanceID=()=>location.hash.match(/^#\/yoda\/attendance\/(\d+)(?:[/?]|$)/)?.[1]||'';
   let queue={active:false,current:'',pending:[],completed:[],selected:new Set(),message:'Selecione os chamados que deseja atender.',seenWorking:false};
-  let queueSearch='',queueOpening=false,queueRestoreOpen=null,queueStartTimer=null,queueTickBusy=false,queueReadBusy=false,queueIntent=null;
+  let queueSearch='',queueOpening=false,queueRestoreOpen=null,queueStartTimer=null,queueTickBusy=false,queueReadBusy=false,queueIntent=null,queueReturnWait=0;
   const queueCache=new Map();
   function queueRows(){
     if(!isDashboard())return [];
@@ -1030,16 +1030,25 @@
         const fresh=notices.filter(message=>!queueIntent?.before.has(message)).join('\n');
         const confirmedNotice=queueIntent&&queueIntent.id===queue.current&&Date.now()-queueIntent.time<20000&&/(?:chamado|atendimento)[^\n]{0,100}(?:encerrad|finalizad|conclu[ií]d|fechad)|(?:encerrad|finalizad|conclu[ií]d|fechad)[^\n]{0,80}(?:sucesso)/i.test(fresh)&&!/erro|falh|não foi|nao foi/i.test(fresh);
         if(queueClosed()||(queue.seenWorking&&confirmedNotice&&(id===queue.current||isDashboard()))){
-          queue.completed.push(queue.current);queue.selected.delete(queue.current);queue.pending=queue.pending.filter(x=>x!==queue.current);queue.current='';queueIntent=null;queue.message='Encerramento confirmado. Preparando o próximo selecionado…';location.hash='#/yoda/dashboard';return;
+          queue.completed.push(queue.current);queue.selected.delete(queue.current);queue.pending=queue.pending.filter(x=>x!==queue.current);queue.current='';queueIntent=null;queueReturnWait=0;queue.message='Encerramento confirmado. Preparando o próximo selecionado…';location.hash='#/yoda/dashboard';return;
         }
-        if(!queueOpening&&id!==queue.current){queue.active=false;queue.message=`Fila pausada: saímos de #${queue.current} sem confirmação de encerramento. Nenhum outro chamado foi iniciado.`;renderQueue();}
+        if(!queueOpening&&id!==queue.current){
+          if(isDashboard()&&queueIntent?.id===queue.current&&Date.now()-queueIntent.time<20000){if(!queueReturnWait)queueReturnWait=Date.now();if(Date.now()-queueReturnWait<8000){queue.message='Aguardando a confirmação de encerramento do Revan…';return;}}
+          queue.active=false;queueReturnWait=0;queue.message=`Fila pausada: saímos de #${queue.current} sem confirmação de encerramento. Nenhum outro chamado foi iniciado.`;renderQueue();
+        }else queueReturnWait=0;
       }else if(queue.active)await queueNext();
     }finally{queueTickBusy=false;}
   }
   document.addEventListener('click',event=>{
     if(!queue.active||!queue.current||attendanceID()!==queue.current||root.contains(event.target))return;
-    const control=event.target.closest('button,[role="button"],.action-item');if(!control)return;
-    if(/^(encerrar|finalizar|concluir|fechar)( chamado| atendimento)?$/i.test(text(control)))queueIntent={id:queue.current,time:Date.now(),before:new Set(all(document,'.ant-message-notice-content,.ant-notification-notice,[role="alert"]').filter(e=>!root.contains(e)&&e.getClientRects().length).map(text))};
+    const control=event.target.closest('button,[role="button"],.action-item,nz-list-item.more-actions-list-item');if(!control)return;
+    const label=text(control),tagDialog=control.closest('[role="dialog"],.ant-modal-content');
+    const finishing=/^(encerrar|finalizar|fechar)( chamado| atendimento)?$/i.test(label);
+    const requiredTag=queueIntent?.id===queue.current&&/^concluir$/i.test(label)&&tagDialog&&/adicionar etiquetas/i.test(text(tagDialog));
+    if(finishing||requiredTag){
+      if(/^trabalhando$/i.test(text(document.querySelector('.custom-card__state-tag'))))queue.seenWorking=true;
+      queueReturnWait=0;queueIntent={id:queue.current,time:Date.now(),before:new Set(all(document,'.ant-message-notice-content,.ant-notification-notice,[role="alert"]').filter(e=>!root.contains(e)&&e.getClientRects().length).map(text))};
+    }else if(/^cancelar$/i.test(label)&&tagDialog)queueIntent=null;
   },true);
   const queueMonitor=setInterval(()=>{if(!root.isConnected){clearInterval(queueMonitor);restoreQueueOpen();return;}void queueTick();},700);
 

@@ -1,6 +1,6 @@
 # Revan — Equipamentos e rede
 
-Minidashboard flutuante para o Revan. Versão 4.11.0.
+Minidashboard flutuante para o Revan. Versão 4.11.1.
 
 ## Instalar o favorito
 
@@ -79,10 +79,11 @@ Na aba Etiquetar, Abrir chamado externo não exige etiqueta nem observação: am
 Ao marcar a caixa O cliente está ciente e confirma o agendamento na revisão final, o painel lê o dia e a janela e tenta copiar automaticamente a mensagem para a área de transferência. Basta Ctrl+V no destino desejado. A prévia usa está previsto e permanece pendente de confirmação, sem clicar em Confirmar. Após confirmação final manual e sucesso do Revan, o painel gera a versão confirmada na aba Etiquetar. O horário geral informado é 08:00 às 18:00. O painel não envia mensagem ao cliente.
 Se o navegador bloquear o acesso à área de transferência, um aviso aparece na revisão e a mensagem fica disponível na aba Etiquetar com botão de cópia manual.
 Validação simulada: externo com campos vazios; modo somente externo com etiqueta e observação preenchidas sem gravá-las; cópia ao marcar a caixa antes de Confirmar, texto de prévia, dados de manhã/tarde e cópia manual após confirmação simulada. Nenhuma confirmação final real foi executada.
-Rascunho de rede e execução separada — versão 4.11.0
+Rascunho de rede e execução separada — versão 4.11.1
 Editar abre temporariamente a edição nativa apenas para ler as opções disponíveis e a cancela automaticamente, sem alterar campos nem salvar. A partir daí, SSID, unificação, visibilidade, UPnP, energia, modo, largura, canal, geração de senha Wi-Fi e restauração de SSID são escolhas locais do dashboard. Salvar mostra a revisão; Confirmar salvar minimiza o painel, reabre a edição original, aplica as escolhas e aciona Salvar uma vez. Cancelar descarta o rascunho local.
 As opções são verificadas novamente durante a aplicação porque modo, largura e canal podem ter dependências específicas do equipamento. Combinação indisponível cancela a edição nativa sem salvar. Mudanças externas nas configurações bloqueiam a aplicação. Se uma geração de senha/comando ou um salvamento já foi enviado e não foi confirmado, o painel não tenta novamente automaticamente. A otimização de canal e o controle de energia podem ter confirmação própria no Revan e são executados somente depois da aplicação final, quando solicitados. As etapas não são uma transação única.
 Ativações, reconfiguração e outras ações de alteração exibidas no dispositivo agora são primeiro selecionadas localmente e só abrem o fluxo nativo após Executar ação. Cancelar seleção não envia comando. Consultas de sinal, spliter e gerência continuam disponíveis como consultas.
 Autenticação: Gerar nova senha e Novo e-mail/login também têm seleção e execução separadas. A senha PPPoE depende da confirmação original do Revan: o dashboard agora diferencia espera, falha e retorno de Senha gerada; captura a senha retornada na memória da página para cópia. A criação de login usa o ícone + que contém o evento nativo. Nenhuma API privada é utilizada.
 O favorito e o próprio script impedem substituir o widget enquanto existe rascunho local ou ação selecionada. Salve ou cancele antes de atualizar.
 Validação: testes simulados com dados fictícios cobrem rascunho sem mudanças nativas, seis seletores, SSID, switches, energia, geração/restauração adiadas, cancelamento local, revisão sem aplicação, aplicação final única, comandos selecionados, confirmação PPPoE manual, captura de senha fictícia e clique de criar login; combinação inválida, mudança externa, salvamento sem resposta e bloqueio de reenvio. Regressões de Etiquetar, chamado externo, mensagem de agendamento e favorito online também verificadas. No Revan real só houve inspeção da interface e navegação para a aba Rede: nenhuma configuração, ativação, reconfiguração nem geração de senha foi executada.
+
