@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Revan — Minidashboard de equipamentos
 // @namespace    local.revan.minidashboard
-// @version      4.10.0
+// @version      4.11.0
 // @updateURL    https://raw.githubusercontent.com/kingoffjoss/Meus-Scripts/main/Revan/outputs/revan-minidashboard.user.js
 // @downloadURL  https://raw.githubusercontent.com/kingoffjoss/Meus-Scripts/main/Revan/outputs/revan-minidashboard.user.js
 // @description  Campos próprios e ações integradas aos controles originais do Revan.
@@ -13,13 +13,14 @@
 (() => {
   'use strict';
   if(document.getElementById('rv-mini')?.dataset.draft==='true'){alert('Salve ou cancele o rascunho antes de atualizar o dashboard.');return;}
+  if(document.getElementById('rv-mini')?.dataset.queueRunning==='true'){alert('Pause a fila antes de atualizar o dashboard.');return;}
   document.getElementById('rv-mini')?.remove();
   document.querySelectorAll('style').forEach(style => {
     if (style.textContent.includes('#rv-mini')) style.remove();
   });
   const root = document.createElement('section');
   root.id = 'rv-mini';
-  root.dataset.version = '4.10.0';
+  root.dataset.version = '4.11.0';
   root.innerHTML = `<button class="launch" aria-expanded="false"><span class="launch-icon">◈</span> Equipamentos <span class="launch-dot"></span></button><div class="panel" hidden><header><strong><span class="brand-icon">◈</span> Revan <small>REDE & CONEXÃO</small></strong><button class="close" aria-label="Minimizar" title="Minimizar para botão">−</button></header><div class="context"></div><select class="equipment" aria-label="Equipamento"></select><nav></nav><p class="status" role="status"></p><div class="body"></div><footer></footer></div>`;
   const refreshButton=document.createElement('button');refreshButton.className='refresh-panel';refreshButton.type='button';refreshButton.textContent='↻';refreshButton.setAttribute('aria-label','Atualizar painel');refreshButton.title='Atualizar painel e recuperar os controles';
   root.querySelector('header').insertBefore(refreshButton,root.querySelector('.close'));
@@ -105,6 +106,7 @@
   };
   let operationEpoch=0;
   css.textContent += '#rv-mini .command-state,#rv-mini .save-review{padding:10px;border-radius:12px;background:#ffffffb8;margin:5px 0;display:grid;gap:6px}#rv-mini .command-state.good,#rv-mini .diagnostic-good{border-left:3px solid #10b981;background:#10b98114}#rv-mini .command-state.bad,#rv-mini .diagnostic-bad{border-left:3px solid #f43f5e;background:#f43f5e14}#rv-mini .command-state.pending{border-left:3px solid #f59e0b}#rv-mini .save-review{border:1px solid #8b5cf6;color:#293765;font-size:11px;grid-column:1/-1}#rv-mini .client-message{grid-column:1/-1;background:#ffffffaa;border-radius:12px;padding:10px}#rv-mini textarea{width:100%;resize:vertical;font:12px system-ui;border:1px solid #cbd7e7;border-radius:8px;padding:8px;margin:8px 0}#rv-mini .diagnostic-hint{display:block;padding:6px 12px;color:#52617a}';
+  css.textContent += "#rv-mini .panel{height:auto;max-height:min(720px,calc(100dvh - 24px))}\n#rv-mini .body{max-height:calc(100dvh - 255px);min-height:100px;font-size:12px}\n#rv-mini .context{font-size:11px}#rv-mini .device-info span,#rv-mini small{font-size:11px}#rv-mini .device-info strong{font-size:12px}\n#rv-mini .command-state,#rv-mini .command-state.pending{background:#302c214d;color:#f7dba7;border:1px solid #6a542d;border-left:3px solid #e0ad4d;border-radius:9px;padding:9px;margin-top:7px;display:grid;gap:5px}\n#rv-mini .command-state small{color:#d1c2a5}#rv-mini .command-state.good{background:#123e374f;color:#81efc7;border-color:#28675a}#rv-mini .command-state.good small{color:#a6dacc}#rv-mini .command-state.bad{background:#49233366;color:#ffb6c7;border-color:#804459}#rv-mini .command-state.bad small{color:#e8b6c5}\n#rv-mini .save-review{grid-column:auto;background:#32291e;color:#ffdc9c;border-color:#7b5f31}#rv-mini .save-review small{color:#e8c89d}\n#rv-mini .client-message{grid-column:auto;background:#102238;color:#bed0e9;border:1px solid #29435e}#rv-mini .client-message summary{background:transparent;color:#bed0e9}#rv-mini textarea{background:#08192b;color:#e6f1ff;border-color:#34516e;resize:vertical}\n#rv-mini .shared-ssid{padding:0;background:transparent;border:0;display:flex;flex-wrap:wrap;gap:6px}#rv-mini .shared-ssid>label{width:100%;display:grid;gap:6px}#rv-mini .ssid-input-wrap{display:flex;align-items:center;border:1px solid #304c70;border-radius:8px;background:#071727b8;overflow:hidden}#rv-mini .ssid-prefix{padding-left:9px;color:#a7c9e6;white-space:nowrap}#rv-mini .ssid-input-wrap input{border:0;background:transparent;padding-left:2px}#rv-mini .password-reading{width:100%;display:flex;justify-content:space-between;gap:8px;font-size:11px;color:#a9c2dc;background:#0c1d30;padding:7px 9px;border-radius:7px}\n#rv-mini.queue-view .panel{grid-template-columns:1fr}#rv-mini.queue-view nav{display:none}#rv-mini.queue-view .body,#rv-mini.queue-view .status,#rv-mini.queue-view footer{grid-column:1}#rv-mini.queue-view .body{min-height:180px}\n#rv-mini .queue-count{font-size:11px;color:#71deec}#rv-mini .queue-list{display:flex;flex-direction:column;gap:7px}#rv-mini .queue-item{display:flex;align-items:center;gap:10px;padding:10px;background:#10283c;border:1px solid #29465f;border-radius:10px;cursor:pointer}#rv-mini .queue-item:has(input:checked){background:#0a3649;border-color:#00abc8}#rv-mini .queue-item:has(input:disabled){cursor:default}#rv-mini .queue-info{display:grid;gap:4px;min-width:0}#rv-mini .queue-info strong{font-size:12px;overflow-wrap:anywhere;color:#e5f1ff}#rv-mini .queue-info small{color:#b4c8dc}#rv-mini .queue-unavailable{color:#e3bb7a!important}\n#rv-mini .queue-running{display:flex;align-items:center;justify-content:space-between;gap:8px;width:100%;padding:8px;border:1px solid #27576c;border-radius:8px;color:#81e4ef;font-size:11px;background:#0c3041}\n#rv-mini .queue-item input[type=checkbox]{width:19px;height:19px;border-radius:5px;background:#0a192d;border-color:#51708e}\n#rv-mini .queue-item input[type=checkbox]:before{content:'';width:auto;height:auto;inset:0;background:none;border-radius:0;transform:none}\n#rv-mini .queue-item input[type=checkbox]:checked{background:#00cde5;border-color:#00dff5}\n#rv-mini .queue-item input[type=checkbox]:checked:before{content:'✓';display:grid;place-items:center;color:#06283a;font-weight:800;transform:none;background:none}\n@media(max-width:460px){#rv-mini .body{max-height:calc(100dvh - 270px)}#rv-mini.queue-view .body{max-height:calc(100dvh - 215px)}}\n";
   const interrupted=()=>Object.assign(new Error('Operação interrompida para atualizar o painel.'),{code:'RV_REFRESH'});
   const pause = ms => {const token=operationEpoch;return new Promise((resolve,reject)=>setTimeout(()=>token===operationEpoch?resolve():reject(interrupted()),ms));};
   let card = null, opened = false, editing = false, busy = false, tabName = 'Rede', route = location.hash;
@@ -124,8 +126,9 @@
     return all(document,'.ant-message-notice-content,.ant-notification-notice,[role="alert"],.toast-message').filter(e=>!root.contains(e)&&e.getClientRects().length).map(e=>text(e)).join('\n');
   }
   function monitorCommand(name) {
-    if(commandWatch)clearInterval(commandWatch);
-    const entry={name,state:'Executando',detail:'Aguardando resposta do Revan.',started:Date.now(),route:location.hash,before:commandFeedback()};commandHistory.unshift(entry);commandHistory.splice(5);
+    if(commandWatch){clearInterval(commandWatch);const previous=commandHistory.find(e=>e.state==='Executando');if(previous){previous.state='Sem confirmação';previous.detail='Acompanhamento anterior encerrado ao iniciar outra consulta. Confira o retorno no Revan.';}}
+
+    const entry={tab:tabName,name,state:'Executando',detail:'Aguardando resposta do Revan.',started:Date.now(),route:location.hash,before:commandFeedback()};commandHistory.unshift(entry);commandHistory.splice(5);
     commandWatch=setInterval(()=>{
       if(!root.isConnected||entry.route!==location.hash){clearInterval(commandWatch);commandWatch=null;return;}
       const feedback=commandFeedback();
@@ -140,9 +143,9 @@
     },700);
   }
   function renderCommandHistory(body) {
-    if(!commandHistory.length)return;
+    const relevant=commandHistory.filter(e=>e.route===location.hash&&(!e.tab||e.tab===tabName));if(!relevant.length)return;
     const block=make('div','command-section');block.append(make('strong','','Últimas ações'));
-    for(const e of commandHistory.filter(e=>e.route===location.hash)){const item=make('div',`command-state ${e.state==='Falhou'?'bad':e.state==='Concluído'?'good':'pending'}`);item.append(make('strong','',`${e.state} · ${e.name}`),make('small','',e.detail));block.append(item);}
+    for(const e of relevant){const item=make('div',`command-state ${e.state==='Falhou'?'bad':e.state==='Concluído'?'good':'pending'}`);item.append(make('strong','',`${e.state} · ${e.name}`),make('small','',e.detail));block.append(item);}
     body.append(block);
   }
   let autoPending=false, autoReport='';
@@ -291,7 +294,7 @@
   function networkSignature(){return JSON.stringify(networkSnapshot());}
   function captureNetworkPlan(baseline){
     const fields=all(card,'ion-select').map((e,index)=>({index,band:headingFor(e),label:networkLabel(e),value:selectedValue(e),choices:[...new Set([selectedValue(e),...(options.get(e)||[])])],available:options.has(e)})).filter(f=>['Modo do Wi-Fi','Largura de banda','Canal'].includes(f.label));
-    const ssids=all(card,'input[placeholder="Nome da rede Wi-Fi"]').map((e,index)=>({index,band:headingFor(e),value:e.value,max:e.maxLength>0?e.maxLength:32,generate:false,restore:false}));
+    const ssids=all(card,'input[placeholder="Nome da rede Wi-Fi"]').map((e,index)=>({index,band:headingFor(e),value:e.value,max:e.maxLength>0?e.maxLength:32,generate:false,restore:false,prefix:text(e.closest('.fiber-network__ssid-wrap')?.querySelector('.fiber-network__ssid-prefix')),hasPassword:Boolean(all(card,'input[placeholder="Senha da rede"]')[index]?.value)}));
     const switches={};for(const e of all(card,'ion-switch')){const title=networkSwitchTitle(e);if(title)switches[title]=e.querySelector('button')?.classList.contains('ion-switch--active')||false;}
     return {route,card,baseline,fields,ssids,switches,power:nativeButton('Habilitar rede')?false:nativeButton('Desabilitar rede')?true:null,powerChanged:false,optimize:false,state:'draft'};
   }
@@ -389,11 +392,12 @@
     const groups=new Map();function group(band){if(!groups.has(band)){const e=make('div','network-band');e.append(make('h3','band',band));groups.set(band,e);body.append(e);}return groups.get(band);}
     plan.ssids.forEach((item,index)=>{
       if(plan.switches['Rede unificada']&&index>0)return;
-      const field=make('div','field ssid-field'),label=make('label','','Nome da rede Wi-Fi (SSID)'),input=make('input');input.value=item.value;input.maxLength=item.max;input.dataset.lock=String(readonly);input.addEventListener('input',()=>{item.value=input.value;item.restore=false;draftChanged();});label.append(input);field.append(label);
+      const field=make('div','field ssid-field'),label=make('label','','Nome da rede Wi-Fi (SSID)'),input=make('input');input.value=item.value;input.maxLength=item.max;input.dataset.lock=String(readonly);input.addEventListener('input',()=>{item.value=input.value;item.restore=false;draftChanged();});if(item.prefix){const wrap=make('div','ssid-input-wrap');wrap.append(make('span','ssid-prefix',item.prefix),input);label.append(wrap);}else label.append(input);field.append(label);
+      const secret=make('div','password-reading');secret.append(make('span','','Senha da rede'),make('span','',item.hasPassword?'••••••••':'Não disponibilizada pelo Revan'));field.append(secret);
       field.append(actionButton(item.generate?'Cancelar geração de senha':'Gerar senha ao salvar',()=>{item.generate=!item.generate;draftChanged();},'',readonly),actionButton(item.restore?'Cancelar restauração do SSID':'Restaurar SSID ao salvar',()=>{item.restore=!item.restore;draftChanged();},'',readonly));
       if(item.generate)field.append(make('small','','A senha será gerada pelo Revan somente durante a aplicação após Confirmar salvar.'));
       if(item.restore)field.append(make('small','','O nome padrão será solicitado ao Revan somente ao aplicar.'));
-      group(item.band).append(field);
+      if(item.band==='Rede unificada'){field.classList.add('shared-ssid');body.append(field);}else group(item.band).append(field);
     });
     for(const f of plan.fields){const field=make('div','field select-field'),label=make('label','',f.label),select=make('select');for(const value of f.choices){const o=make('option','',value);o.value=value;select.append(o);}select.value=f.value;select.dataset.lock=String(readonly||!f.available);select.addEventListener('change',()=>{f.value=select.value;draftChanged();});label.append(select);field.append(label);group(f.band).append(field);}
     const bands=[...groups.keys()];
@@ -408,6 +412,7 @@
   }
 
   async function refreshDashboard() {
+    if(isDashboard()){queueRows();renderQueue();return;}
     const token=++operationEpoch;busy=true;lock();
     try{
       if(networkDraft&&card?.isConnected&&route===location.hash){if(networkDraft.state==='applying')networkDraft.state='uncertain';note(networkDraft.state==='draft'?'Rascunho local preservado. Nenhuma configuração foi reenviada.':'Aplicação interrompida. Confira o Revan antes de repetir.');return;}
@@ -867,6 +872,8 @@
     body.append(make('small', '', 'Estas ações alteram o login de autenticação do contrato. O e-mail mostrado é o usuário de acesso, não necessariamente o e-mail de contato.'));
   }
   function render() {
+    if(isDashboard()){renderQueue();return;}
+    root.classList.remove('queue-view');
     if (!card?.isConnected) return;
     if(editing&&!networkDraft&&!nativeEditing()&&nativeButton('Editar')){editing=false;changed=false;options.clear();generatedPasswords.clear();}
     const ips = fixedIPs();
@@ -908,15 +915,142 @@
       }
       else footer.append(actionButton('Editar', startEdit, 'primary', !nativeButton('Editar')));
     }
+    if(queue.current||queue.active)footer.append(queueSummary());
     lock();
     restorePositions();
   }
+  // The queue uses rendered native controls only. It never closes a ticket.
+  const isDashboard=()=>/^#\/yoda\/dashboard(?:[/?]|$)/.test(location.hash);
+  const attendanceID=()=>location.hash.match(/^#\/yoda\/attendance\/(\d+)(?:[/?]|$)/)?.[1]||'';
+  let queue={active:false,current:'',pending:[],completed:[],selected:new Set(),message:'Selecione os chamados que deseja atender.',seenWorking:false};
+  let queueSearch='',queueOpening=false,queueRestoreOpen=null,queueStartTimer=null,queueTickBusy=false,queueReadBusy=false,queueIntent=null;
+  const queueCache=new Map();
+  function queueRows(){
+    if(!isDashboard())return [];
+    const active=all(document,'[role="tab"]').find(e=>!root.contains(e)&&(e.getAttribute('aria-selected')==='true'||e.classList.contains('ant-tabs-tab-active')));
+    if(active&&normalized(text(active))!=='meus chamados')return [];
+    const hosts=all(document,'brisanet-call-list').filter(e=>!root.contains(e)&&e.getClientRects().length);
+    return hosts.flatMap(host=>all(host,'li.list-item').map(element=>{
+      const primary=element.querySelector('.primary-text'),id=text(primary).match(/#(\d+)/)?.[1];if(!id)return null;
+      const state=text(primary.querySelector('nz-tag')),name=text(element.querySelector('.secondary-text'));
+      const start=element.querySelector('button.init-button,button.init-button-dense');
+      const eligible=/^aguardando$/i.test(state)?Boolean(start&&!start.disabled):/^trabalhando$/i.test(state);
+      const item={id,name,state,labels:all(element,'.label-list nz-tag').map(text).join(' · '),eligible,element,start,primary};
+      queueCache.set(id,{id,name,state,labels:item.labels,eligible});return item;
+    }).filter(Boolean)).filter((r,i,a)=>a.findIndex(x=>x.id===r.id)===i);
+  }
+  function queueControl(name,fn,primary=false,disabled=false){
+    const b=make('button',primary?'primary':'',name);b.type='button';b.disabled=disabled;b.dataset.lock=String(disabled);
+    b.addEventListener('click',()=>Promise.resolve().then(fn).catch(e=>{queue.active=false;queue.message=e.message;queueOpening=false;restoreQueueOpen();renderQueue();}));return b;
+  }
+  function restoreQueueOpen(){if(queueRestoreOpen){queueRestoreOpen();queueRestoreOpen=null;}clearTimeout(queueStartTimer);}
+  function pauseQueue(){queue.active=false;root.dataset.queueRunning='false';queue.message=queue.current?'Fila pausada. Conclua o chamado atual; use Retomar para acompanhar novamente.':'Fila pausada. Nenhum outro chamado será iniciado.';if(isDashboard())renderQueue();else if(opened&&card?.isConnected)render();}
+  function queueSummary(){
+    const strip=make('div','queue-running');strip.append(make('span','',`Fila: ${queue.current?'#'+queue.current:'aguardando'} · ${queue.pending.filter(id=>id!==queue.current).length} na sequência`),queueControl(queue.active?'Pausar fila':'Retomar fila',()=>{if(queue.active)pauseQueue();else{queue.active=true;queue.message='Fila retomada.';if(queue.current&&isDashboard())location.hash='#/yoda/attendance/'+queue.current;else void queueTick();}},false));return strip;
+  }
+  function renderQueue(){
+    if(!isDashboard()||!opened)return;
+    root.classList.add('queue-view');$('.equipment').hidden=true;$('nav').replaceChildren();
+    $('.context').textContent='Meus chamados · fila de atendimento';$('.status').textContent=queue.message;
+    const body=$('.body');body.classList.remove('network-layout');body.replaceChildren(make('h2','section-title','Fila de chamados'));
+    const controls=make('div','actions');controls.append(queueControl(queueReadBusy?'Lendo a lista…':'Carregar toda a lista',readAllQueueRows,false,queueReadBusy||queue.active),queueControl('Atualizar leitura',()=>{queueRows();renderQueue();},false,queueReadBusy));body.append(controls);
+    body.append(make('small','','A leitura inclui os itens carregados em Meus chamados. “Carregar toda a lista” percorre a rolagem nativa. Os filtros do Revan continuam valendo.'));
+    const search=make('input');search.placeholder='Pesquisar nome, número, estado ou etiqueta';search.value=queueSearch;search.setAttribute('aria-label','Pesquisar chamados');body.append(search);
+    const count=make('div','queue-count'),list=make('div','queue-list');body.append(count,list);
+    const pick=make('div','actions');body.insertBefore(pick,count);
+    function draw(){
+      const native=queueRows(),rows=[...queueCache.values()];const query=normalized(queueSearch);const shown=rows.filter(r=>normalized([r.id,r.name,r.state,r.labels].join(' ')).includes(query));
+      count.textContent=`${rows.length} lidos · ${queue.selected.size} selecionados · ${queue.completed.length} concluídos`;
+      list.replaceChildren();
+      for(const item of shown){const row=make('label','queue-item'),check=make('input');check.type='checkbox';check.checked=queue.selected.has(item.id);check.disabled=!item.eligible||queue.active||Boolean(queue.current)||queueReadBusy;check.dataset.lock=String(check.disabled);check.setAttribute('aria-label','Selecionar chamado '+item.id);
+        check.addEventListener('change',()=>{if(check.checked)queue.selected.add(item.id);else queue.selected.delete(item.id);draw();updateFooter();});
+        const info=make('span','queue-info');info.append(make('strong','',`#${item.id} · ${item.name}`),make('small','',item.state+(item.labels?' · '+item.labels:'')));
+        if(!item.eligible)info.append(make('small','queue-unavailable','Sem botão Iniciar: continue este estado pelo Revan.'));
+        row.append(check,info);list.append(row);
+      }
+      if(!shown.length)list.append(make('small','','Nenhum chamado encontrado nesta leitura.'));
+      pick.replaceChildren(queueControl('Selecionar filtrados',()=>{shown.filter(r=>r.eligible).forEach(r=>queue.selected.add(r.id));draw();updateFooter();},false,queue.active||Boolean(queue.current)||queueReadBusy),queueControl('Limpar seleção',()=>{queue.selected.clear();draw();updateFooter();},false,queue.active||Boolean(queue.current)||queueReadBusy));
+    }
+    function updateFooter(){
+      const footer=$('footer');footer.replaceChildren();
+      if(queue.current||queue.active){footer.append(queueSummary(),queueControl('Parar fila',()=>{pauseQueue();queue.current='';queue.pending=[];queue.message='Fila interrompida. O atendimento permanece como está no Revan.';renderQueue();}));}
+      else footer.append(queueControl(`Abrir selecionados (${queue.selected.size})`,startQueue,true,!queue.selected.size||queueReadBusy));
+    }
+    search.addEventListener('input',()=>{queueSearch=search.value;draw();restorePositions();});draw();updateFooter();restorePositions();
+  }
+  async function readAllQueueRows(){
+    if(queueReadBusy)return;queueReadBusy=true;queue.message='Lendo os chamados pela rolagem da lista…';renderQueue();
+    let stopped=false;try{
+      let unchanged=0,lastCount=0;
+      for(let pass=0;pass<100&&root.isConnected&&isDashboard();pass++){
+        const rows=queueRows(),first=rows[0]?.element;if(!first)break;
+        let scroll=first.parentElement;while(scroll&&scroll!==document.body&&!(scroll.scrollHeight>scroll.clientHeight+5&&/auto|scroll/.test(getComputedStyle(scroll).overflowY)))scroll=scroll.parentElement;
+        if(!scroll||scroll===document.body)break;
+        scroll.scrollTop=scroll.scrollHeight;scroll.dispatchEvent(new Event('scroll',{bubbles:true}));await new Promise(r=>setTimeout(r,1100));
+        queueRows();const total=queueCache.size;unchanged=total===lastCount?unchanged+1:0;lastCount=total;
+        const loading=all(scroll.parentElement||scroll,'.ant-spin-spinning,.loading').some(e=>e.getClientRects().length);
+        if(unchanged>=4&&!loading){stopped=true;break;}
+      }
+      queue.message=`${queueCache.size} chamados lidos${stopped?' até o fim da rolagem detectada':'. Confira se há mais resultados na lista'}.`;
+    }finally{queueReadBusy=false;renderQueue();}
+  }
+  function startQueue(){
+    if(queue.active||queue.current)return;
+    const visible=queueRows(),ids=[...queue.selected];if(!ids.length)return;
+    if(ids.some(id=>!queueCache.get(id)?.eligible))throw new Error('Revise a seleção: há um chamado indisponível.');
+    queue.pending=ids;queue.completed=[];queue.current='';queue.active=true;queue.seenWorking=false;queue.message=`Fila iniciada com ${ids.length} chamados. Um por vez.`;renderQueue();void queueTick();
+  }
+  async function queueNext(){
+    if(!queue.active||queue.current||queueOpening||!isDashboard()||networkDraft||pendingAction||busy)return;
+    if(!queue.pending.length){queue.active=false;queue.message='Fila concluída. Todos os chamados selecionados foram atendidos.';renderQueue();return;}
+    const id=queue.pending[0];let item=queueRows().find(r=>r.id===id);
+    if(!item){await readAllQueueRows();if(!queue.active||!isDashboard())return;item=queueRows().find(r=>r.id===id);if(!item){queue.active=false;queue.message=`#${id} não está mais na lista disponível. Fila pausada; confira os filtros e a situação do chamado.`;renderQueue();return;}}
+    if(!item.eligible){queue.active=false;queue.message=`#${id} mudou para ${item.state||'um estado indisponível'}. Fila pausada para conferência.`;renderQueue();return;}
+    queueOpening=true;queue.current=id;queue.seenWorking=false;queue.message=`Iniciando #${id} pelo controle do Revan…`;root.dataset.queueRunning='true';renderQueue();
+    // Reuse this SPA tab when this one native control opens the selected attendance.
+    // All unrelated calls retain the browser's original behavior.
+    const original=window.open;
+    const redirected=function(url,...args){let target;try{target=new URL(String(url),location.href);}catch{}if(target?.origin===location.origin&&target.hash===`#/yoda/attendance/${id}`){restoreQueueOpen();queueOpening=false;location.hash=target.hash;return window;}return original.call(window,url,...args);};
+    window.open=redirected;queueRestoreOpen=()=>{if(window.open===redirected)window.open=original;};
+    queueStartTimer=setTimeout(()=>{restoreQueueOpen();queueOpening=false;if(attendanceID()!==id){queue.active=false;queue.message=`Não houve confirmação de abertura de #${id}. Confira a tela do Revan antes de retomar; não repetimos o início automaticamente.`;renderQueue();}},15000);
+    try{if(item.start&&!item.start.disabled)item.start.click();else item.primary.click();}catch(e){restoreQueueOpen();queueOpening=false;queue.active=false;queue.message=e.message;renderQueue();}
+  }
+  function queueClosed(){
+    if(!queue.active||!queue.current||!queue.seenWorking)return false;
+    const state=text(document.querySelector('.custom-card__state-tag'));
+    return attendanceID()===queue.current&&/^(encerrad[oa]|finalizad[oa]|conclu[ií]d[oa]|fechad[oa])$/i.test(state);
+  }
+  async function queueTick(){
+    if(queueTickBusy||!root.isConnected)return;queueTickBusy=true;
+    try{
+      root.dataset.queueRunning=String(queue.active);
+      if(queue.active&&queue.current){
+        const id=attendanceID();if(id===queue.current){queueOpening=false;restoreQueueOpen();const state=text(document.querySelector('.custom-card__state-tag'));if(/^trabalhando$/i.test(state))queue.seenWorking=true;}
+        const notices=all(document,'.ant-message-notice-content,.ant-notification-notice,[role="alert"]').filter(e=>!root.contains(e)&&e.getClientRects().length).map(text);
+        const fresh=notices.filter(message=>!queueIntent?.before.has(message)).join('\n');
+        const confirmedNotice=queueIntent&&queueIntent.id===queue.current&&Date.now()-queueIntent.time<20000&&/(?:chamado|atendimento)[^\n]{0,100}(?:encerrad|finalizad|conclu[ií]d|fechad)|(?:encerrad|finalizad|conclu[ií]d|fechad)[^\n]{0,80}(?:sucesso)/i.test(fresh)&&!/erro|falh|não foi|nao foi/i.test(fresh);
+        if(queueClosed()||(queue.seenWorking&&confirmedNotice&&(id===queue.current||isDashboard()))){
+          queue.completed.push(queue.current);queue.selected.delete(queue.current);queue.pending=queue.pending.filter(x=>x!==queue.current);queue.current='';queueIntent=null;queue.message='Encerramento confirmado. Preparando o próximo selecionado…';location.hash='#/yoda/dashboard';return;
+        }
+        if(!queueOpening&&id!==queue.current){queue.active=false;queue.message=`Fila pausada: saímos de #${queue.current} sem confirmação de encerramento. Nenhum outro chamado foi iniciado.`;renderQueue();}
+      }else if(queue.active)await queueNext();
+    }finally{queueTickBusy=false;}
+  }
+  document.addEventListener('click',event=>{
+    if(!queue.active||!queue.current||attendanceID()!==queue.current||root.contains(event.target))return;
+    const control=event.target.closest('button,[role="button"],.action-item');if(!control)return;
+    if(/^(encerrar|finalizar|concluir|fechar)( chamado| atendimento)?$/i.test(text(control)))queueIntent={id:queue.current,time:Date.now(),before:new Set(all(document,'.ant-message-notice-content,.ant-notification-notice,[role="alert"]').filter(e=>!root.contains(e)&&e.getClientRects().length).map(text))};
+  },true);
+  const queueMonitor=setInterval(()=>{if(!root.isConnected){clearInterval(queueMonitor);restoreQueueOpen();return;}void queueTick();},700);
+
   async function open() {
     const anchor=root.getBoundingClientRect();
     opened = true; $('.panel').hidden = false; $('.launch').setAttribute('aria-expanded','true');
     $('.launch').hidden=true;
     if (!positions.widget) positions.widget={x:anchor.left,y:anchor.top};
     restorePositions();
+    if(isDashboard()){queueRows();renderQueue();return;}
+    root.classList.remove('queue-view');
     const list = cards(); const picker = $('.equipment'); picker.replaceChildren();
     list.forEach((c, i) => { const o = make('option','',`Equipamento ${i + 1} · ${text(c.querySelector('ion-tab-group')?.previousElementSibling).slice(0,80)}`); o.value = String(i); picker.append(o); });
     picker.hidden = list.length < 2;
@@ -943,6 +1077,7 @@
   document.addEventListener('keydown', e => { if (e.key === 'Escape') minimize(); });
   new MutationObserver(records => {
     syncDialogs();
+    if(isDashboard()&&opened&&!queueReadBusy&&records.some(r=>!root.contains(r.target)&&r.target.closest?.('brisanet-call-list'))){clearTimeout(timer);timer=setTimeout(()=>{if(!root.contains(document.activeElement)||document.activeElement.tagName!=='INPUT')renderQueue();},200);}
     const sections=[card,commandSection(),financialSection(),pageSection('RESULTADOS DOS TESTES','brisanet-config-report'),pageSection('AUTENTICAÇÃO','brisanet-auth-card')].filter(Boolean);
     if (!opened || busy || !card || !records.some(r => sections.some(section=>section.contains(r.target)))) return;
     clearTimeout(timer); timer = setTimeout(() => {
