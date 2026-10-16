@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Revan — Minidashboard de equipamentos
 // @namespace    local.revan.minidashboard
-// @version      4.11.1
+// @version      4.12.0
 // @updateURL    https://raw.githubusercontent.com/kingoffjoss/Meus-Scripts/main/Revan/outputs/revan-minidashboard.user.js
 // @downloadURL  https://raw.githubusercontent.com/kingoffjoss/Meus-Scripts/main/Revan/outputs/revan-minidashboard.user.js
 // @description  Campos próprios e ações integradas aos controles originais do Revan.
@@ -14,13 +14,17 @@
   'use strict';
   if(document.getElementById('rv-mini')?.dataset.draft==='true'){alert('Salve ou cancele o rascunho antes de atualizar o dashboard.');return;}
   if(document.getElementById('rv-mini')?.dataset.queueRunning==='true'){alert('Pause a fila antes de atualizar o dashboard.');return;}
+  const previousQueueWidget=document.getElementById('rv-mini');
+  let inheritedQueueHistory=[],inheritedQueueUnknown=0;
+  try{inheritedQueueHistory=JSON.parse(previousQueueWidget?.dataset.queueHistory||'[]').filter(item=>/^\d+$/.test(item.id)&&/^(encerrad[oa]|finalizad[oa]|conclu[ií]d[oa]|fechad[oa])$/i.test(item.state));}catch{}
+  inheritedQueueUnknown=Number(previousQueueWidget?.dataset.queuePreviousClosed)||Number(previousQueueWidget?.querySelector('.queue-count')?.textContent.match(/(\d+)\s+conclu[ií]dos/)?.[1])||0;
   document.getElementById('rv-mini')?.remove();
   document.querySelectorAll('style').forEach(style => {
     if (style.textContent.includes('#rv-mini')) style.remove();
   });
   const root = document.createElement('section');
   root.id = 'rv-mini';
-  root.dataset.version = '4.11.1';
+  root.dataset.version = '4.12.0';
   root.innerHTML = `<button class="launch" aria-expanded="false"><span class="launch-icon">◈</span> Equipamentos <span class="launch-dot"></span></button><div class="panel" hidden><header><strong><span class="brand-icon">◈</span> Revan <small>REDE & CONEXÃO</small></strong><button class="close" aria-label="Minimizar" title="Minimizar para botão">−</button></header><div class="context"></div><select class="equipment" aria-label="Equipamento"></select><nav></nav><p class="status" role="status"></p><div class="body"></div><footer></footer></div>`;
   const refreshButton=document.createElement('button');refreshButton.className='refresh-panel';refreshButton.type='button';refreshButton.textContent='↻';refreshButton.setAttribute('aria-label','Atualizar painel');refreshButton.title='Atualizar painel e recuperar os controles';
   root.querySelector('header').insertBefore(refreshButton,root.querySelector('.close'));
@@ -106,7 +110,7 @@
   };
   let operationEpoch=0;
   css.textContent += '#rv-mini .command-state,#rv-mini .save-review{padding:10px;border-radius:12px;background:#ffffffb8;margin:5px 0;display:grid;gap:6px}#rv-mini .command-state.good,#rv-mini .diagnostic-good{border-left:3px solid #10b981;background:#10b98114}#rv-mini .command-state.bad,#rv-mini .diagnostic-bad{border-left:3px solid #f43f5e;background:#f43f5e14}#rv-mini .command-state.pending{border-left:3px solid #f59e0b}#rv-mini .save-review{border:1px solid #8b5cf6;color:#293765;font-size:11px;grid-column:1/-1}#rv-mini .client-message{grid-column:1/-1;background:#ffffffaa;border-radius:12px;padding:10px}#rv-mini textarea{width:100%;resize:vertical;font:12px system-ui;border:1px solid #cbd7e7;border-radius:8px;padding:8px;margin:8px 0}#rv-mini .diagnostic-hint{display:block;padding:6px 12px;color:#52617a}';
-  css.textContent += "#rv-mini .panel{height:auto;max-height:min(720px,calc(100dvh - 24px))}\n#rv-mini .body{max-height:calc(100dvh - 255px);min-height:100px;font-size:12px}\n#rv-mini .context{font-size:11px}#rv-mini .device-info span,#rv-mini small{font-size:11px}#rv-mini .device-info strong{font-size:12px}\n#rv-mini .command-state,#rv-mini .command-state.pending{background:#302c214d;color:#f7dba7;border:1px solid #6a542d;border-left:3px solid #e0ad4d;border-radius:9px;padding:9px;margin-top:7px;display:grid;gap:5px}\n#rv-mini .command-state small{color:#d1c2a5}#rv-mini .command-state.good{background:#123e374f;color:#81efc7;border-color:#28675a}#rv-mini .command-state.good small{color:#a6dacc}#rv-mini .command-state.bad{background:#49233366;color:#ffb6c7;border-color:#804459}#rv-mini .command-state.bad small{color:#e8b6c5}\n#rv-mini .save-review{grid-column:auto;background:#32291e;color:#ffdc9c;border-color:#7b5f31}#rv-mini .save-review small{color:#e8c89d}\n#rv-mini .client-message{grid-column:auto;background:#102238;color:#bed0e9;border:1px solid #29435e}#rv-mini .client-message summary{background:transparent;color:#bed0e9}#rv-mini textarea{background:#08192b;color:#e6f1ff;border-color:#34516e;resize:vertical}\n#rv-mini .shared-ssid{padding:0;background:transparent;border:0;display:flex;flex-wrap:wrap;gap:6px}#rv-mini .shared-ssid>label{width:100%;display:grid;gap:6px}#rv-mini .ssid-input-wrap{display:flex;align-items:center;border:1px solid #304c70;border-radius:8px;background:#071727b8;overflow:hidden}#rv-mini .ssid-prefix{padding-left:9px;color:#a7c9e6;white-space:nowrap}#rv-mini .ssid-input-wrap input{border:0;background:transparent;padding-left:2px}#rv-mini .password-reading{width:100%;display:flex;justify-content:space-between;gap:8px;font-size:11px;color:#a9c2dc;background:#0c1d30;padding:7px 9px;border-radius:7px}\n#rv-mini.queue-view .panel{grid-template-columns:1fr}#rv-mini.queue-view nav{display:none}#rv-mini.queue-view .body,#rv-mini.queue-view .status,#rv-mini.queue-view footer{grid-column:1}#rv-mini.queue-view .body{min-height:180px}\n#rv-mini .queue-count{font-size:11px;color:#71deec}#rv-mini .queue-list{display:flex;flex-direction:column;gap:7px}#rv-mini .queue-item{display:flex;align-items:center;gap:10px;padding:10px;background:#10283c;border:1px solid #29465f;border-radius:10px;cursor:pointer}#rv-mini .queue-item:has(input:checked){background:#0a3649;border-color:#00abc8}#rv-mini .queue-item:has(input:disabled){cursor:default}#rv-mini .queue-info{display:grid;gap:4px;min-width:0}#rv-mini .queue-info strong{font-size:12px;overflow-wrap:anywhere;color:#e5f1ff}#rv-mini .queue-info small{color:#b4c8dc}#rv-mini .queue-unavailable{color:#e3bb7a!important}\n#rv-mini .queue-running{display:flex;align-items:center;justify-content:space-between;gap:8px;width:100%;padding:8px;border:1px solid #27576c;border-radius:8px;color:#81e4ef;font-size:11px;background:#0c3041}\n#rv-mini .queue-item input[type=checkbox]{width:19px;height:19px;border-radius:5px;background:#0a192d;border-color:#51708e}\n#rv-mini .queue-item input[type=checkbox]:before{content:'';width:auto;height:auto;inset:0;background:none;border-radius:0;transform:none}\n#rv-mini .queue-item input[type=checkbox]:checked{background:#00cde5;border-color:#00dff5}\n#rv-mini .queue-item input[type=checkbox]:checked:before{content:'✓';display:grid;place-items:center;color:#06283a;font-weight:800;transform:none;background:none}\n@media(max-width:460px){#rv-mini .body{max-height:calc(100dvh - 270px)}#rv-mini.queue-view .body{max-height:calc(100dvh - 215px)}}\n";
+  css.textContent += "#rv-mini .panel{height:auto;max-height:min(720px,calc(100dvh - 24px))}\n#rv-mini .body{max-height:calc(100dvh - 255px);min-height:100px;font-size:12px}\n#rv-mini .context{font-size:11px}#rv-mini .device-info span,#rv-mini small{font-size:11px}#rv-mini .device-info strong{font-size:12px}\n#rv-mini .command-state,#rv-mini .command-state.pending{background:#302c214d;color:#f7dba7;border:1px solid #6a542d;border-left:3px solid #e0ad4d;border-radius:9px;padding:9px;margin-top:7px;display:grid;gap:5px}\n#rv-mini .command-state small{color:#d1c2a5}#rv-mini .command-state.good{background:#123e374f;color:#81efc7;border-color:#28675a}#rv-mini .command-state.good small{color:#a6dacc}#rv-mini .command-state.bad{background:#49233366;color:#ffb6c7;border-color:#804459}#rv-mini .command-state.bad small{color:#e8b6c5}\n#rv-mini .save-review{grid-column:auto;background:#32291e;color:#ffdc9c;border-color:#7b5f31}#rv-mini .save-review small{color:#e8c89d}\n#rv-mini .client-message{grid-column:auto;background:#102238;color:#bed0e9;border:1px solid #29435e}#rv-mini .client-message summary{background:transparent;color:#bed0e9}#rv-mini textarea{background:#08192b;color:#e6f1ff;border-color:#34516e;resize:vertical}\n#rv-mini .shared-ssid{padding:0;background:transparent;border:0;display:flex;flex-wrap:wrap;gap:6px}#rv-mini .shared-ssid>label{width:100%;display:grid;gap:6px}#rv-mini .ssid-input-wrap{display:flex;align-items:center;border:1px solid #304c70;border-radius:8px;background:#071727b8;overflow:hidden}#rv-mini .ssid-prefix{padding-left:9px;color:#a7c9e6;white-space:nowrap}#rv-mini .ssid-input-wrap input{border:0;background:transparent;padding-left:2px}#rv-mini .password-reading{width:100%;display:flex;justify-content:space-between;gap:8px;font-size:11px;color:#a9c2dc;background:#0c1d30;padding:7px 9px;border-radius:7px}\n#rv-mini.queue-view .panel{grid-template-columns:1fr}#rv-mini.queue-view nav{display:none}#rv-mini.queue-view .body,#rv-mini.queue-view .status,#rv-mini.queue-view footer{grid-column:1}#rv-mini.queue-view .body{min-height:180px}\n#rv-mini .queue-count{font-size:11px;color:#71deec}#rv-mini .queue-list{display:flex;flex-direction:column;gap:7px}#rv-mini .queue-item{display:flex;align-items:center;gap:10px;padding:10px;background:#10283c;border:1px solid #29465f;border-radius:10px;cursor:pointer}#rv-mini .queue-item:has(input:checked){background:#0a3649;border-color:#00abc8}#rv-mini .queue-item:has(input:disabled){cursor:default}#rv-mini .queue-info{display:grid;gap:4px;min-width:0}#rv-mini .queue-info strong{font-size:12px;overflow-wrap:anywhere;color:#e5f1ff}#rv-mini .queue-info small{color:#b4c8dc}#rv-mini .queue-unavailable{color:#e3bb7a!important}\n#rv-mini .queue-running{display:flex;align-items:center;justify-content:space-between;gap:8px;width:100%;padding:8px;border:1px solid #27576c;border-radius:8px;color:#81e4ef;font-size:11px;background:#0c3041}\n#rv-mini .queue-stats{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}\n#rv-mini .queue-stat{display:grid;gap:4px;text-align:left;padding:10px;border:1px solid #2c536e;background:#102b40;border-radius:10px}\n#rv-mini .queue-stat strong{font-size:23px;line-height:1.1}#rv-mini .queue-stat span{font-size:11px}\n#rv-mini .queue-stat.abertos{color:#59e6ee;background:#103343}#rv-mini .queue-stat.pendentes{color:#ffcc7b;background:#342e22}#rv-mini .queue-stat.fechados{color:#8ce5bf;background:#15362e}\n#rv-mini .queue-stat.active{outline:2px solid currentColor;outline-offset:-2px}#rv-mini .queue-legacy{padding:8px;border:1px dashed #45627a;border-radius:8px;color:#b3c8dc}\n#rv-mini .queue-item input[type=checkbox]{width:19px;height:19px;border-radius:5px;background:#0a192d;border-color:#51708e}\n#rv-mini .queue-item input[type=checkbox]:before{content:'';width:auto;height:auto;inset:0;background:none;border-radius:0;transform:none}\n#rv-mini .queue-item input[type=checkbox]:checked{background:#00cde5;border-color:#00dff5}\n#rv-mini .queue-item input[type=checkbox]:checked:before{content:'✓';display:grid;place-items:center;color:#06283a;font-weight:800;transform:none;background:none}\n@media(max-width:460px){#rv-mini .body{max-height:calc(100dvh - 270px)}#rv-mini.queue-view .body{max-height:calc(100dvh - 215px)}}\n";
   const interrupted=()=>Object.assign(new Error('Operação interrompida para atualizar o painel.'),{code:'RV_REFRESH'});
   const pause = ms => {const token=operationEpoch;return new Promise((resolve,reject)=>setTimeout(()=>token===operationEpoch?resolve():reject(interrupted()),ms));};
   let card = null, opened = false, editing = false, busy = false, tabName = 'Rede', route = location.hash;
@@ -925,22 +929,43 @@
   let queue={active:false,current:'',pending:[],completed:[],selected:new Set(),message:'Selecione os chamados que deseja atender.',seenWorking:false};
   let queueSearch='',queueOpening=false,queueRestoreOpen=null,queueStartTimer=null,queueTickBusy=false,queueReadBusy=false,queueIntent=null,queueReturnWait=0;
   const queueCache=new Map();
+  const queueClosedCache=new Map(inheritedQueueHistory.map(item=>[item.id,item]));
+  const queuePreviousClosed=inheritedQueueUnknown;
+  function retainQueueHistory(){root.dataset.queueHistory=JSON.stringify([...queueClosedCache.values()]);root.dataset.queuePreviousClosed=String(queuePreviousClosed);}
+  retainQueueHistory();
+  let queueFilter='todos';
+  const closedState=value=>/^(encerrad[oa]|finalizad[oa]|conclu[ií]d[oa]|fechad[oa])$/i.test(value);
+  const queueGroup=item=>closedState(item.state)?'fechados':/^pendente$/i.test(item.state)?'pendentes':'abertos';
+  function archiveQueueCall(id,state='Finalizado'){
+    const previous=queueCache.get(id)||queueClosedCache.get(id)||{id,name:'Chamado '+id,labels:''};
+    queueClosedCache.set(id,{...previous,state,eligible:false});queueCache.delete(id);queue.selected.delete(id);retainQueueHistory();
+  }
   function queueRows(){
     if(!isDashboard())return [];
     const active=all(document,'[role="tab"]').find(e=>!root.contains(e)&&(e.getAttribute('aria-selected')==='true'||e.classList.contains('ant-tabs-tab-active')));
     if(active&&normalized(text(active))!=='meus chamados')return [];
     const hosts=all(document,'brisanet-call-list').filter(e=>!root.contains(e)&&e.getClientRects().length);
-    return hosts.flatMap(host=>all(host,'li.list-item').map(element=>{
+    const rows=hosts.flatMap(host=>all(host,'li.list-item').map(element=>{
       const primary=element.querySelector('.primary-text'),id=text(primary).match(/#(\d+)/)?.[1];if(!id)return null;
       const state=text(primary.querySelector('nz-tag')),name=text(element.querySelector('.secondary-text'));
       const start=element.querySelector('button.init-button,button.init-button-dense');
       const eligible=/^aguardando$/i.test(state)?Boolean(start&&!start.disabled):/^trabalhando$/i.test(state);
       const item={id,name,state,labels:all(element,'.label-list nz-tag').map(text).join(' · '),eligible,element,start,primary};
-      queueCache.set(id,{id,name,state,labels:item.labels,eligible});return item;
+      return item;
     }).filter(Boolean)).filter((r,i,a)=>a.findIndex(x=>x.id===r.id)===i);
+    // The native list is a snapshot, not an append-only history. Disappearance alone
+    // must never be interpreted as closure (filters and reassignment also remove rows).
+    queueCache.clear();
+    for(const item of rows){
+      if(closedState(item.state)){queueClosedCache.set(item.id,{id:item.id,name:item.name,state:item.state,labels:item.labels,eligible:false});continue;}
+      if(queueClosedCache.has(item.id))continue;
+      queueCache.set(item.id,{id:item.id,name:item.name,state:item.state,labels:item.labels,eligible:item.eligible});
+    }
+    for(const id of queue.selected)if(!queueCache.has(id))queue.selected.delete(id);retainQueueHistory();
+    return rows.filter(r=>queueCache.has(r.id));
   }
   function queueControl(name,fn,primary=false,disabled=false){
-    const b=make('button',primary?'primary':'',name);b.type='button';b.disabled=disabled;b.dataset.lock=String(disabled);
+    const b=make('button',primary?'primary':'',name);b.type='button';b.setAttribute('aria-label',name);b.disabled=disabled;b.dataset.lock=String(disabled);
     b.addEventListener('click',()=>Promise.resolve().then(fn).catch(e=>{queue.active=false;queue.message=e.message;queueOpening=false;restoreQueueOpen();renderQueue();}));return b;
   }
   function restoreQueueOpen(){if(queueRestoreOpen){queueRestoreOpen();queueRestoreOpen=null;}clearTimeout(queueStartTimer);}
@@ -956,19 +981,22 @@
     const controls=make('div','actions');controls.append(queueControl(queueReadBusy?'Lendo a lista…':'Carregar toda a lista',readAllQueueRows,false,queueReadBusy||queue.active),queueControl('Atualizar leitura',()=>{queueRows();renderQueue();},false,queueReadBusy));body.append(controls);
     body.append(make('small','','A leitura inclui os itens carregados em Meus chamados. “Carregar toda a lista” percorre a rolagem nativa. Os filtros do Revan continuam valendo.'));
     const search=make('input');search.placeholder='Pesquisar nome, número, estado ou etiqueta';search.value=queueSearch;search.setAttribute('aria-label','Pesquisar chamados');body.append(search);
+    const stats=make('div','queue-stats');stats.setAttribute('aria-label','Situação dos chamados');body.append(stats);
     const count=make('div','queue-count'),list=make('div','queue-list');body.append(count,list);
     const pick=make('div','actions');body.insertBefore(pick,count);
     function draw(){
-      const native=queueRows(),rows=[...queueCache.values()];const query=normalized(queueSearch);const shown=rows.filter(r=>normalized([r.id,r.name,r.state,r.labels].join(' ')).includes(query));
-      count.textContent=`${rows.length} lidos · ${queue.selected.size} selecionados · ${queue.completed.length} concluídos`;
+      queueRows();const rows=[...queueCache.values(),...queueClosedCache.values()];const query=normalized(queueSearch);const shown=rows.filter(r=>(queueFilter==='todos'||queueGroup(r)===queueFilter)&&normalized([r.id,r.name,r.state,r.labels].join(' ')).includes(query));
+      stats.replaceChildren(...[['abertos','Abertos'],['pendentes','Pendentes'],['fechados','Fechados']].map(([key,label])=>{const total=rows.filter(r=>queueGroup(r)===key).length+(key==='fechados'?queuePreviousClosed:0);const b=queueControl(label+' ('+total+')',()=>{queueFilter=queueFilter===key?'todos':key;draw();updateFooter();restorePositions();});b.className='queue-stat '+key+(queueFilter===key?' active':'');b.setAttribute('aria-pressed',String(queueFilter===key));b.replaceChildren(make('strong','',String(total)),make('span','',label));return b;}));
+      count.textContent=`${queueCache.size} na lista atual · ${queue.selected.size} selecionados · ${queueClosedCache.size+queuePreviousClosed} encerramentos confirmados`;
       list.replaceChildren();
       for(const item of shown){const row=make('label','queue-item'),check=make('input');check.type='checkbox';check.checked=queue.selected.has(item.id);check.disabled=!item.eligible||queue.active||Boolean(queue.current)||queueReadBusy;check.dataset.lock=String(check.disabled);check.setAttribute('aria-label','Selecionar chamado '+item.id);
         check.addEventListener('change',()=>{if(check.checked)queue.selected.add(item.id);else queue.selected.delete(item.id);draw();updateFooter();});
         const info=make('span','queue-info');info.append(make('strong','',`#${item.id} · ${item.name}`),make('small','',item.state+(item.labels?' · '+item.labels:'')));
-        if(!item.eligible)info.append(make('small','queue-unavailable','Sem botão Iniciar: continue este estado pelo Revan.'));
+        if(!item.eligible)info.append(make('small','queue-unavailable',queueGroup(item)==='fechados'?'Encerramento confirmado nesta sessão.':'Sem botão Iniciar: continue este estado pelo Revan.'));
         row.append(check,info);list.append(row);
       }
       if(!shown.length)list.append(make('small','','Nenhum chamado encontrado nesta leitura.'));
+      if(queuePreviousClosed&&(queueFilter==='fechados'||queueFilter==='todos'))list.append(make('small','queue-legacy',`${queuePreviousClosed} encerramentos foram contabilizados pela versão anterior. Os detalhes desses chamados não estavam disponíveis para migração.`));
       pick.replaceChildren(queueControl('Selecionar filtrados',()=>{shown.filter(r=>r.eligible).forEach(r=>queue.selected.add(r.id));draw();updateFooter();},false,queue.active||Boolean(queue.current)||queueReadBusy),queueControl('Limpar seleção',()=>{queue.selected.clear();draw();updateFooter();},false,queue.active||Boolean(queue.current)||queueReadBusy));
     }
     function updateFooter(){
@@ -1002,8 +1030,9 @@
   }
   async function queueNext(){
     if(!queue.active||queue.current||queueOpening||!isDashboard()||networkDraft||pendingAction||busy)return;
-    if(!queue.pending.length){queue.active=false;queue.message='Fila concluída. Todos os chamados selecionados foram atendidos.';renderQueue();return;}
+    if(!queue.pending.length){queue.active=false;root.dataset.queueRunning='false';queue.message='Fila concluída. Todos os chamados selecionados foram atendidos.';renderQueue();return;}
     const id=queue.pending[0];let item=queueRows().find(r=>r.id===id);
+    if(!item&&!document.querySelector('brisanet-call-list')){const limit=Date.now()+8000;while(queue.active&&isDashboard()&&Date.now()<limit&&!document.querySelector('brisanet-call-list'))await new Promise(r=>setTimeout(r,200));item=queueRows().find(r=>r.id===id);}
     if(!item){await readAllQueueRows();if(!queue.active||!isDashboard())return;item=queueRows().find(r=>r.id===id);if(!item){queue.active=false;queue.message=`#${id} não está mais na lista disponível. Fila pausada; confira os filtros e a situação do chamado.`;renderQueue();return;}}
     if(!item.eligible){queue.active=false;queue.message=`#${id} mudou para ${item.state||'um estado indisponível'}. Fila pausada para conferência.`;renderQueue();return;}
     queueOpening=true;queue.current=id;queue.seenWorking=false;queue.message=`Iniciando #${id} pelo controle do Revan…`;root.dataset.queueRunning='true';renderQueue();
@@ -1030,7 +1059,7 @@
         const fresh=notices.filter(message=>!queueIntent?.before.has(message)).join('\n');
         const confirmedNotice=queueIntent&&queueIntent.id===queue.current&&Date.now()-queueIntent.time<20000&&/(?:chamado|atendimento)[^\n]{0,100}(?:encerrad|finalizad|conclu[ií]d|fechad)|(?:encerrad|finalizad|conclu[ií]d|fechad)[^\n]{0,80}(?:sucesso)/i.test(fresh)&&!/erro|falh|não foi|nao foi/i.test(fresh);
         if(queueClosed()||(queue.seenWorking&&confirmedNotice&&(id===queue.current||isDashboard()))){
-          queue.completed.push(queue.current);queue.selected.delete(queue.current);queue.pending=queue.pending.filter(x=>x!==queue.current);queue.current='';queueIntent=null;queueReturnWait=0;queue.message='Encerramento confirmado. Preparando o próximo selecionado…';location.hash='#/yoda/dashboard';return;
+          queue.completed.push(queue.current);archiveQueueCall(queue.current);queue.pending=queue.pending.filter(x=>x!==queue.current);queue.current='';queueIntent=null;queueReturnWait=0;queue.message='Encerramento confirmado. Preparando o próximo selecionado…';location.hash='#/yoda/dashboard';return;
         }
         if(!queueOpening&&id!==queue.current){
           if(isDashboard()&&queueIntent?.id===queue.current&&Date.now()-queueIntent.time<20000){if(!queueReturnWait)queueReturnWait=Date.now();if(Date.now()-queueReturnWait<8000){queue.message='Aguardando a confirmação de encerramento do Revan…';return;}}
@@ -1086,7 +1115,7 @@
   document.addEventListener('keydown', e => { if (e.key === 'Escape') minimize(); });
   new MutationObserver(records => {
     syncDialogs();
-    if(isDashboard()&&opened&&!queueReadBusy&&records.some(r=>!root.contains(r.target)&&r.target.closest?.('brisanet-call-list'))){clearTimeout(timer);timer=setTimeout(()=>{if(!root.contains(document.activeElement)||document.activeElement.tagName!=='INPUT')renderQueue();},200);}
+    if(isDashboard()&&opened&&!queueReadBusy&&records.some(r=>!root.contains(r.target)&&(r.target.closest?.('brisanet-call-list')||[...r.addedNodes,...r.removedNodes].some(n=>n.matches?.('brisanet-call-list')||n.querySelector?.('brisanet-call-list'))))){clearTimeout(timer);timer=setTimeout(()=>{if(!root.contains(document.activeElement)||document.activeElement.tagName!=='INPUT')renderQueue();},200);}
     const sections=[card,commandSection(),financialSection(),pageSection('RESULTADOS DOS TESTES','brisanet-config-report'),pageSection('AUTENTICAÇÃO','brisanet-auth-card')].filter(Boolean);
     if (!opened || busy || !card || !records.some(r => sections.some(section=>section.contains(r.target)))) return;
     clearTimeout(timer); timer = setTimeout(() => {
