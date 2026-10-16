@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Revan — Minidashboard de equipamentos
 // @namespace    local.revan.minidashboard
-// @version      4.6.2
+// @version      4.6.3
 // @updateURL    https://raw.githubusercontent.com/kingoffjoss/Meus-Scripts/main/Revan/outputs/revan-minidashboard.user.js
 // @downloadURL  https://raw.githubusercontent.com/kingoffjoss/Meus-Scripts/main/Revan/outputs/revan-minidashboard.user.js
 // @description  Campos próprios e ações integradas aos controles originais do Revan.
@@ -18,7 +18,7 @@
   });
   const root = document.createElement('section');
   root.id = 'rv-mini';
-  root.dataset.version = '4.6.2';
+  root.dataset.version = '4.6.3';
   root.innerHTML = `<button class="launch" aria-expanded="false"><span class="launch-icon">◈</span> Equipamentos <span class="launch-dot"></span></button><div class="panel" hidden><header><strong><span class="brand-icon">◈</span> Equipamentos <small>REDE & CONEXÃO</small></strong><button class="close" aria-label="Minimizar" title="Minimizar para botão">−</button></header><div class="context"></div><select class="equipment" aria-label="Equipamento"></select><nav></nav><p class="status" role="status"></p><div class="body"></div><footer></footer></div>`;
   const refreshButton=document.createElement('button');refreshButton.className='refresh-panel';refreshButton.type='button';refreshButton.textContent='↻';refreshButton.setAttribute('aria-label','Atualizar painel');refreshButton.title='Atualizar painel e recuperar os controles';
   root.querySelector('header').insertBefore(refreshButton,root.querySelector('.close'));
@@ -321,7 +321,6 @@
   let autoPending=false, autoReport='';
   const tagNames=new Set(["(Desativada) Brisa Play","Agendamento de Retorno","Alannio / Concluido","Alannio / Pendência","Alannio / Trabalhando","Alcance do Wi-Fi","Alteração de cômodo","Alteração de dados cadastrais - (Carimbo)","Alteração de Senha do WIFI","Alteração de Senha TV (autocensura)","Alterar data de vencimento","Alterar modo da ONU","Amaury Bezerra / Concluído","Amaury Bezerra / Pendência","Amaury Bezerra / Trabalhando","Área do Cliente - (Carimbo)","Ativo sem contato/Env. SMS","Atualização de E-mail","Atualização de telefone","Atualização do Plano","Aumento/Redução do Limite da Telefonia","Bloqueio de chamadas fixo","Brisa Móvel","BrisaCliente","BrisaMusic","BrisaMusicPremium","BrisaPlay","Cabo da Fibra Rompido","Cabo de fibra baixo/remanejamento - FTTH","Cabo de Rede não disponibilizado no ato da Instalação - até 7d","Cabo desconectado","Caio Vinicius / Pendência","Canais Quadriculando","Canal Em Manutenção","Chamado IMOC","Chamado interno incorreto (suporte interno)","Chamado proativo","Chamado Teste","Cliente desistiu da visita técnica","Cliente já atendido","Cliente Não Localizado - AGR","Cliente não pagou","Cliente priorizado - atendimento","Cob. Alteração de Plano (dentro do prazo)","Cob. Alteração de Plano (fora do prazo)","Cobrança de equipamento danificado/perdido","Cobrança De Instalação Dentro Do Prazo","Cobrança De Instalação Fora Do Prazo","COBRANÇA DE RECOLHIMENTO DE KIT","COBRANÇA DE REPARO DENTRO DO PRAZO","COBRANÇA DE REPARO FORA DO PRAZO","Cobrança de Retorno Interno","Compartilhamento de Rede","Conecta+","Configuração de roteador não realizada n​a instalação - 7d","Configuração Estruturada de Rede Interna","David Myquellyson / Concluido","David Myquellyson / Pendência","David Myquellyson / Trabalhando","Declaração de débito","Declaração de quitação anual","Desbloqueio temporário","Desbloqueio temporário - (Carimbo)","Desbloqueio/Bloqueio para ligações 0300/0500","Desbloqueio/Bloqueio para ligações internacionais","Desbloqueio/Bloqueio para números especifico","Desbloqueio/Bloqueio para realizar ligações a cobrar","Desconto sem acesso","Discovery Kids","E00","Eliwelton Alves / Concluído","Eliwelton Alves / Pendência","Eliwelton Alves / Trabalhando","Encerrado por falta de cordialidade","Endereços de pontos de pagamento","Expansão dos pontos de pagamento","Facebook","Falha de Autenticação","Falta de Recolhimento de equipamento","Fidelização (termos do contrato)","Formas de pagamento - (Carimbo)","FOX","Francielio / Concluido","Francielio / Pendência","Francielio / Trabalhando","Globoplay","Heroapp","Histórico de Ligações do Fixo","Horários de funcionamento de escritórios","Indisponibilidade area de risco","Informação APP/SITE","Informação atendimento","Informação de nota fiscal","Informação Técnica","Informações do Serviço","Informações sobre cartão brisanet","Informações sobre vencimento","Insatisfeito com o equipamento instalado - 7d","Instabilidade no WI-FI","Instabilidade TP-LINK","Instagram","Instalação de Roteador TP-LINK","Instalação Inadequada (local) - 7d","Instalação mal sucedida (sem acesso) - 7d","IPTV - (Carimbo)","Israel Henrick / Pendência","Jaquicione / Pendência","Jaquicione / Trabalhando","Jean Aires / Concluído","Jean Aires / Pendência","Jean Aires / Trabalhando","Jeymerson / Pendência","Jeymerson / Trabalhando","João Neto / Concluido","João Neto / Pendência","João Neto / Trabalhando","Klaus Vasconcelos / Concluído","Klaus Vasconcelos / Pendência","Klaus Vasconcelos / Trabalhando","Latência alta para servidor do jogo","Ligação caiu","LinkedIn","Live FC","Mau atendimento de vendedor externo","Max","Max Walney / Concluído","Max Walney / Pendência","Max Walney / Trabalhando","Monitoria CSAT","Mudança de Numero Fixo","Multas e juros","Multas e Juros","Não Efetua Ligações","Não recebe Ligações","Nat Geo kid's","Netflix","Nooggin","Notificação de débito/bloqueio ou desativação","Pendências / Agend. J.A - Kaio","Perda de pacotes","Personalização da Rede wifi","Ping alto","Plano não chega o contratado - FTTH","Pon apagada - FTTH","Pon piscando - FTTH","Porta Incorreta","Portas virtuais bloqueadas","Pós atendimento","Pós-Venda (CX)","Premiere","Problema em Redes sociais","Problema na Maquineta de Cartão","Problema na OLT","Problema na portabilidade","Problema no Áudio","Problema no Pabx do Cliente","Problema no Replay","Problemas com o Telefone Fixo","Qualifica","Reagendou visita","Receptor Bloqueado","Reclamação de jogos online","Recolher roteador","Recolhimento Desativado automático","REPARO MAL SUCEDIDO","Restrição de NAT","Retenção Suporte","Revisão de Equipamento","Rota Inoperante - FTTH","Sebastião Felix / Concluido","Sebastião Felix / Pendência","Sebastião Felix / Trabalhando","sem Acesso","Sem acesso","Sem acesso site ou sistema específico - FTTH","Sem acesso site ou sistema específico - FWA","Sem acesso TP-LINK","Sem contato","Senha de Autenticação","Servidor do jogo em manutenção","Servidor Inoperante (Rádio)","Sinal da fibra do cliente irregular - FTTH","Skeelo","SKY+ - Informações do plano","Solicitação de alteração de parede","Solicitação de alteração na Forma Pagamento não disponibilizada","Solicitação para separar redes Wi-Fi - FTTH","Solicitação para separar redes Wi-Fi - FWA","Solicitação para unificar redes Wi-Fi - FTTH","Solicitação para unificar redes Wi-Fi - FWA","Suporte a equipamento particular","Suporte ao técnico - (Carimbo)","Suspeita de LOS","Tarifação da telefonia","Taxa de alteração de Cômodo","Taxa de mudança de endereço","Tela Preta","Telecine","Telefone mudo","Telefonia - (Carimbo)","Troca de Cabo de Rede","Troca de Cabo Fibra - FTTH","Troca de Cabo HDMI/RCA","Troca de Conector (ONU)","Troca de Conector (RJ)","Troca de Conector (Splitter)","Troca de Controle","Troca de Equipamento","Troca de Fonte - FTTH","Troca de onu - FTTH","Troca de Radio","Troca de Receptor","Troca de roteador - FTTH","Troca de Telefone","Twitter","Ubook Select","Upgrade de roteador","Valor de fatura divergente","Valor de IP fixo","Valores cobrados durante bloqueio/desativação/sem acesso","Velocidade (Taxa de Download/Upload)","Visita sem êxito","Visita sem êxito 2","Visita sem êxito 3","Visita técnica (dentro do prazo)","Visita técnica (fora do prazo)","Watch Espn","Webmail","Wi-Fi da ONU/Roteador desativado"]);
   let tagDraft={query:'',selected:'',comment:'',progress:null};
-  let tagSearchTimer,tagSearchEpoch=0;
   const selectedValue = e => text(e.querySelector('.ion-select-item__content'));
   const note = message => { $('.status').textContent = message; };
   const technology = () => nativeButton('CPE') ? 'FWA' : 'Fibra';
@@ -823,18 +822,8 @@
       return Date.now()-since>250?{rows}:false;
     },8000);
   }
-  async function searchTags(){
-    const query=tagDraft.query.trim();if(!query)throw new Error('Digite parte do nome para consultar o Revan.');
-    clearTimeout(tagSearchTimer);let dialog;try{note('Consultando etiquetas no Revan…');dialog=await openTagDialog();const {rows}=await nativeTagOptions(dialog,query);rows.forEach(e=>tagNames.add(text(e)));note(`${rows.length} resultado(s) lido(s) do Revan para “${query}”. Lista organizada abaixo.`);}finally{closeTagDialog(dialog);await pause(250);}
-  }
-  function scheduleTagSearch(){
-    clearTimeout(tagSearchTimer);const ticket=++tagSearchEpoch,hash=location.hash;
-    const execute=async()=>{if(ticket!==tagSearchEpoch||hash!==location.hash||!root.isConnected||!opened||tabName!=='Etiquetar'||!tagDraft.query.trim())return;if(busy){tagSearchTimer=setTimeout(execute,200);return;}await run(searchTags);if(ticket===tagSearchEpoch&&tabName==='Etiquetar'&&opened)root.querySelector('[aria-label="Buscar etiqueta"]')?.focus({preventScroll:true});};
-    tagSearchTimer=setTimeout(execute,1000);
-  }
   async function attachTag(){
-    clearTimeout(tagSearchTimer);tagSearchEpoch++;
-    valid();const selected=tagDraft.selected,comment=tagDraft.comment.trim();if(!selected)throw new Error('Escolha uma etiqueta da lista antes de anexar.');
+    valid();let selected=tagDraft.selected||tagDraft.query.trim();const comment=tagDraft.comment.trim();if(!selected)throw new Error('Digite o nome ou escolha uma etiqueta antes de anexar.');
     const payload=JSON.stringify([route,selected,comment]);
     if(tagDraft.progress&&tagDraft.progress.payload!==payload&&tagDraft.progress.attempted&&!tagDraft.progress.sent)throw new Error('Há envio anterior sem confirmação. Confira os Eventos antes de iniciar outro.');
     const progress=tagDraft.progress?.payload===payload?tagDraft.progress:(tagDraft.progress={payload,tagged:false,attempted:false,sent:false});
@@ -845,8 +834,11 @@
       else{
         let dialog;try{
           dialog=await openTagDialog();const {rows}=await nativeTagOptions(dialog,selected);
-          const exact=rows.filter(e=>text(e)===selected);const matches=exact.length?exact:rows.filter(e=>tagKey(text(e))===tagKey(selected));
-          if(matches.length!==1)throw new Error('A etiqueta exata não foi encontrada de forma única no Revan. Consulte novamente pelo nome.');
+          rows.forEach(e=>tagNames.add(text(e)));
+          const exact=rows.filter(e=>text(e)===selected);let matches=exact.length?exact:rows.filter(e=>tagKey(text(e))===tagKey(selected));
+          if(!matches.length&&rows.length===1)matches=rows;
+          if(matches.length!==1)throw new Error(rows.length?'Encontrei várias etiquetas. Escolha o nome exato na lista e clique em Anexar novamente.':'Nenhuma etiqueta encontrada no Revan. Confira o nome digitado.');
+          selected=text(matches[0]);tagDraft.selected=selected;progress.payload=JSON.stringify([route,selected,comment]);
           valid();matches[0].click();await pause(100);
           const selectedNames=all(dialog,'nz-select#tags .ant-select-selection__choice').map(text);
           if(selectedNames.length!==1||!selectedNames.some(n=>tagKey(n)===tagKey(selected)))throw new Error('Seleção nativa da etiqueta não confirmada.');
@@ -875,10 +867,9 @@
       counter.textContent=`${found.length} etiqueta(s) no catálogo · selecione o nome exato`;
       results.replaceChildren(...found.map(name=>{const b=make('button',tagDraft.selected===name?'active':'',name);b.type='button';b.addEventListener('click',()=>{tagDraft.selected=name;updateResults();chosen.textContent='Selecionada: '+name;});return b;}));
     }
-    query.addEventListener('input',()=>{tagDraft.query=query.value;updateResults();scheduleTagSearch();});
+    query.addEventListener('input',()=>{tagDraft.query=query.value;tagDraft.selected='';chosen.textContent='Selecionada: nenhuma';updateResults();});
     field.append(counter,results);const chosen=make('strong','','Selecionada: '+(tagDraft.selected||'nenhuma'));field.append(chosen);
-    field.append(make('small','','Ao parar de digitar, o painel consulta o segundo campo do Revan. O catálogo local é apenas um ponto de partida.'));
-    field.append(actionButton('Buscar mais no Revan',()=>{clearTimeout(tagSearchTimer);tagSearchEpoch++;return searchTags();}));
+    field.append(make('small','','A busca acima é local. O Revan só será aberto após Anexar. Se faltar uma etiqueta, digite o nome e clique em Anexar; resultados ambíguos serão apresentados para sua escolha.'));
     const messageLabel=make('label','','Informações para os Eventos (opcional)');const message=make('textarea');message.rows=4;message.value=tagDraft.comment;message.placeholder='Digite a observação do atendimento…';message.setAttribute('aria-label','Informações para os Eventos');message.addEventListener('input',()=>{tagDraft.comment=message.value;});messageLabel.append(message);field.append(messageLabel);
     field.append(make('small','','Anexar aplica a etiqueta selecionada e publica o texto acima como comentário interno nos Eventos deste atendimento. Categoria é opcional e não será selecionada.'));
     if(tagDraft.progress)field.append(make('small','',`Etiqueta: ${tagDraft.progress.tagged?'confirmada':'não confirmada'} · Comentário: ${tagDraft.progress.sent?'confirmado':tagDraft.progress.attempted?'enviado, confira os Eventos':'não enviado'}`));
