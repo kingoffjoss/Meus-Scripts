@@ -1,6 +1,6 @@
 # Revan — Equipamentos e rede
 
-Minidashboard flutuante para o Revan. Versão 4.7.2.
+Minidashboard flutuante para o Revan. Versão 4.8.0.
 
 ## Instalar o favorito
 
@@ -66,3 +66,7 @@ Pesquisa nativa de A a Z em cliente Fibra ampliou o catálogo de 15 para 61 prob
 A pesquisa do dashboard agora apresenta botões com os resultados locais, ignora acentos/maiúsculas e mostra uma mensagem quando nada foi encontrado. Escolher um resultado define o problema e sugere o tipo de reparo. O texto pesquisado é mantido ao atualizar a aba. Digitar não abre telas do Revan.
 Ao Anexar, a automação pesquisa no campo nativo de problemas antes de selecionar, aguardando o debounce do Revan e removendo apenas o sufixo visual do tipo de reparo do termo pesquisado. Se o nome não estiver no catálogo local, é possível digitá-lo e consultar ao Anexar. Somente uma correspondência exata ou única é aplicada. Vários resultados interrompem a automação para escolha no formulário original. O calendário e a conclusão permanecem manuais.
 Validação: consulta real de A a Z e confirmação nativa de Estruturada/Serviço Adicional; teste de navegador simulado cobre filtro local de A a Z, Estruturada ausente da lista nativa inicial, busca com debounce de 1 segundo e problema novo ausente do catálogo local, além de recuperação do preparo e prevenção de duplicação.
+Mensagem de agendamento — versão 4.8.0
+Após o usuário clicar no Confirmar final da etapa Revisão, o painel captura a data e a janela dos campos nativos de revisão. Somente depois da notificação de agendamento/reagendamento realizado com sucesso e do fechamento do formulário gera a mensagem. O Confirmar intermediário de escolha da janela não dispara a mensagem. Fechamento sem confirmação de sucesso não é tratado como agendamento confirmado.
+A mensagem apresenta dia, período e horas da janela escolhida, seguidos de: O horário de atendimento da empresa é das 08:00 às 18:00. Fica na aba Etiquetar, com botão Copiar mensagem de agendamento. O painel não envia a mensagem ao cliente e não clica nem marca confirmações em nome do usuário. A mensagem e o acompanhamento ficam apenas na memória da página e são limpos ao trocar o atendimento.
+Validação: campos da revisão inspecionados no Revan sem confirmar; teste simulado cobre clique intermediário, falha, confirmação final com sucesso, manhã/tarde, cópia e troca de atendimento. A confirmação final real não foi executada.

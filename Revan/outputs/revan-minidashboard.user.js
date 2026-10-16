@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Revan — Minidashboard de equipamentos
 // @namespace    local.revan.minidashboard
-// @version      4.7.2
+// @version      4.8.0
 // @updateURL    https://raw.githubusercontent.com/kingoffjoss/Meus-Scripts/main/Revan/outputs/revan-minidashboard.user.js
 // @downloadURL  https://raw.githubusercontent.com/kingoffjoss/Meus-Scripts/main/Revan/outputs/revan-minidashboard.user.js
 // @description  Campos próprios e ações integradas aos controles originais do Revan.
@@ -18,7 +18,7 @@
   });
   const root = document.createElement('section');
   root.id = 'rv-mini';
-  root.dataset.version = '4.7.2';
+  root.dataset.version = '4.8.0';
   root.innerHTML = `<button class="launch" aria-expanded="false"><span class="launch-icon">◈</span> Equipamentos <span class="launch-dot"></span></button><div class="panel" hidden><header><strong><span class="brand-icon">◈</span> Equipamentos <small>REDE & CONEXÃO</small></strong><button class="close" aria-label="Minimizar" title="Minimizar para botão">−</button></header><div class="context"></div><select class="equipment" aria-label="Equipamento"></select><nav></nav><p class="status" role="status"></p><div class="body"></div><footer></footer></div>`;
   const refreshButton=document.createElement('button');refreshButton.className='refresh-panel';refreshButton.type='button';refreshButton.textContent='↻';refreshButton.setAttribute('aria-label','Atualizar painel');refreshButton.title='Atualizar painel e recuperar os controles';
   root.querySelector('header').insertBefore(refreshButton,root.querySelector('.close'));
@@ -867,6 +867,50 @@
   const scheduleDialog=()=>visibleNative('.ant-modal-content').find(e=>e.querySelector('app-new-schedule'));
   const forwardDialog=()=>visibleNative('.ant-modal-content').find(e=>e.querySelector('app-brisanet-forward-form'));
   const calendarVisible=()=>Boolean(scheduleDialog()?.querySelector('[data-testid="component-calendar-step"]'));
+  let scheduleMessage=null,pendingSchedule=null,scheduleMonitor=null;
+  window.addEventListener('hashchange',()=>{scheduleMessage=null;pendingSchedule=null;if(scheduleMonitor)clearInterval(scheduleMonitor);scheduleMonitor=null;});
+  function readScheduleReview(dialog){
+    const review=dialog?.querySelector('[data-testid="component-revision-step"],app-revision-confirmation-step');
+    if(!review)return null;
+    const values=all(review,'[data-testid="data-to-confirm"]').map(text);
+    const day=values.find(v=>/^\d{1,2}\s+de\s+\S+\s+de\s+\d{4}$/i.test(v));
+    const windowText=values.find(v=>/\d{1,2}:\d{2}.*\d{1,2}:\d{2}/.test(v));
+    const hours=windowText?.match(/\d{1,2}:\d{2}/g);
+    if(!day||hours?.length!==2)return null;
+    return {day,start:hours[0],end:hours[1]};
+  }
+  function finishScheduleMessage(){
+    const pending=pendingSchedule;if(!pending)return;
+    if(!root.isConnected||pending.route!==location.hash){clearInterval(scheduleMonitor);scheduleMonitor=null;pendingSchedule=null;return;}
+    const feedback=commandFeedback();
+    if(feedback!==pending.before&&/(?:reagendamento|agendamento)\s+realizado\s+com\s+sucesso/i.test(feedback))pending.confirmed=true;
+    if(pending.confirmed&&!scheduleDialog()){
+      const data=pending.data;const begin=Number(data.start.split(':')[0]),end=Number(data.end.split(':')[0]);
+      const period=end<=12?'no período da manhã':begin>=12?'no período da tarde':'no período informado';
+      const message=`Olá! Seu atendimento técnico foi agendado para o dia ${data.day}, ${period}, das ${data.start} às ${data.end}.\n\nO horário de atendimento da empresa é das 08:00 às 18:00.`;
+      scheduleMessage={route:pending.route,message};pendingSchedule=null;clearInterval(scheduleMonitor);scheduleMonitor=null;
+      if(!card?.isConnected){card=cards()[0]||null;route=location.hash;}
+      if(card?.isConnected){tabName='Etiquetar';opened=true;$('.panel').hidden=false;$('.launch').hidden=true;note('Agendamento confirmado pelo Revan. Mensagem pronta para copiar.');render();$('.panel').scrollTop=0;}
+    }else if(Date.now()-pending.started>45000){pendingSchedule=null;clearInterval(scheduleMonitor);scheduleMonitor=null;note('A confirmação do agendamento não foi identificada. Nenhuma mensagem de confirmação foi gerada.');}
+  }
+  document.addEventListener('click',event=>{
+    if(!root.isConnected)return;
+    const button=event.target.closest?.('button');if(!button||button.disabled||text(button)!=='Confirmar')return;
+    const dialog=button.closest('.ant-modal-content');
+    if(!dialog?.querySelector('app-new-schedule [data-testid="component-revision-step"],app-new-schedule app-revision-confirmation-step'))return;
+    const check=dialog.querySelector('[data-testid="confirm-schedule-checkbox"] input');if(!check?.checked)return;
+    const data=readScheduleReview(dialog);if(!data)return;
+    if(scheduleMonitor)clearInterval(scheduleMonitor);
+    pendingSchedule={route:location.hash,data,before:commandFeedback(),started:Date.now(),confirmed:false};
+    scheduleMonitor=setInterval(finishScheduleMessage,200);
+  },true);
+  function renderScheduleMessage(body){
+    if(!scheduleMessage||scheduleMessage.route!==location.hash)return;
+    const box=make('div','field save-review');box.append(make('strong','','Agendamento confirmado · mensagem para o cliente'));
+    const area=make('textarea');area.readOnly=true;area.rows=5;area.value=scheduleMessage.message;area.setAttribute('aria-label','Mensagem de agendamento');
+    box.append(area,actionButton('Copiar mensagem de agendamento',async()=>{await navigator.clipboard.writeText(scheduleMessage.message);note('Mensagem de agendamento copiada.');}));
+    box.append(make('small','','Gerada a partir da revisão e da confirmação de sucesso do Revan.'));body.append(box);
+  }
   async function chooseForwardOption(dialog,id,name){
     const select=await until(()=>{const e=dialog.querySelector('nz-select#'+id);return e&&!e.classList.contains('ant-select-disabled')&&e;},6000);
     const choices=all(select,'.ant-select-selection__choice').map(text);
@@ -985,6 +1029,7 @@
     const updateDest=()=>{problemFields.hidden=dest.value!=='Suporte Externo';info.textContent=dest.value==='Suporte Externo'?'Após Anexar: minimizar → etiqueta e Eventos → Enviar → Aguardar chamado → Suporte Externo → problema → serviço → calendário. Data e conclusão são manuais.':'Após Anexar: minimizar → etiqueta e Eventos → Enviar → Aguardar chamado → destino → Encaminhar. Se houver campos adicionais, continue no Revan.';};dest.addEventListener('change',()=>{tagDraft.destination=dest.value;updateDest();});updateDest();field.append(extra);
   }
   function renderTagger(body){
+    renderScheduleMessage(body);
     const field=make('div','field tagger');const label=make('label','','Nome, parte do nome ou letra');
     const query=make('input');query.type='search';query.value=tagDraft.query;query.placeholder='Ex.: wifi, sinal, retorno…';query.setAttribute('aria-label','Buscar etiqueta');label.append(query);field.append(label);
     const results=make('div','tag-results');const counter=make('small');
