@@ -1,4 +1,4 @@
-MINIDASHBOARD REVAN — VERSÃO 4.5.2
+MINIDASHBOARD REVAN — VERSÃO 4.6.0
 
 INSTALAR / ATUALIZAR FAVORITO
 Importe revan-favoritos.html no gerenciador de favoritos do Chrome ou Edge.
@@ -103,3 +103,8 @@ O favorito foi testado em uma página simulada, inclusive reabrir sem perder edi
 A proteção do navegador do Codex bloqueou a abertura automática do instalador local.
 Os atendimentos deixados pelo usuário continuam abertos. A instalação atualizada deve ser
 feita pelo usuário no navegador em que vai utilizar o dashboard.
+
+
+ETIQUETAR — versão 4.6
+Aba Etiquetar: busque nome, trecho ou letra; a lista local ignora acentos e é ordenada alfabeticamente. Escolha o nome exato. Buscar mais no Revan consulta a lista nativa e incorpora os resultados à sessão. O catálogo inicial contém etiquetas de atendimento observadas, sem nomes de colaboradores. Não garante totalidade.
+Digite uma observação opcional. Anexar aplica a etiqueta no atendimento e publica a observação como comentário interno nos Eventos. A categoria não é selecionada. O painel preserva comentários já em rascunho e evita repetir envios acompanhados nesta sessão. Confira confirmações e erros: etiqueta e comentário são etapas separadas, sem transação única. Se o comentário ficar sem confirmação, confira os Eventos antes de repetir; atualizar o painel não reenvia.

@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Revan — Minidashboard de equipamentos
 // @namespace    local.revan.minidashboard
-// @version      4.5.2
+// @version      4.6.0
 // @updateURL    https://raw.githubusercontent.com/kingoffjoss/Meus-Scripts/main/Revan/outputs/revan-minidashboard.user.js
 // @downloadURL  https://raw.githubusercontent.com/kingoffjoss/Meus-Scripts/main/Revan/outputs/revan-minidashboard.user.js
 // @description  Campos próprios e ações integradas aos controles originais do Revan.
@@ -18,7 +18,7 @@
   });
   const root = document.createElement('section');
   root.id = 'rv-mini';
-  root.dataset.version = '4.5.2';
+  root.dataset.version = '4.6.0';
   root.innerHTML = `<button class="launch" aria-expanded="false"><span class="launch-icon">◈</span> Equipamentos <span class="launch-dot"></span></button><div class="panel" hidden><header><strong><span class="brand-icon">◈</span> Equipamentos <small>REDE & CONEXÃO</small></strong><button class="close" aria-label="Minimizar" title="Minimizar para botão">−</button></header><div class="context"></div><select class="equipment" aria-label="Equipamento"></select><nav></nav><p class="status" role="status"></p><div class="body"></div><footer></footer></div>`;
   const refreshButton=document.createElement('button');refreshButton.className='refresh-panel';refreshButton.type='button';refreshButton.textContent='↻';refreshButton.setAttribute('aria-label','Atualizar painel');refreshButton.title='Atualizar painel e recuperar os controles';
   root.querySelector('header').insertBefore(refreshButton,root.querySelector('.close'));
@@ -319,6 +319,8 @@
     body.append(block);
   }
   let autoPending=false, autoReport='';
+  const tagNames=new Set(["(Desativada) Brisa Play","Agendamento de Retorno","Alcance do Wi-Fi","Alteração de cômodo","Alteração de dados cadastrais - (Carimbo)","Alteração de Senha do WIFI","Alteração de Senha TV (autocensura)","Alterar data de vencimento","Alterar modo da ONU","Área do Cliente - (Carimbo)","Ativo sem contato/Env. SMS","Atualização de E-mail","Atualização de telefone","Atualização do Plano","Aumento/Redução do Limite da Telefonia","Bloqueio de chamadas fixo","Brisa Móvel","BrisaCliente","BrisaMusic","BrisaMusicPremium","BrisaPlay","Cabo da Fibra Rompido","Cabo de fibra baixo/remanejamento - FTTH","Cabo de Rede não disponibilizado no ato da Instalação - até 7d","Cabo desconectado","Canais Quadriculando","Canal Em Manutenção","Chamado IMOC","Chamado interno incorreto (suporte interno)","Chamado proativo","Cliente desistiu da visita técnica","Cliente já atendido","Cliente Não Localizado - AGR","Cliente não pagou","Cliente priorizado - atendimento","Cob. Alteração de Plano (dentro do prazo)","Cob. Alteração de Plano (fora do prazo)","Cobrança de equipamento danificado/perdido","Cobrança De Instalação Dentro Do Prazo","Cobrança De Instalação Fora Do Prazo","COBRANÇA DE RECOLHIMENTO DE KIT","COBRANÇA DE REPARO DENTRO DO PRAZO","COBRANÇA DE REPARO FORA DO PRAZO","Cobrança de Retorno Interno","Compartilhamento de Rede","Conecta+","Configuração de roteador não realizada n​a instalação - 7d","Configuração Estruturada de Rede Interna","Declaração de débito","Declaração de quitação anual","Desbloqueio temporário","Desbloqueio temporário - (Carimbo)","Desbloqueio/Bloqueio para ligações 0300/0500","Desbloqueio/Bloqueio para ligações internacionais","Desbloqueio/Bloqueio para números especifico","Desbloqueio/Bloqueio para realizar ligações a cobrar","Discovery Kids","E00","Encerrado por falta de cordialidade","Endereços de pontos de pagamento","Expansão dos pontos de pagamento","Facebook","Falha de Autenticação","Falta de Recolhimento de equipamento","Fidelização (termos do contrato)","Formas de pagamento - (Carimbo)","FOX","Globoplay","Heroapp","Histórico de Ligações do Fixo","Horários de funcionamento de escritórios","Indisponibilidade area de risco","Informação APP/SITE","Informação atendimento","Informação de nota fiscal","Informação Técnica","Informações do Serviço","Informações sobre cartão brisanet","Informações sobre vencimento","Insatisfeito com o equipamento instalado - 7d","Instabilidade no WI-FI","Instabilidade TP-LINK","Instagram","Instalação de Roteador TP-LINK","Instalação Inadequada (local) - 7d","Instalação mal sucedida (sem acesso) - 7d","IPTV - (Carimbo)","Latência alta para servidor do jogo","Ligação caiu","LinkedIn","Live FC","Mau atendimento de vendedor externo","Max","Monitoria CSAT","Mudança de Numero Fixo","Multas e juros","Multas e Juros","Não Efetua Ligações","Não recebe Ligações","Nat Geo kid's","Netflix","Nooggin","Notificação de débito/bloqueio ou desativação","Perda de pacotes","Personalização da Rede wifi","Ping alto","Plano não chega o contratado - FTTH","Pon apagada - FTTH","Pon piscando - FTTH","Porta Incorreta","Portas virtuais bloqueadas","Pós atendimento","Pós-Venda (CX)","Premiere","Problema em Redes sociais","Problema na Maquineta de Cartão","Problema na OLT","Problema na portabilidade","Problema no Áudio","Problema no Pabx do Cliente","Problema no Replay","Problemas com o Telefone Fixo","Qualifica","Reagendou visita","Receptor Bloqueado","Reclamação de jogos online","Recolher roteador","Recolhimento Desativado automático","REPARO MAL SUCEDIDO","Restrição de NAT","Retenção Suporte","Revisão de Equipamento","Rota Inoperante - FTTH","Sem acesso TP-LINK","Sem contato","Senha de Autenticação","Servidor do jogo em manutenção","Servidor Inoperante (Rádio)","Sinal da fibra do cliente irregular - FTTH","Skeelo","SKY+ - Informações do plano","Solicitação de alteração de parede","Solicitação de alteração na Forma Pagamento não disponibilizada","Solicitação para separar redes Wi-Fi - FTTH","Solicitação para separar redes Wi-Fi - FWA","Solicitação para unificar redes Wi-Fi - FTTH","Solicitação para unificar redes Wi-Fi - FWA","Suporte a equipamento particular","Suporte ao técnico - (Carimbo)","Suspeita de LOS","Tarifação da telefonia","Taxa de alteração de Cômodo","Taxa de mudança de endereço","Tela Preta","Telecine","Telefone mudo","Telefonia - (Carimbo)","Troca de Cabo de Rede","Troca de Cabo Fibra - FTTH","Troca de Cabo HDMI/RCA","Troca de Conector (ONU)","Troca de Conector (RJ)","Troca de Conector (Splitter)","Troca de Controle","Troca de Equipamento","Troca de Fonte - FTTH","Troca de onu - FTTH","Troca de Radio","Troca de Receptor","Troca de roteador - FTTH","Troca de Telefone","Twitter","Ubook Select","Upgrade de roteador","Valor de fatura divergente","Valor de IP fixo","Valores cobrados durante bloqueio/desativação/sem acesso","Velocidade (Taxa de Download/Upload)","Visita sem êxito","Visita sem êxito 2","Visita sem êxito 3","Visita técnica (dentro do prazo)","Visita técnica (fora do prazo)","Watch Espn","Webmail","Wi-Fi da ONU/Roteador desativado"]);
+  let tagDraft={query:'',selected:'',comment:'',progress:null};
   const selectedValue = e => text(e.querySelector('.ion-select-item__content'));
   const note = message => { $('.status').textContent = message; };
   const technology = () => nativeButton('CPE') ? 'FWA' : 'Fibra';
@@ -351,7 +353,7 @@
     root.classList.toggle('rv-dialog-open', hasDialog);
   }
   const valid = () => {
-    if (!card?.isConnected || location.hash !== route) throw new Error('O atendimento mudou. Reabra o painel.');
+    if (!root.isConnected || !card?.isConnected || location.hash !== route) throw new Error('O atendimento ou o painel mudou. Reabra o painel.');
   };
   async function until(check, timeout = 2500) {
     const token=operationEpoch;
@@ -369,7 +371,8 @@
     finally { clearTimeout(limit);if(token===operationEpoch){operationEpoch++;busy = false; if (opened && card?.isConnected) render(); lock();} }
   }
   function lock() {
-    all(root, 'button,input,select').forEach(e => {
+    root.dataset.busy=String(busy);
+    all(root, 'button,input,select,textarea').forEach(e => {
       if (!e.classList.contains('launch') && !e.classList.contains('close') && !e.classList.contains('refresh-panel')) e.disabled = busy || e.dataset.lock === 'true';
     });
   }
@@ -441,7 +444,7 @@
   }
   async function switchTab(name) {
     if (editing || nativeEditing()) throw new Error('Salve ou cancele a edição antes de trocar de aba.');
-    if (['Testes', 'Autenticação'].includes(name)) { tabName = name; note(name === 'Testes' ? 'Resultados lidos do Revan. Expanda cada teste para ver os detalhes.' : 'Login de autenticação do cliente e ações disponíveis no Revan.'); return; }
+    if (['Testes', 'Autenticação','Etiquetar'].includes(name)) { tabName = name; note(name === 'Etiquetar'?'Pesquise, escolha a etiqueta e clique em Anexar. O texto será registrado nos Eventos.':name === 'Testes' ? 'Resultados lidos do Revan. Expanda cada teste para ver os detalhes.' : 'Login de autenticação do cliente e ações disponíveis no Revan.'); return; }
     nativeButton(name).click(); tabName = name; await pause(100);
     if (name === 'Roteador') {
       await until(() => nativeButton('Verificar gerência') || nativeButton('Acessar Axess') || nativeButton('Adicionar roteador'));
@@ -791,6 +794,84 @@
     if (mode === 'password') return section.querySelector('ion-button[icontype="security"] button') || all(section, 'button').find(b => b.querySelector('[id="ion-icon-security"]'));
     return section.querySelector('button[nztooltiptitle="Criar login"]') || all(section, 'button').find(b => b.querySelector('[data-icon="plus"]'));
   }
+  css.textContent+='#rv-mini nav{flex-wrap:wrap}#rv-mini .tag-results{max-height:190px;overflow:auto;display:grid;gap:5px}#rv-mini .tag-results button{text-align:left;font-size:11px;padding:7px}#rv-mini .tag-results button.active{background:linear-gradient(110deg,#d5f5ef,#e7deff);border-color:#8d8be2}#rv-mini .tagger{display:grid;gap:10px}';
+  const tagKey=value=>normalized(value).replace(/[\u200b-\u200d\ufeff]/g,'');
+  const eventCard=()=>document.querySelector('app-new-events-card')||all(document,'.card').find(e=>!root.contains(e)&&e.querySelector('textarea[placeholder="Escreva uma nova mensagem..."]'));
+  const attachedTags=()=>all(document,'.tags .tag:not(.new) nz-tag span').map(text);
+  const tagDialog=()=>all(document,'.ant-modal-content').find(e=>e.getClientRects().length&&all(e,'.ant-modal-title').some(n=>text(n)==='Adicionar etiquetas'));
+  function setNativeText(input,value){const proto=input.tagName==='TEXTAREA'?HTMLTextAreaElement.prototype:HTMLInputElement.prototype;Object.getOwnPropertyDescriptor(proto,'value').set.call(input,value);input.dispatchEvent(new Event('input',{bubbles:true}));input.dispatchEvent(new Event('change',{bubbles:true}));}
+  async function openTagDialog(){
+    if(tagDialog())throw new Error('Feche ou conclua o formulário de etiquetas já aberto no Revan.');
+    const plus=document.querySelector('.tags .tag.new');if(!plus)throw new Error('Botão + de etiquetas indisponível.');
+    plus.click();return await until(()=>tagDialog(),5000);
+  }
+  function closeTagDialog(dialog){if(!dialog?.isConnected)return;all(dialog,'button').find(b=>text(b)==='Cancelar')?.click();}
+  async function nativeTagOptions(dialog,query){
+    const select=dialog.querySelector('nz-select#tags');const input=select?.querySelector('input');
+    if(!input)throw new Error('Campo de etiquetas não encontrado.');
+    select.querySelector('.ant-select-selection')?.click();setNativeText(input,query);await pause(650);
+    let previous='',since=Date.now();
+    return await until(()=>{
+      const rows=all(document,'.ant-select-dropdown li[nz-option-li]').filter(e=>e.getClientRects().length);
+      if(rows.some(e=>/loading|carregando/i.test(text(e))))return false;
+      const signature=rows.map(text).join('\n');if(signature!==previous){previous=signature;since=Date.now();return false;}
+      return Date.now()-since>250?{rows}:false;
+    },8000);
+  }
+  async function searchTags(){
+    const query=tagDraft.query.trim();if(!query)throw new Error('Digite parte do nome para consultar o Revan.');
+    let dialog;try{dialog=await openTagDialog();const {rows}=await nativeTagOptions(dialog,query);rows.forEach(e=>tagNames.add(text(e)));note(`${rows.length} resultado(s) lido(s) do Revan. Lista organizada abaixo.`);}finally{closeTagDialog(dialog);}
+  }
+  async function attachTag(){
+    valid();const selected=tagDraft.selected,comment=tagDraft.comment.trim();if(!selected)throw new Error('Escolha uma etiqueta da lista antes de anexar.');
+    const payload=JSON.stringify([route,selected,comment]);
+    if(tagDraft.progress&&tagDraft.progress.payload!==payload&&tagDraft.progress.attempted&&!tagDraft.progress.sent)throw new Error('Há envio anterior sem confirmação. Confira os Eventos antes de iniciar outro.');
+    const progress=tagDraft.progress?.payload===payload?tagDraft.progress:(tagDraft.progress={payload,tagged:false,attempted:false,sent:false});
+    const events=eventCard(),area=events?.querySelector('textarea[placeholder="Escreva uma nova mensagem..."]');
+    if(comment&&!progress.sent){if(!area||area.disabled)throw new Error('Campo de comentário dos Eventos indisponível.');if(area.value.trim()&&!((progress.tagged||progress.attempted)&&area.value.trim()===comment))throw new Error('Existe um comentário em rascunho nos Eventos. Conclua ou limpe por lá antes de anexar.');}
+    if(!progress.tagged){
+      if(attachedTags().some(t=>tagKey(t)===tagKey(selected)))progress.tagged=true;
+      else{
+        let dialog;try{
+          dialog=await openTagDialog();const {rows}=await nativeTagOptions(dialog,selected);
+          const exact=rows.filter(e=>text(e)===selected);const matches=exact.length?exact:rows.filter(e=>tagKey(text(e))===tagKey(selected));
+          if(matches.length!==1)throw new Error('A etiqueta exata não foi encontrada de forma única no Revan. Consulte novamente pelo nome.');
+          valid();matches[0].click();await pause(100);
+          const selectedNames=all(dialog,'nz-select#tags .ant-select-selection__choice').map(text);
+          if(selectedNames.length!==1||!selectedNames.some(n=>tagKey(n)===tagKey(selected)))throw new Error('Seleção nativa da etiqueta não confirmada.');
+          const conclude=all(dialog,'button').find(b=>text(b)==='Concluir');if(!conclude||conclude.disabled)throw new Error('O Revan não liberou Concluir.');
+          valid();conclude.click();await until(()=>attachedTags().some(t=>tagKey(t)===tagKey(selected)),10000);progress.tagged=true;
+        }finally{closeTagDialog(dialog);}
+      }
+    }
+    if(comment&&!progress.sent){
+      if(progress.attempted)throw new Error('Etiqueta aplicada; o comentário foi enviado sem confirmação. Confira os Eventos. Nenhum reenvio automático será feito.');
+      valid();setNativeText(area,comment);const send=events.querySelector('button#send_button');
+      await until(()=>send&&!send.disabled,3000);valid();
+      const content=()=>events.querySelector('.card-content')?.innerText||'';const occurrences=()=>normalized(content()).split(normalized(comment)).length-1;const before=occurrences();
+      progress.attempted=true;send.click();
+      try{await until(()=>!area.value.trim()&&occurrences()>before,12000);progress.sent=true;}
+      catch(error){throw new Error('Etiqueta aplicada. O envio do comentário não foi confirmado; confira os Eventos antes de repetir.');}
+    }
+    note(comment?'Etiqueta anexada e comentário confirmado nos Eventos.':'Etiqueta anexada ao atendimento.');
+  }
+  function renderTagger(body){
+    const field=make('div','field tagger');const label=make('label','','Nome, parte do nome ou letra');
+    const query=make('input');query.type='search';query.value=tagDraft.query;query.placeholder='Ex.: wifi, sinal, retorno…';query.setAttribute('aria-label','Buscar etiqueta');label.append(query);field.append(label);
+    const results=make('div','tag-results');const counter=make('small');
+    function updateResults(){
+      const q=tagKey(query.value);const found=[...tagNames].filter(n=>!q||tagKey(n).includes(q)).sort((a,b)=>a.localeCompare(b,'pt-BR'));
+      counter.textContent=`${found.length} etiqueta(s) no catálogo · selecione o nome exato`;
+      results.replaceChildren(...found.map(name=>{const b=make('button',tagDraft.selected===name?'active':'',name);b.type='button';b.addEventListener('click',()=>{tagDraft.selected=name;updateResults();chosen.textContent='Selecionada: '+name;});return b;}));
+    }
+    query.addEventListener('input',()=>{tagDraft.query=query.value;updateResults();});
+    field.append(counter,results);const chosen=make('strong','','Selecionada: '+(tagDraft.selected||'nenhuma'));field.append(chosen);
+    field.append(actionButton('Buscar mais no Revan',searchTags));
+    const messageLabel=make('label','','Informações para os Eventos (opcional)');const message=make('textarea');message.rows=4;message.value=tagDraft.comment;message.placeholder='Digite a observação do atendimento…';message.setAttribute('aria-label','Informações para os Eventos');message.addEventListener('input',()=>{tagDraft.comment=message.value;});messageLabel.append(message);field.append(messageLabel);
+    field.append(make('small','','Anexar aplica a etiqueta selecionada e publica o texto acima como comentário interno nos Eventos deste atendimento. Categoria é opcional e não será selecionada.'));
+    if(tagDraft.progress)field.append(make('small','',`Etiqueta: ${tagDraft.progress.tagged?'confirmada':'não confirmada'} · Comentário: ${tagDraft.progress.sent?'confirmado':tagDraft.progress.attempted?'enviado, confira os Eventos':'não enviado'}`));
+    updateResults();body.append(field);
+  }
   function renderAuthentication(body) {
     renderCommandHistory(body);
     const section = pageSection('AUTENTICAÇÃO', 'brisanet-auth-card');
@@ -825,11 +906,11 @@
     const financialClass=/^ativ[oa]$/i.test(financial)?'finance-active':/^(bloquead|suspens|inativ)/i.test(financial)?'finance-blocked':'finance-other';
     const badge=make('span',`finance-badge ${financialClass}`,financial);badge.title='Situação financeira no Revan';
     $('.context').append(' · ',badge);
-    const tabs = technology() === 'FWA' ? ['CPE','Rede','Testes','Autenticação'] : ['ONU','Roteador','Rede','Testes','Autenticação'];
+    const tabs = technology() === 'FWA' ? ['CPE','Rede','Testes','Autenticação','Etiquetar'] : ['ONU','Roteador','Rede','Testes','Autenticação','Etiquetar'];
     $('nav').replaceChildren(...tabs.map(name => actionButton(name, () => switchTab(name), name === tabName ? 'active' : '', editing)));
     const body = $('.body'); body.replaceChildren();
     body.classList.toggle('network-layout', tabName === 'Rede');
-    if (tabName === 'Rede') renderNetwork(body); else if (tabName === 'Testes') renderTests(body); else if (tabName === 'Autenticação') renderAuthentication(body); else renderDevice(body);
+    if (tabName === 'Rede') renderNetwork(body); else if (tabName === 'Testes') renderTests(body); else if (tabName === 'Autenticação') renderAuthentication(body); else if(tabName==='Etiquetar')renderTagger(body);else renderDevice(body);
     if(tabName==='Rede'){
       if(reviewRequested&&editing){
         const box=make('div','save-review');box.append(make('strong','','Revisar alterações'));
@@ -845,6 +926,7 @@
       const area=make('textarea');area.readOnly=true;area.value=payload;area.rows=5;message.append(area,actionButton('Copiar mensagem',async()=>{await navigator.clipboard.writeText(payload);note(editing?'Rascunho copiado. Salve antes de enviar ao cliente.':'Mensagem copiada.');}));body.append(message);
     }
     const footer = $('footer'); footer.replaceChildren();
+    if(tabName==='Etiquetar')footer.append(actionButton('Anexar',attachTag,'primary'));
     if (tabName === 'Rede') {
       if (editing) {
         footer.append(actionButton(reviewRequested?'Confirmar salvar':'Salvar',()=>save(reviewRequested),'primary'));
@@ -866,7 +948,7 @@
     list.forEach((c, i) => { const o = make('option','',`Equipamento ${i + 1} · ${text(c.querySelector('ion-tab-group')?.previousElementSibling).slice(0,80)}`); o.value = String(i); picker.append(o); });
     picker.hidden = list.length < 2;
     if (card?.isConnected && route === location.hash && editing && nativeEditing()) { picker.value = String(list.indexOf(card)); render(); return; }
-    if (card !== list[0] || route !== location.hash) {generatedPasswords.clear();savedNetwork=null;editBaseline=null;reviewRequested=false;}
+    if (card !== list[0] || route !== location.hash) {generatedPasswords.clear();savedNetwork=null;editBaseline=null;reviewRequested=false;tagDraft={query:'',selected:'',comment:'',progress:null};}
     card = list[0]; route = location.hash; editing = false; changed = false;
     if (!card) { $('.context').textContent = `Atendimento ${route.split('/').pop()}`; $('nav').replaceChildren(); $('.body').replaceChildren(); $('footer').replaceChildren(); note('Não localizei as abas dos equipamentos nesta tela. Aguarde o atendimento carregar e abra o painel novamente.'); return; }
     if (nativeEditing()) { tabName = 'Rede'; note('Há edição na tela original. Conclua ou cancele antes de editar pelo painel.'); render(); return; }
@@ -884,14 +966,14 @@
     if (editing || nativeEditing()) { $('.equipment').value = String(cards().indexOf(card)); note('Salve ou cancele antes de trocar de equipamento.'); return; }
     generatedPasswords.clear(); savedNetwork=null;editBaseline=null;reviewRequested=false;autoPending=false;autoReport='';card = cards()[Number($('.equipment').value)]; void run(() => switchTab(technology() === 'FWA' ? 'CPE' : 'ONU'));
   });
-  window.addEventListener('hashchange', () => { minimize(); savedNetwork=null;editBaseline=null;reviewRequested=false;card = null; editing = false; changed = false; options.clear(); generatedPasswords.clear();autoPending=false;autoReport='';$('.context').textContent = ''; $('nav').replaceChildren(); $('.body').replaceChildren(); $('footer').replaceChildren(); });
+  window.addEventListener('hashchange', () => { minimize(); tagDraft={query:'',selected:'',comment:'',progress:null};savedNetwork=null;editBaseline=null;reviewRequested=false;card = null; editing = false; changed = false; options.clear(); generatedPasswords.clear();autoPending=false;autoReport='';$('.context').textContent = ''; $('nav').replaceChildren(); $('.body').replaceChildren(); $('footer').replaceChildren(); });
   document.addEventListener('keydown', e => { if (e.key === 'Escape') minimize(); });
   new MutationObserver(records => {
     syncDialogs();
     const sections=[card,commandSection(),financialSection(),pageSection('RESULTADOS DOS TESTES','brisanet-config-report'),pageSection('AUTENTICAÇÃO','brisanet-auth-card')].filter(Boolean);
     if (!opened || busy || !card || !records.some(r => sections.some(section=>section.contains(r.target)))) return;
     clearTimeout(timer); timer = setTimeout(() => {
-      if (busy || !opened || (root.contains(document.activeElement) && document.activeElement.matches('input:not([readonly]),select'))) return;
+      if (busy || !opened || (root.contains(document.activeElement) && document.activeElement.matches('input:not([readonly]),select,textarea'))) return;
       render();
     }, 150);
   }).observe(document.body, {childList:true, subtree:true});
