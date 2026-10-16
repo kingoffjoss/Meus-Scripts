@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Revan — Minidashboard de equipamentos
 // @namespace    local.revan.minidashboard
-// @version      4.9.0
+// @version      4.10.0
 // @updateURL    https://raw.githubusercontent.com/kingoffjoss/Meus-Scripts/main/Revan/outputs/revan-minidashboard.user.js
 // @downloadURL  https://raw.githubusercontent.com/kingoffjoss/Meus-Scripts/main/Revan/outputs/revan-minidashboard.user.js
 // @description  Campos próprios e ações integradas aos controles originais do Revan.
@@ -19,187 +19,12 @@
   });
   const root = document.createElement('section');
   root.id = 'rv-mini';
-  root.dataset.version = '4.9.0';
-  root.innerHTML = `<button class="launch" aria-expanded="false"><span class="launch-icon">◈</span> Equipamentos <span class="launch-dot"></span></button><div class="panel" hidden><header><strong><span class="brand-icon">◈</span> Equipamentos <small>REDE & CONEXÃO</small></strong><button class="close" aria-label="Minimizar" title="Minimizar para botão">−</button></header><div class="context"></div><select class="equipment" aria-label="Equipamento"></select><nav></nav><p class="status" role="status"></p><div class="body"></div><footer></footer></div>`;
+  root.dataset.version = '4.10.0';
+  root.innerHTML = `<button class="launch" aria-expanded="false"><span class="launch-icon">◈</span> Equipamentos <span class="launch-dot"></span></button><div class="panel" hidden><header><strong><span class="brand-icon">◈</span> Revan <small>REDE & CONEXÃO</small></strong><button class="close" aria-label="Minimizar" title="Minimizar para botão">−</button></header><div class="context"></div><select class="equipment" aria-label="Equipamento"></select><nav></nav><p class="status" role="status"></p><div class="body"></div><footer></footer></div>`;
   const refreshButton=document.createElement('button');refreshButton.className='refresh-panel';refreshButton.type='button';refreshButton.textContent='↻';refreshButton.setAttribute('aria-label','Atualizar painel');refreshButton.title='Atualizar painel e recuperar os controles';
   root.querySelector('header').insertBefore(refreshButton,root.querySelector('.close'));
   const css = document.createElement('style');
-  css.textContent = `#rv-mini{position:fixed;right:20px;bottom:20px;z-index:10000;font:14px system-ui,sans-serif;color:#17243c}#rv-mini *{box-sizing:border-box}#rv-mini [hidden]{display:none!important}#rv-mini button{font:inherit;cursor:pointer;border:1px solid #dbe3ee;border-radius:10px;padding:9px 12px;background:white;color:#163e73}#rv-mini button:disabled{opacity:.5;cursor:default}#rv-mini .launch,#rv-mini .primary{background:#163e73;color:white;border-color:#163e73}#rv-mini .launch{box-shadow:0 6px 24px #102d5540;font-weight:650}#rv-mini .panel{position:absolute;right:0;bottom:56px;width:min(560px,calc(100vw - 40px));max-height:calc(100vh - 100px);overflow:auto;background:#f5f7fb;border:1px solid #dce4ee;border-radius:18px;box-shadow:0 18px 50px #102d5538}#rv-mini header{display:flex;justify-content:space-between;align-items:center;background:#163e73;color:white;padding:15px 18px}#rv-mini .close{background:#ffffff20;color:white;border:0}#rv-mini .context,#rv-mini nav,#rv-mini .status,#rv-mini .body,#rv-mini footer{padding:12px 18px;margin:0}#rv-mini .context{font-size:12px;color:#52617a}#rv-mini nav{display:flex;gap:8px;padding-top:0}#rv-mini nav .active{background:#e1eafb;border-color:#163e73}#rv-mini .status{background:#e9eff9;font-size:12px;line-height:1.5}#rv-mini .body{display:grid;gap:12px}#rv-mini .field{display:grid;gap:6px;background:white;border:1px solid #e1e7ef;border-radius:12px;padding:12px}#rv-mini label{font-weight:600;font-size:12px}#rv-mini input:not([type=checkbox]),#rv-mini select{width:100%;padding:9px;border:1px solid #cbd7e7;border-radius:8px;font:inherit;background:white;color:#17243c}#rv-mini input:disabled,#rv-mini select:disabled{background:#f0f3f7;color:#52617a}#rv-mini .equipment{width:calc(100% - 36px);margin:0 18px 12px}#rv-mini .toggle{display:flex;align-items:center;justify-content:space-between;background:white;padding:12px;border-radius:10px}#rv-mini .toggle input{width:18px;height:18px}#rv-mini .summary{white-space:pre-line;line-height:1.6;background:white;padding:12px;border-radius:12px}#rv-mini .actions,#rv-mini footer{display:flex;flex-wrap:wrap;gap:8px}#rv-mini footer{position:sticky;bottom:0;background:#f5f7fb;border-top:1px solid #dce4ee}#rv-mini small{font-size:11px;color:#52617a}#rv-mini .danger{color:#a52b33}#rv-mini .band{font-weight:700;color:#163e73;margin-top:8px}`;
-  css.textContent += '#rv-mini .network-band{display:grid;gap:8px}#rv-mini h3.band{margin:4px 0;font-size:15px}';
-  css.textContent += '#rv-mini.rv-dialog-open{z-index:900}';
-  css.textContent += '#rv-mini .panel{position:fixed;right:20px;bottom:76px}#rv-mini header{cursor:move;touch-action:none;user-select:none}#rv-mini .launch{cursor:grab;touch-action:none;user-select:none}#rv-mini .launch:active{cursor:grabbing}';
-  css.textContent += '#rv-mini nav{flex-wrap:wrap}#rv-mini .context{font-weight:600;line-height:1.6;color:#17243c}#rv-mini .test-result{padding:12px;border:1px solid #dce4ee;border-radius:12px;background:white}#rv-mini .test-result summary{cursor:pointer;font-weight:600;line-height:1.5}#rv-mini .test-detail{white-space:pre-wrap;line-height:1.6;color:#52617a;margin-top:10px}#rv-mini .test-success{border-left:4px solid #21865c}#rv-mini .test-error{border-left:4px solid #bd3541}#rv-mini .test-warning{border-left:4px solid #cb8b21}#rv-mini .auth-email{overflow-wrap:anywhere;font-weight:650}';
-  css.textContent += `
-    #rv-mini{font-size:12px}
-    #rv-mini .panel{width:min(490px,calc(100vw - 24px));max-height:calc(100vh - 88px)}
-    #rv-mini header{padding:9px 12px}
-    #rv-mini button{padding:6px 9px;border-radius:8px;font-size:12px}
-    #rv-mini .context,#rv-mini nav,#rv-mini .status,#rv-mini .body,#rv-mini footer{padding:8px 12px}
-    #rv-mini .context{font-size:11px;line-height:1.45}
-    #rv-mini nav{gap:5px;padding-top:0}
-    #rv-mini .status{font-size:11px;line-height:1.4}
-    #rv-mini .body{gap:8px}
-    #rv-mini .field{padding:8px;gap:4px;border-radius:9px}
-    #rv-mini input:not([type=checkbox]),#rv-mini select{padding:6px 7px;min-height:30px;font-size:12px}
-    #rv-mini label{font-size:11px}
-    #rv-mini .toggle{padding:7px 8px}
-    #rv-mini .network-toolbar{align-items:center;justify-content:space-between}
-    #rv-mini .network-toolbar .toggle{gap:10px;margin-left:auto;background:transparent;padding:4px 0}
-    #rv-mini .summary{padding:8px;line-height:1.45;font-size:11px}
-    #rv-mini .actions{gap:5px}
-    #rv-mini small{font-size:10px;line-height:1.4}
-    #rv-mini .network-band{grid-template-columns:repeat(3,minmax(0,1fr));gap:5px;background:#fff;border:1px solid #dce4ee;border-radius:11px;padding:8px}
-    #rv-mini .network-band .band,#rv-mini .network-band .ssid-field{grid-column:1/-1}
-    #rv-mini h3.band{font-size:12px;margin:0 0 2px}
-    #rv-mini .network-band .field{border:0;background:#f5f7fb;border-radius:7px;padding:6px;min-width:0}
-    #rv-mini .network-band .ssid-field{background:transparent;padding:0 0 5px}
-    #rv-mini .network-band .select-field label{display:grid;gap:4px}
-    #rv-mini .device-info{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:4px 12px;font-size:11px}
-    #rv-mini .device-info span{color:#52617a;font-size:10px}
-    #rv-mini .device-info strong{display:block;font-weight:600;overflow-wrap:anywhere}
-    #rv-mini .command-section{background:#fff;border:1px solid #dce4ee;border-radius:9px;padding:8px}
-    #rv-mini .command-heading{display:flex;justify-content:space-between;align-items:center;gap:8px;font-weight:700}
-    #rv-mini .command-content{white-space:pre-wrap;overflow-wrap:anywhere;line-height:1.5;margin-top:6px;padding:7px;border-radius:6px;background:#fff3d9;border-left:3px solid #cb8b21}
-    #rv-mini .command-empty{font-size:11px;color:#52617a;margin-top:4px}
-    #rv-mini .test-result{padding:8px}
-    @media(max-width:380px){#rv-mini .network-band{grid-template-columns:1fr}#rv-mini .network-band .band,#rv-mini .network-band .ssid-field{grid-column:1}#rv-mini .device-info{grid-template-columns:1fr}}
-  `;
-  css.textContent += `
-    #rv-mini header{padding:7px 10px}
-    #rv-mini .context,#rv-mini nav,#rv-mini .status,#rv-mini .body,#rv-mini footer{padding:6px 10px}
-    #rv-mini nav{padding-top:0;gap:4px}
-    #rv-mini button{padding:5px 7px}
-    #rv-mini .body{gap:6px}
-    #rv-mini .body.network-layout{grid-template-columns:repeat(2,minmax(0,1fr));align-items:start}
-    #rv-mini .network-layout .network-toolbar{grid-column:1/-1}
-    #rv-mini .network-layout .network-band{grid-template-columns:1fr;padding:7px;gap:4px;min-width:0;border-radius:8px}
-    #rv-mini .network-layout .network-band .field{padding:3px;background:transparent}
-    #rv-mini .network-layout .network-band .ssid-field{padding:0 0 3px}
-    #rv-mini .network-layout .network-band .select-field label{grid-template-columns:minmax(0,1fr) minmax(0,98px);align-items:center;gap:4px}
-    #rv-mini input:not([type=checkbox]),#rv-mini select{min-height:27px;padding:4px 6px}
-    #rv-mini .network-layout label{font-size:10.5px}
-    #rv-mini .network-layout .actions{gap:4px}
-    #rv-mini .network-layout .ssid-field button{font-size:11px;padding:5px 6px}
-    #rv-mini .summary,#rv-mini .command-section,#rv-mini .test-result{padding:7px}
-    @media(max-width:480px){#rv-mini .body.network-layout{grid-template-columns:1fr}}
-  `;
-  css.textContent += `
-    #rv-mini{font-family:Inter,Segoe UI,system-ui,sans-serif;color:#20304b}
-    #rv-mini .panel{position:relative;inset:auto;width:min(490px,calc(100vw - 24px));background:linear-gradient(135deg,rgba(255,255,255,.93),rgba(235,244,255,.84) 58%,rgba(243,234,255,.88));backdrop-filter:blur(24px) saturate(150%);-webkit-backdrop-filter:blur(24px) saturate(150%);border:1px solid rgba(255,255,255,.9);border-radius:19px;box-shadow:0 20px 65px rgba(24,43,87,.22),0 3px 12px rgba(87,65,180,.12),inset 0 1px 0 #fff;animation:rv-reveal .2s ease-out}
-    #rv-mini .launch{display:flex;align-items:center;gap:8px;padding:12px 16px;border:1px solid #ffffff80;border-radius:16px;font-weight:650;background:linear-gradient(115deg,#176bc2,#6544c7);box-shadow:0 8px 25px #3448a84d,inset 0 1px 0 #ffffff50;color:white;animation:rv-reveal .18s ease-out}
-    #rv-mini .launch:hover{box-shadow:0 10px 30px #5443ba66;filter:brightness(1.08)}
-    #rv-mini .launch-icon,#rv-mini .brand-icon{font-size:22px;color:#92f2ff}
-    #rv-mini .launch-dot{width:6px;height:6px;background:#a5ffe2;border-radius:50%;box-shadow:0 0 10px #7cffd7}
-    #rv-mini header{background:linear-gradient(105deg,#155b99,#354b9c 55%,#6a42a9);padding:10px 12px;border-bottom:1px solid #ffffff30;position:sticky;top:0;z-index:2}
-    #rv-mini header strong{display:flex;align-items:center;gap:7px;font-size:13px;letter-spacing:.15px}
-    #rv-mini header small{font-size:8px;letter-spacing:1px;color:#d6e3ff;white-space:nowrap;font-weight:500}
-    #rv-mini .close{display:grid;place-items:center;width:27px;height:27px;padding:0;background:#ffffff20;border:1px solid #ffffff30;color:#fff;border-radius:9px;font-size:20px}
-    #rv-mini .close:hover{background:#ffffff35}
-    #rv-mini .context{padding:8px 12px;color:#3d4d69;font-weight:500;font-size:10.5px}
-    #rv-mini .finance-badge{display:inline-block;padding:2px 6px;border-radius:6px;border:1px solid #ccd8e780;background:#ffffff80;font-weight:650;line-height:1.3}
-    #rv-mini .finance-active{color:#167456;background:#d9f8ebaa;border-color:#a6dec980}
-    #rv-mini .finance-blocked{color:#ad354e;background:#ffe2eaaa;border-color:#f3b9c780}
-    #rv-mini .finance-other{color:#80641d;background:#fff1cdaa;border-color:#e9d39080}
-    #rv-mini nav{padding:0 10px 7px;gap:5px}
-    #rv-mini nav button{background:#ffffff80;border:1px solid #d8e2f180;color:#59677f;font-weight:600;border-radius:9px;padding:6px 9px}
-    #rv-mini nav button.active{background:linear-gradient(110deg,#e2f3ff,#eee7ff);border-color:#b2bcf5;color:#4c43a2;box-shadow:0 2px 8px #6452ad18}
-    #rv-mini button{transition:background .15s,box-shadow .15s,border-color .15s,filter .15s}
-    #rv-mini button:not(:disabled):hover{border-color:#8db5ee;box-shadow:0 2px 7px #28477318}
-    #rv-mini .status{margin:0 10px 1px;border-radius:8px;background:linear-gradient(110deg,#daf2f780,#ece5fa80);color:#476079;padding:6px 8px;font-size:10.5px}
-    #rv-mini .body{padding:8px 10px;gap:7px}
-    #rv-mini .network-layout .network-band{background:#ffffff88;border-color:#ffffffd9;box-shadow:0 2px 10px #4967a50b;border-radius:12px;padding:8px}
-    #rv-mini .network-layout .network-band:nth-of-type(2){border-top:3px solid #26b1c4}
-    #rv-mini .network-layout .network-band:nth-of-type(3){border-top:3px solid #9265d4}
-    #rv-mini h3.band{font-size:12px;color:#40598d;margin:0 0 4px}
-    #rv-mini input:not([type=checkbox]),#rv-mini select{background:#ffffffaa;border:1px solid #c8d8ebaa;border-radius:7px;color:#293d59}
-    #rv-mini input:disabled,#rv-mini select:disabled{background:#eef3f880;color:#8391a7}
-    #rv-mini input:focus,#rv-mini select:focus{outline:2px solid #b3a4eb80;outline-offset:1px;border-color:#8273cf}
-    #rv-mini .field,#rv-mini .summary,#rv-mini .command-section,#rv-mini .test-result{background:#ffffff9c;border-color:#ffffffd9;border-radius:11px}
-    #rv-mini .network-layout .network-band .field{background:transparent}
-    #rv-mini .primary{background:linear-gradient(105deg,#177fad,#6c4ac7);border-color:transparent;color:white;box-shadow:0 3px 10px #4554aa25}
-    #rv-mini .danger{background:#fff0f180;border-color:#edc9d580;color:#a85069}
-    #rv-mini .command-content{background:#fff3d7aa;border-color:#e8b767}
-    #rv-mini footer{background:rgba(242,246,255,.88);backdrop-filter:blur(12px);border-top:1px solid #ffffffcc;padding:7px 10px}
-    #rv-mini .equipment{margin-bottom:7px;background:#ffffff90}
-    #rv-mini ::-webkit-scrollbar{width:5px;height:5px}
-    #rv-mini ::-webkit-scrollbar-thumb{background:#7890be70;border-radius:9px}
-    @keyframes rv-reveal{from{opacity:0;transform:scale(.98)}to{opacity:1;transform:scale(1)}}
-    @media(prefers-reduced-motion:reduce){#rv-mini .panel,#rv-mini .launch{animation:none}#rv-mini button{transition:none}}
-    @media(max-width:380px){#rv-mini header small{display:none}}
-  `;
-  css.textContent += `
-    #rv-mini .panel{background:radial-gradient(ellipse at 0 0,#d4f8ff80,transparent 55%),radial-gradient(ellipse at 100% 70%,#e9d8ff85,transparent 60%),linear-gradient(140deg,#f8fbffed,#eef4ffdf);box-shadow:0 24px 70px #26375730,0 4px 16px #644bac20,inset 0 1px 0 #fff}
-    #rv-mini .body{gap:9px;padding-top:10px}
-    #rv-mini nav button{position:relative;border-radius:10px;background:#ffffffa6}
-    #rv-mini nav button.active{background:linear-gradient(110deg,#cff3ff,#e8ddff);border-color:#a8c0ee;box-shadow:0 3px 9px #5460b51c}
-    #rv-mini .status{border-left:3px solid #62b5d8;background:linear-gradient(110deg,#ddf6ffb0,#e8e4ff80)}
-    #rv-mini .command-section{position:relative;background:linear-gradient(115deg,#e4f8ffbb,#ffffffb0);border:1px solid #b9e4f780;border-radius:13px;padding:10px}
-    #rv-mini .command-heading>span:before{content:'≋';display:inline-grid;place-items:center;width:24px;height:24px;border-radius:8px;background:#2da9c520;color:#258dab;font-size:19px;margin-right:7px;vertical-align:middle}
-    #rv-mini .command-empty{padding-left:31px;color:#6a8196}
-    #rv-mini .device-info{gap:6px}
-    #rv-mini .device-info>div{position:relative;padding:7px 9px;border-radius:9px;border:1px solid #dce9f590;background:linear-gradient(115deg,#ffffffb0,#e8f1ff80);min-width:0}
-    #rv-mini .device-info>div:nth-child(4n+2){background:linear-gradient(115deg,#ffffffa0,#ebe4ff90);border-color:#dcd4f190}
-    #rv-mini .device-info>div:nth-child(4n+3){background:linear-gradient(115deg,#ffffffa0,#dff5f190);border-color:#cbe6df90}
-    #rv-mini .device-info span{font-size:9px;font-weight:600;letter-spacing:.15px;color:#60768b}
-    #rv-mini .device-info strong{margin-top:3px;font-size:11px;color:#304b70}
-    #rv-mini .summary:has(.device-info){padding:0;background:transparent;border:0}
-    #rv-mini .device-actions{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:6px}
-    #rv-mini .device-actions button{padding:9px 10px;text-align:left;display:flex;align-items:center;gap:7px;border-radius:11px;background:linear-gradient(110deg,#e6f5ff,#f7fbff);border-color:#b9d8f280;color:#346e9a;font-weight:600}
-    #rv-mini .device-actions button:before{content:'↗';font-size:16px;width:23px;height:23px;display:grid;place-items:center;border-radius:7px;background:#359bca18}
-    #rv-mini .device-actions button.danger{background:linear-gradient(110deg,#ffebf1,#fff7ed);border-color:#efc3d380;color:#aa5877}
-    #rv-mini .device-actions button.danger:before{content:'ϟ';background:#da78991a;color:#b46383}
-    #rv-mini .device-actions button:hover:not(:disabled){box-shadow:0 4px 12px #5478ac26;filter:brightness(1.03)}
-    #rv-mini .test-stats{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:6px}
-    #rv-mini .test-stat{padding:8px 10px;border-radius:11px;border:1px solid #ffffffc0;background:#ffffff80}
-    #rv-mini .test-stat strong{display:block;font-size:19px;line-height:1.1;letter-spacing:-.4px}
-    #rv-mini .test-stat span{font-size:10px;font-weight:600}
-    #rv-mini .stat-success{background:linear-gradient(130deg,#d8f7ec,#f2fff8);color:#288663;border-color:#bae8d280}
-    #rv-mini .stat-error{background:linear-gradient(130deg,#ffe0eb,#fff2f6);color:#b7476e;border-color:#f3bdd180}
-    #rv-mini .stat-warning{background:linear-gradient(130deg,#fff0d0,#fffbee);color:#a17c26;border-color:#efdda280}
-    #rv-mini .test-result{padding:0;overflow:hidden;border-radius:12px;border:1px solid #dce5f280;background:#ffffff90;transition:box-shadow .18s}
-    #rv-mini .test-result:hover{box-shadow:0 3px 12px #5676ac13}
-    #rv-mini .test-result summary{list-style:none;display:flex;align-items:center;gap:7px;padding:9px 10px;font-size:11px}
-    #rv-mini .test-result summary::-webkit-details-marker{display:none}
-    #rv-mini .test-result summary:before{content:'•';display:grid;place-items:center;width:20px;height:20px;flex-shrink:0;border-radius:7px;background:#dce9f5;font-size:16px;color:#52738c}
-    #rv-mini .test-result summary:after{content:'⌄';margin-left:auto;color:#7890a6;transition:transform .18s}
-    #rv-mini .test-result[open] summary:after{transform:rotate(180deg)}
-    #rv-mini .test-success{border-left:3px solid #48b997}
-    #rv-mini .test-success summary:before{content:'✓';background:#d6f4e8;color:#24946d;font-size:12px}
-    #rv-mini .test-error{border-left:3px solid #d87497;background:linear-gradient(135deg,#fff0f5aa,#ffffffb0)}
-    #rv-mini .test-error summary:before{content:'!';background:#fbdce9;color:#b24c72;font-size:13px;font-weight:700}
-    #rv-mini .test-warning{border-left:3px solid #d5ac59}
-    #rv-mini .test-warning summary:before{content:'!';background:#fff0cd;color:#a78028}
-    #rv-mini .test-detail{padding:0 10px 10px;margin:0;font-size:11px}
-    #rv-mini .test-message{padding:7px 9px;background:#ffffff90;border-radius:8px;margin-bottom:7px;color:#7b5370}
-    #rv-mini .test-metrics{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:7px}
-    #rv-mini .metric-card{padding:8px;border-radius:9px;border:1px solid #dce5f090;background:#edf4ffb0;white-space:pre-wrap;overflow-wrap:anywhere}
-    #rv-mini .metric-card.expected{background:#e8f6eeb0;border-color:#d1e9da90}
-    #rv-mini .metric-card>span{display:block;font-size:9px;letter-spacing:.5px;text-transform:uppercase;font-weight:700;color:#68819e;margin-bottom:5px}
-    #rv-mini .metric-card.expected>span{color:#618773}
-    #rv-mini .auth-card{position:relative;padding:14px 12px 12px 54px;border-radius:14px;background:linear-gradient(125deg,#e8e5ffb0,#e0f5ffb0);border:1px solid #d5cef5aa;min-height:82px}
-    #rv-mini .auth-card:before{content:'@';position:absolute;left:12px;top:15px;width:31px;height:31px;display:grid;place-items:center;background:linear-gradient(135deg,#7960d8,#46a9ce);color:white;border-radius:10px;box-shadow:0 4px 10px #7060b530;font-size:19px;font-weight:650}
-    #rv-mini .auth-card label{color:#6b6492;font-size:9px;text-transform:uppercase;letter-spacing:.6px}
-    #rv-mini .auth-email{margin:4px 0 6px;color:#493b7f;font-size:13px}
-    #rv-mini .auth-card small{color:#478572}
-    #rv-mini .auth-actions{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:7px}
-    #rv-mini .auth-actions button{padding:10px 8px;text-align:left;background:linear-gradient(120deg,#e5f4ff,#f5f1ff);border-color:#c9d6ef90;border-radius:11px;color:#586492;font-weight:600}
-    #rv-mini .auth-actions button:before{content:'↻';margin-right:6px;color:#8371c5;font-size:16px}
-    #rv-mini .refresh-reading{background:#ffffff50;border:1px dashed #c6d6e9;color:#7086a0;padding:5px;font-size:10px;box-shadow:none}
-    #rv-mini .network-layout .network-band{background:linear-gradient(145deg,#ffffffcc,#eaf8ff85);box-shadow:0 4px 12px #607da515}
-    #rv-mini .network-layout .network-band:nth-of-type(3){background:linear-gradient(145deg,#ffffffcc,#eee6ff90)}
-    #rv-mini .network-layout .ssid-field button{background:#ffffff90;border-color:#cfdcf380;border-radius:8px;color:#6281a1}
-    #rv-mini .network-toolbar .toggle{color:#667391}
-    #rv-mini .network-options{grid-column:1/-1;display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:5px}
-    #rv-mini .network-options .toggle{margin:0;padding:7px;border-radius:9px;border:1px solid #d9e5f280;background:linear-gradient(115deg,#ffffffb0,#e5f3ff80);font-size:10px;gap:5px;color:#526c89}
-    #rv-mini .network-options .toggle:nth-child(2){background:linear-gradient(115deg,#ffffffb0,#e5f7ef90)}
-    #rv-mini .network-options .toggle:nth-child(3){background:linear-gradient(115deg,#ffffffb0,#eee7ff90)}
-    #rv-mini .network-options input{width:14px;height:14px;flex-shrink:0;accent-color:#7661ca}
-    #rv-mini .auto-network{grid-column:1/-1;padding:9px;border-radius:11px;background:linear-gradient(110deg,#dcefffaa,#ece2ffaa);border:1px solid #c9cff099;display:grid;gap:5px}
-    #rv-mini .auto-network button{background:linear-gradient(110deg,#4c98b8,#8a65c0);color:white;border:0;font-weight:600;padding:8px}
-    #rv-mini .auto-report{white-space:pre-wrap;font-size:10px;line-height:1.5;color:#566a88}
-    @media(prefers-reduced-motion:reduce){#rv-mini .test-result,#rv-mini .test-result summary:after{transition:none}}
-  `;
-  css.textContent += '#rv-mini .refresh-panel{margin-left:auto;margin-right:5px;display:grid;place-items:center;width:27px;height:27px;padding:0;background:#ffffff20;border:1px solid #ffffff30;color:white;border-radius:9px;font-size:18px}#rv-mini .refresh-panel:hover{background:#ffffff35}';
+  css.textContent = "#rv-mini{--bg:#091727;--card:#102238;--line:#253d5b;--text:#eaf2ff;--muted:#a8bbd6;--cyan:#00d9f5;position:fixed;right:20px;bottom:20px;z-index:10000;color:var(--text);font:12px 'Segoe UI',system-ui,sans-serif;color-scheme:dark}\n#rv-mini *{box-sizing:border-box}#rv-mini [hidden]{display:none!important}\n#rv-mini button,#rv-mini input,#rv-mini select,#rv-mini textarea{font:inherit}\n#rv-mini button{cursor:pointer;color:var(--text);background:#13263d;border:1px solid var(--line);border-radius:8px;padding:8px 10px;transition:background .16s,border-color .16s,box-shadow .16s}\n#rv-mini button:hover:not(:disabled){border-color:#26b6d3;background:#18334d;box-shadow:0 0 12px #00d9f519}#rv-mini button:disabled{opacity:.45;cursor:default}\n#rv-mini button:focus-visible,#rv-mini input:focus-visible,#rv-mini select:focus-visible,#rv-mini textarea:focus-visible{outline:2px solid var(--cyan);outline-offset:2px}\n#rv-mini .launch{display:flex;align-items:center;gap:8px;padding:13px 18px;background:linear-gradient(115deg,#09243b,#252051);border-color:#40608b;border-radius:14px;box-shadow:0 8px 32px #0007;cursor:grab;touch-action:none;user-select:none;font-weight:700}\n#rv-mini .launch-icon,#rv-mini .brand-icon{color:var(--cyan);font-size:23px}#rv-mini .launch-dot{width:6px;height:6px;border-radius:50%;background:#31ebba;box-shadow:0 0 9px #31ebba80}\n#rv-mini .panel{width:min(570px,calc(100vw - 24px));height:min(690px,calc(100dvh - 40px));display:grid;grid-template-columns:78px minmax(0,1fr);grid-template-rows:auto auto auto auto minmax(0,1fr) auto;overflow:hidden;background:linear-gradient(135deg,#071424f5,#102039f2);backdrop-filter:blur(24px);-webkit-backdrop-filter:blur(24px);border:1px solid #35537d;border-radius:17px;box-shadow:0 20px 65px #0008,inset 0 1px 0 #89bdff19;animation:rv-reveal .18s ease-out}\n#rv-mini header{grid-column:1/-1;display:flex;align-items:center;gap:8px;padding:12px 14px;border-bottom:1px solid var(--line);background:#0b192cbb;cursor:move;touch-action:none;user-select:none}\n#rv-mini header strong{display:flex;align-items:center;gap:7px;font-size:19px}#rv-mini header small{display:none}\n#rv-mini .refresh-panel{margin-left:auto}#rv-mini .close,#rv-mini .refresh-panel{height:30px;min-width:31px;padding:0;background:transparent;border-color:#314762;font-size:21px;color:#c8dcf7}\n#rv-mini .context{grid-column:1/-1;padding:9px 14px;color:var(--muted);font-size:10.5px;line-height:1.6;border-bottom:1px solid #253d5b80}\n#rv-mini .finance-badge{padding:2px 6px;border-radius:5px;background:#203c50;font-weight:700}.finance-active{color:#42e5b0!important}.finance-blocked{color:#ff9caa!important}.finance-other{color:#ffcd77!important}\n#rv-mini .equipment{grid-column:2;margin:8px 12px 0;width:calc(100% - 24px)}\n#rv-mini nav{grid-column:1;grid-row:3/7;display:flex;flex-direction:column;gap:6px;padding:10px 5px;border-right:1px solid var(--line);background:#08172799;overflow:auto;min-height:0}\n#rv-mini nav button{position:relative;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:5px;min-height:61px;border-color:transparent;background:transparent;color:#b7c9e4;padding:7px 2px;font-size:10px}\n#rv-mini nav button.active{color:var(--cyan);background:linear-gradient(90deg,#083c55,#10243d);border-color:#174d6c;box-shadow:inset 3px 0 0 var(--cyan)}\n#rv-mini .nav-icon{width:23px;height:23px;display:block}#rv-mini svg{fill:none;stroke:currentColor;stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round}\n#rv-mini .status{grid-column:2;margin:8px 12px 0;padding:7px 9px;font-size:10.5px;line-height:1.5;color:#aac7e0;background:#12334a80;border:1px solid #22465f;border-radius:8px}\n#rv-mini .body{grid-column:2;min-height:0;overflow:auto;padding:12px;display:flex;flex-direction:column;gap:10px;scrollbar-width:thin;scrollbar-color:#355476 transparent}\n#rv-mini .section-title{margin:0;font-size:18px;letter-spacing:-.3px;color:#edf5ff}\n#rv-mini footer{grid-column:2;display:flex;flex-wrap:wrap;align-items:center;justify-content:flex-end;gap:7px;padding:10px 12px;background:#0a192be8;border-top:1px solid var(--line)}#rv-mini footer:empty{display:none}\n#rv-mini .primary,#rv-mini .auto-network button{background:linear-gradient(110deg,#9100f1,#00cde8);border-color:transparent;color:#fff;font-weight:700;box-shadow:0 3px 14px #5600bd30}\n#rv-mini input:not([type=checkbox]),#rv-mini select,#rv-mini textarea{width:100%;min-width:0;min-height:33px;padding:7px 9px;background:#071727b8;border:1px solid #304c70;border-radius:8px;color:var(--text)}#rv-mini input:disabled,#rv-mini select:disabled{color:#a8b9ce;background:#0b1a2b}\n#rv-mini input::placeholder,#rv-mini textarea::placeholder{color:#869bb7}#rv-mini label{font-size:11px;font-weight:500;color:#bfd0e8}#rv-mini small{font-size:10px;line-height:1.5;color:var(--muted)}\n#rv-mini .field,#rv-mini .summary,#rv-mini .command-section,#rv-mini .auth-card,#rv-mini .save-review,#rv-mini .auto-network,#rv-mini .client-message{background:linear-gradient(135deg,#11263ab3,#102036a6);border:1px solid var(--line);border-radius:11px;padding:10px;line-height:1.5;min-width:0}\n#rv-mini .field{display:grid;gap:6px}#rv-mini .summary{white-space:pre-line}#rv-mini .actions{display:flex;flex-wrap:wrap;gap:6px}#rv-mini .device-actions{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:7px}#rv-mini .device-actions button{text-align:left}\n#rv-mini .device-info{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}#rv-mini .device-info>div{padding:8px;border:1px solid #29405b;border-radius:8px;background:#0a1b2d}#rv-mini .device-info span{font-size:10px;color:var(--muted)}#rv-mini .device-info strong{display:block;overflow-wrap:anywhere;color:#e1edff;margin-top:3px;font-size:11px}\n#rv-mini .command-heading{display:flex;align-items:center;justify-content:space-between;gap:6px;font-weight:700}#rv-mini .command-content{white-space:pre-wrap;overflow-wrap:anywhere;background:#59431938;border-left:3px solid #e2ad42;padding:8px;margin-top:7px;border-radius:6px}#rv-mini .command-empty{color:var(--muted);font-size:11px;margin-top:6px}\n#rv-mini .band-tabs{display:flex;gap:0;background:#142b47;border:1px solid #284c70;border-radius:9px;padding:3px}#rv-mini .band-tabs button{flex:1;background:transparent;border:0;color:#abb9dc}#rv-mini .band-tabs button.active{background:#064565;color:var(--cyan);box-shadow:inset 0 -2px 0 var(--cyan)}\n#rv-mini .network-band{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}#rv-mini .network-band .ssid-field{grid-column:1/-1;background:transparent;border:0;padding:0 0 5px;display:flex;flex-wrap:wrap;gap:6px}#rv-mini .ssid-field>label{width:100%;display:grid;gap:6px}#rv-mini .ssid-field>small{width:100%}#rv-mini .band{display:none}#rv-mini .select-field{padding:0;background:transparent;border:0}#rv-mini .select-field label{display:grid;gap:6px}\n#rv-mini .toggle-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:7px}#rv-mini .toggle{display:flex;align-items:center;justify-content:space-between;gap:8px;padding:10px;background:#10263bb3;border:1px solid var(--line);border-radius:9px;min-width:0}\n#rv-mini input[type=checkbox]{appearance:none;-webkit-appearance:none;flex-shrink:0;width:32px;height:19px;border-radius:12px;background:#40516e;border:1px solid #607394;cursor:pointer;position:relative}#rv-mini input[type=checkbox]:before{content:'';position:absolute;width:13px;height:13px;left:2px;top:2px;background:#d9e7ff;border-radius:50%;transition:transform .16s}#rv-mini input[type=checkbox]:checked{background:#00cce8;border-color:#00d9f5}#rv-mini input[type=checkbox]:checked:before{transform:translateX(13px);background:white}#rv-mini input:disabled{cursor:default}\n#rv-mini .save-review{background:#5e431929;border-color:#836219;color:#ffd185;display:grid;gap:5px}#rv-mini .draft-banner{color:#ffcf75;background:#59411d38;border:1px solid #805f25;border-radius:9px;padding:9px;font-size:11px;width:100%}\n#rv-mini .danger{color:#ffb0c5;border-color:#714059;background:#45203377}#rv-mini .auth-email{font-weight:700;overflow-wrap:anywhere}#rv-mini .auth-actions{display:flex;flex-wrap:wrap;gap:6px}\n#rv-mini .test-stats{display:grid;grid-template-columns:repeat(3,1fr);gap:6px}#rv-mini .test-stat{padding:9px;border-radius:9px;background:#132c41;border:1px solid var(--line)}#rv-mini .test-stat strong{display:block;font-size:21px}#rv-mini .test-stat span{font-size:10px}.stat-success{color:#46deb3}.stat-error{color:#ff94ac}.stat-warning{color:#f9c973}\n#rv-mini .test-result{border:1px solid var(--line);border-radius:9px;background:#10253a;overflow:hidden}#rv-mini summary{cursor:pointer;padding:9px;font-size:11px}#rv-mini .test-detail{white-space:pre-wrap;padding:0 10px 10px;font-size:11px;line-height:1.5}#rv-mini .test-success{border-left:3px solid #31c99d}#rv-mini .test-error{border-left:3px solid #f17b9b}#rv-mini .test-warning{border-left:3px solid #e9b948}#rv-mini .test-metrics{display:grid;grid-template-columns:1fr 1fr;gap:7px}#rv-mini .metric-card{padding:8px;background:#0b1b2d;border-radius:7px;white-space:pre-wrap}#rv-mini .metric-card>span{display:block;color:var(--muted);font-size:10px}\n#rv-mini .tag-results{display:grid;gap:5px;max-height:190px;overflow:auto}#rv-mini .tag-results button{text-align:left}#rv-mini .tag-selected{border-color:#00aeca;color:#66e8ff;background:#07374e}#rv-mini .external-fields{display:grid;gap:8px}#rv-mini .client-message textarea{margin-bottom:6px}\n#rv-mini.rv-dialog-open{z-index:900}#rv-mini ::-webkit-scrollbar{width:5px}#rv-mini ::-webkit-scrollbar-thumb{background:#355476;border-radius:8px}\n@keyframes rv-reveal{from{opacity:0;transform:scale(.98)}to{opacity:1;transform:scale(1)}}\n@media(max-width:460px){#rv-mini .panel{grid-template-columns:61px minmax(0,1fr)}#rv-mini .body{padding:8px}#rv-mini .network-band{grid-template-columns:1fr}#rv-mini .network-band .ssid-field{grid-column:1}#rv-mini nav button{font-size:9px}#rv-mini .toggle-grid{grid-template-columns:1fr}}\n@media(prefers-reduced-motion:reduce){#rv-mini .panel{animation:none}#rv-mini button,#rv-mini input[type=checkbox]:before{transition:none}}\n#rv-mini header{grid-row:1}#rv-mini .context{grid-row:2}#rv-mini .equipment{grid-row:3}#rv-mini .status{grid-row:4}#rv-mini .body{grid-row:5}#rv-mini footer{grid-row:6}#rv-mini .client-message{background:#102238;color:#bed0e9}#rv-mini .client-message summary{background:transparent;color:#bed0e9}\r\n";
   document.head.append(css);
   document.body.append(root);
   const $ = s => root.querySelector(s);
@@ -551,12 +376,15 @@
     for(const f of networkDraft.fields){const automatic=f.choices.find(v=>/^(auto|automatico|todos)/.test(normalized(v)));if(f.label==='Modo do Wi-Fi'&&automatic)f.value=automatic;if(f.label==='Largura de banda'&&f.band.startsWith('2.4'))f.value=f.choices.find(v=>/^20\s*mhz$/i.test(v))||f.value;if(f.label==='Largura de banda'&&f.band.startsWith('5.8')&&automatic)f.value=automatic;}
     networkDraft.optimize=Boolean(nativeButton('Otimizar canal'));draftChanged();autoReport='Perfil preparado localmente. A otimização nativa, quando disponível, só será acionada após Confirmar salvar.';
   }
+  let selectedBand = '';
   function renderNetwork(body){
+    body.append(make('h2','section-title','Configurações Wi-Fi'));
+    const toggles=make('div','toggle-grid');
     const readonly=!networkDraft,plan=networkDraft||captureNetworkPlan(networkSignature());const actions=make('div','actions network-toolbar');
     const devices=nativeButton('Dispositivos conectados');actions.append(actionButton('Dispositivos conectados',async()=>{if(!devices||devices.disabled)throw new Error('Consulta indisponível.');devices.click();await pause(100);syncDialogs();},'',!devices||devices.disabled||editing));body.append(actions);
     if(readonly)body.append(make('small','','Clique em Editar para ler as opções e montar um rascunho local. As escolhas só serão aplicadas depois de Confirmar salvar.'));
-    for(const [title,value] of Object.entries(plan.switches)){const label=make('label','toggle',title),input=make('input');input.type='checkbox';input.checked=value;input.dataset.lock=String(readonly);input.addEventListener('change',()=>{plan.switches[title]=input.checked;if(title==='Rede unificada'&&!input.checked&&plan.ssids.length===1){const first=plan.ssids[0],bands=[...new Set(plan.fields.map(f=>f.band))];if(bands.length>1)plan.ssids=bands.map((band,index)=>({...first,band,index}));}draftChanged();render();});label.append(input);body.append(label);}
-    if(plan.power!==null){const label=make('label','toggle','Habilitar rede'),input=make('input');input.type='checkbox';input.checked=plan.power;input.dataset.lock=String(readonly);input.addEventListener('change',()=>{plan.power=input.checked;plan.powerChanged=true;draftChanged();});label.append(input);body.append(label);}
+    for(const [title,value] of Object.entries(plan.switches)){const label=make('label','toggle',title),input=make('input');input.type='checkbox';input.checked=value;input.dataset.lock=String(readonly);input.addEventListener('change',()=>{plan.switches[title]=input.checked;if(title==='Rede unificada'&&!input.checked&&plan.ssids.length===1){const first=plan.ssids[0],bands=[...new Set(plan.fields.map(f=>f.band))];if(bands.length>1)plan.ssids=bands.map((band,index)=>({...first,band,index}));}draftChanged();render();});label.append(input);toggles.append(label);}
+    if(plan.power!==null){const label=make('label','toggle','Habilitar rede'),input=make('input');input.type='checkbox';input.checked=plan.power;input.dataset.lock=String(readonly);input.addEventListener('change',()=>{plan.power=input.checked;plan.powerChanged=true;draftChanged();});label.append(input);toggles.append(label);}
     body.append(actionButton('Configuração automática · preparar',automaticNetwork));if(autoReport)body.append(make('small','',autoReport));
     const groups=new Map();function group(band){if(!groups.has(band)){const e=make('div','network-band');e.append(make('h3','band',band));groups.set(band,e);body.append(e);}return groups.get(band);}
     plan.ssids.forEach((item,index)=>{
@@ -568,6 +396,15 @@
       group(item.band).append(field);
     });
     for(const f of plan.fields){const field=make('div','field select-field'),label=make('label','',f.label),select=make('select');for(const value of f.choices){const o=make('option','',value);o.value=value;select.append(o);}select.value=f.value;select.dataset.lock=String(readonly||!f.available);select.addEventListener('change',()=>{f.value=select.value;draftChanged();});label.append(select);field.append(label);group(f.band).append(field);}
+    const bands=[...groups.keys()];
+    if(!bands.includes(selectedBand))selectedBand=bands[0]||'';
+    if(bands.length){
+      const guides=make('div','band-tabs');guides.setAttribute('role','tablist');guides.setAttribute('aria-label','Faixa de frequência');
+      function choose(band){selectedBand=band;for(const [name,element] of groups)element.hidden=name!==band;for(const b of guides.children){const active=b.dataset.band===band;b.classList.toggle('active',active);b.setAttribute('aria-selected',String(active));}}
+      for(const band of bands){const b=document.createElement('button');b.type='button';b.textContent=band;b.dataset.band=band;b.setAttribute('role','tab');b.addEventListener('click',()=>choose(band));guides.append(b);}
+      const first=groups.values().next().value;body.insertBefore(guides,first);choose(selectedBand);
+    }
+    if(toggles.children.length)body.append(toggles);
   }
 
   async function refreshDashboard() {
@@ -1039,7 +876,9 @@
     const badge=make('span',`finance-badge ${financialClass}`,financial);badge.title='Situação financeira no Revan';
     $('.context').append(' · ',badge);
     const tabs = technology() === 'FWA' ? ['CPE','Rede','Testes','Autenticação','Etiquetar'] : ['ONU','Roteador','Rede','Testes','Autenticação','Etiquetar'];
-    $('nav').replaceChildren(...tabs.map(name => actionButton(name, () => switchTab(name), name === tabName ? 'active' : '', editing)));
+    const paths={ONU:'M4 4h16v14H4z M8 21h8 M8 14h1 M12 14h1 M16 14h1',CPE:'M4 6h16v12H4z M8 21h8',Roteador:'M4 13h16v7H4z M8 16h1 M12 16h1 M7 5a8 8 0 0 1 10 0 M9 8a4 4 0 0 1 6 0 M12 11h.01',Rede:'M9 3h6v5H9z M3 16h6v5H3z M15 16h6v5h-6z M12 8v4 M6 16v-4h12v4',Testes:'M8 4h8v3H8z M8 5H5v16h14V5h-3 M8 13l2 2 5-5',Autenticação:'M12 3a4 4 0 1 0 0 8a4 4 0 0 0 0-8 M5 21v-3a7 7 0 0 1 14 0v3z',Etiquetar:'M3 3h8l10 10-8 8L3 11z M7 7h.01'};
+    $('nav').setAttribute('aria-label','Seções do dashboard');
+    $('nav').replaceChildren(...tabs.map(name=>{const b=actionButton(name,()=>switchTab(name),name===tabName?'active':'',editing);b.textContent='';const icon=document.createElementNS('http://www.w3.org/2000/svg','svg');icon.setAttribute('viewBox','0 0 24 24');icon.setAttribute('class','nav-icon');icon.setAttribute('aria-hidden','true');const path=document.createElementNS(icon.namespaceURI,'path');path.setAttribute('d',paths[name]);icon.append(path);b.append(icon,make('span','',name==='Autenticação'?'Login':name==='Etiquetar'?'Etiquetas':name));b.title=name;if(name===tabName)b.setAttribute('aria-current','page');return b;}));
     const body = $('.body'); body.replaceChildren();
     body.classList.toggle('network-layout', tabName === 'Rede');
     if (tabName === 'Rede') renderNetwork(body); else if (tabName === 'Testes') renderTests(body); else if (tabName === 'Autenticação') renderAuthentication(body); else if(tabName==='Etiquetar')renderTagger(body);else renderDevice(body);
@@ -1058,6 +897,7 @@
       const area=make('textarea');area.readOnly=true;area.value=payload;area.rows=5;message.append(area,actionButton('Copiar mensagem',async()=>{await navigator.clipboard.writeText(payload);note(editing?'Rascunho copiado. Salve antes de enviar ao cliente.':'Mensagem copiada.');}));body.append(message);
     }
     const footer = $('footer'); footer.replaceChildren();
+    if(networkDraft)footer.append(make('div','draft-banner','Rascunho local · alterações ainda não aplicadas')); 
     if(pendingAction&&pendingAction.tab===tabName){const review=make('div','save-review');review.append(make('strong','','Ação selecionada: '+pendingAction.name),make('small','','Nada foi acionado ainda. Executar ação abre o fluxo no Revan; confirmações nativas continuam manuais.'));body.prepend(review);footer.append(actionButton('Executar ação',executePreparedAction,'primary'),actionButton('Cancelar seleção',()=>{pendingAction=null;note('Seleção descartada. Nenhum comando foi enviado.');}));}
     if(tabName==='Etiquetar')footer.append(actionButton('Anexar',attachRequested,'primary'));
     if (tabName === 'Rede') {
