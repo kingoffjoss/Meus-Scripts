@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Revan — Minidashboard de equipamentos
 // @namespace    local.revan.minidashboard
-// @version      4.8.0
+// @version      4.8.1
 // @updateURL    https://raw.githubusercontent.com/kingoffjoss/Meus-Scripts/main/Revan/outputs/revan-minidashboard.user.js
 // @downloadURL  https://raw.githubusercontent.com/kingoffjoss/Meus-Scripts/main/Revan/outputs/revan-minidashboard.user.js
 // @description  Campos próprios e ações integradas aos controles originais do Revan.
@@ -18,7 +18,7 @@
   });
   const root = document.createElement('section');
   root.id = 'rv-mini';
-  root.dataset.version = '4.8.0';
+  root.dataset.version = '4.8.1';
   root.innerHTML = `<button class="launch" aria-expanded="false"><span class="launch-icon">◈</span> Equipamentos <span class="launch-dot"></span></button><div class="panel" hidden><header><strong><span class="brand-icon">◈</span> Equipamentos <small>REDE & CONEXÃO</small></strong><button class="close" aria-label="Minimizar" title="Minimizar para botão">−</button></header><div class="context"></div><select class="equipment" aria-label="Equipamento"></select><nav></nav><p class="status" role="status"></p><div class="body"></div><footer></footer></div>`;
   const refreshButton=document.createElement('button');refreshButton.className='refresh-panel';refreshButton.type='button';refreshButton.textContent='↻';refreshButton.setAttribute('aria-label','Atualizar painel');refreshButton.title='Atualizar painel e recuperar os controles';
   root.querySelector('header').insertBefore(refreshButton,root.querySelector('.close'));
@@ -320,7 +320,7 @@
   }
   let autoPending=false, autoReport='';
   const tagNames=new Set(["(Desativada) Brisa Play","Agendamento de Retorno","Alannio / Concluido","Alannio / Pendência","Alannio / Trabalhando","Alcance do Wi-Fi","Alteração de cômodo","Alteração de dados cadastrais - (Carimbo)","Alteração de Senha do WIFI","Alteração de Senha TV (autocensura)","Alterar data de vencimento","Alterar modo da ONU","Amaury Bezerra / Concluído","Amaury Bezerra / Pendência","Amaury Bezerra / Trabalhando","Área do Cliente - (Carimbo)","Ativo sem contato/Env. SMS","Atualização de E-mail","Atualização de telefone","Atualização do Plano","Aumento/Redução do Limite da Telefonia","Bloqueio de chamadas fixo","Brisa Móvel","BrisaCliente","BrisaMusic","BrisaMusicPremium","BrisaPlay","Cabo da Fibra Rompido","Cabo de fibra baixo/remanejamento - FTTH","Cabo de Rede não disponibilizado no ato da Instalação - até 7d","Cabo desconectado","Caio Vinicius / Pendência","Canais Quadriculando","Canal Em Manutenção","Chamado IMOC","Chamado interno incorreto (suporte interno)","Chamado proativo","Chamado Teste","Cliente desistiu da visita técnica","Cliente já atendido","Cliente Não Localizado - AGR","Cliente não pagou","Cliente priorizado - atendimento","Cob. Alteração de Plano (dentro do prazo)","Cob. Alteração de Plano (fora do prazo)","Cobrança de equipamento danificado/perdido","Cobrança De Instalação Dentro Do Prazo","Cobrança De Instalação Fora Do Prazo","COBRANÇA DE RECOLHIMENTO DE KIT","COBRANÇA DE REPARO DENTRO DO PRAZO","COBRANÇA DE REPARO FORA DO PRAZO","Cobrança de Retorno Interno","Compartilhamento de Rede","Conecta+","Configuração de roteador não realizada n​a instalação - 7d","Configuração Estruturada de Rede Interna","David Myquellyson / Concluido","David Myquellyson / Pendência","David Myquellyson / Trabalhando","Declaração de débito","Declaração de quitação anual","Desbloqueio temporário","Desbloqueio temporário - (Carimbo)","Desbloqueio/Bloqueio para ligações 0300/0500","Desbloqueio/Bloqueio para ligações internacionais","Desbloqueio/Bloqueio para números especifico","Desbloqueio/Bloqueio para realizar ligações a cobrar","Desconto sem acesso","Discovery Kids","E00","Eliwelton Alves / Concluído","Eliwelton Alves / Pendência","Eliwelton Alves / Trabalhando","Encerrado por falta de cordialidade","Endereços de pontos de pagamento","Expansão dos pontos de pagamento","Facebook","Falha de Autenticação","Falta de Recolhimento de equipamento","Fidelização (termos do contrato)","Formas de pagamento - (Carimbo)","FOX","Francielio / Concluido","Francielio / Pendência","Francielio / Trabalhando","Globoplay","Heroapp","Histórico de Ligações do Fixo","Horários de funcionamento de escritórios","Indisponibilidade area de risco","Informação APP/SITE","Informação atendimento","Informação de nota fiscal","Informação Técnica","Informações do Serviço","Informações sobre cartão brisanet","Informações sobre vencimento","Insatisfeito com o equipamento instalado - 7d","Instabilidade no WI-FI","Instabilidade TP-LINK","Instagram","Instalação de Roteador TP-LINK","Instalação Inadequada (local) - 7d","Instalação mal sucedida (sem acesso) - 7d","IPTV - (Carimbo)","Israel Henrick / Pendência","Jaquicione / Pendência","Jaquicione / Trabalhando","Jean Aires / Concluído","Jean Aires / Pendência","Jean Aires / Trabalhando","Jeymerson / Pendência","Jeymerson / Trabalhando","João Neto / Concluido","João Neto / Pendência","João Neto / Trabalhando","Klaus Vasconcelos / Concluído","Klaus Vasconcelos / Pendência","Klaus Vasconcelos / Trabalhando","Latência alta para servidor do jogo","Ligação caiu","LinkedIn","Live FC","Mau atendimento de vendedor externo","Max","Max Walney / Concluído","Max Walney / Pendência","Max Walney / Trabalhando","Monitoria CSAT","Mudança de Numero Fixo","Multas e juros","Multas e Juros","Não Efetua Ligações","Não recebe Ligações","Nat Geo kid's","Netflix","Nooggin","Notificação de débito/bloqueio ou desativação","Pendências / Agend. J.A - Kaio","Perda de pacotes","Personalização da Rede wifi","Ping alto","Plano não chega o contratado - FTTH","Pon apagada - FTTH","Pon piscando - FTTH","Porta Incorreta","Portas virtuais bloqueadas","Pós atendimento","Pós-Venda (CX)","Premiere","Problema em Redes sociais","Problema na Maquineta de Cartão","Problema na OLT","Problema na portabilidade","Problema no Áudio","Problema no Pabx do Cliente","Problema no Replay","Problemas com o Telefone Fixo","Qualifica","Reagendou visita","Receptor Bloqueado","Reclamação de jogos online","Recolher roteador","Recolhimento Desativado automático","REPARO MAL SUCEDIDO","Restrição de NAT","Retenção Suporte","Revisão de Equipamento","Rota Inoperante - FTTH","Sebastião Felix / Concluido","Sebastião Felix / Pendência","Sebastião Felix / Trabalhando","sem Acesso","Sem acesso","Sem acesso site ou sistema específico - FTTH","Sem acesso site ou sistema específico - FWA","Sem acesso TP-LINK","Sem contato","Senha de Autenticação","Servidor do jogo em manutenção","Servidor Inoperante (Rádio)","Sinal da fibra do cliente irregular - FTTH","Skeelo","SKY+ - Informações do plano","Solicitação de alteração de parede","Solicitação de alteração na Forma Pagamento não disponibilizada","Solicitação para separar redes Wi-Fi - FTTH","Solicitação para separar redes Wi-Fi - FWA","Solicitação para unificar redes Wi-Fi - FTTH","Solicitação para unificar redes Wi-Fi - FWA","Suporte a equipamento particular","Suporte ao técnico - (Carimbo)","Suspeita de LOS","Tarifação da telefonia","Taxa de alteração de Cômodo","Taxa de mudança de endereço","Tela Preta","Telecine","Telefone mudo","Telefonia - (Carimbo)","Troca de Cabo de Rede","Troca de Cabo Fibra - FTTH","Troca de Cabo HDMI/RCA","Troca de Conector (ONU)","Troca de Conector (RJ)","Troca de Conector (Splitter)","Troca de Controle","Troca de Equipamento","Troca de Fonte - FTTH","Troca de onu - FTTH","Troca de Radio","Troca de Receptor","Troca de roteador - FTTH","Troca de Telefone","Twitter","Ubook Select","Upgrade de roteador","Valor de fatura divergente","Valor de IP fixo","Valores cobrados durante bloqueio/desativação/sem acesso","Velocidade (Taxa de Download/Upload)","Visita sem êxito","Visita sem êxito 2","Visita sem êxito 3","Visita técnica (dentro do prazo)","Visita técnica (fora do prazo)","Watch Espn","Webmail","Wi-Fi da ONU/Roteador desativado"]);
-  const emptyTagDraft=()=>({query:'',selected:'',comment:'',progress:null,external:false,destination:'Suporte Externo',problem:'',problemQuery:'',service:'',forwardProgress:null});
+  const emptyTagDraft=()=>({query:'',selected:'',comment:'',progress:null,external:false,onlyExternal:false,destination:'Suporte Externo',problem:'',problemQuery:'',service:'',forwardProgress:null});
   let tagDraft=emptyTagDraft();
   const selectedValue = e => text(e.querySelector('.ion-select-item__content'));
   const note = message => { $('.status').textContent = message; };
@@ -823,11 +823,12 @@
       return Date.now()-since>250?{rows}:false;
     },8000);
   }
-  async function attachTag(){
-    valid();let selected=tagDraft.selected||tagDraft.query.trim();const comment=tagDraft.comment.trim();if(!selected)throw new Error('Digite o nome ou escolha uma etiqueta antes de anexar.');
+  async function attachTag(allowNoTag=false){
+    valid();let selected=tagDraft.selected||tagDraft.query.trim();const comment=tagDraft.comment.trim();if(!selected&&!allowNoTag)throw new Error('Digite o nome ou escolha uma etiqueta antes de anexar.');
     const payload=JSON.stringify([route,selected,comment]);
     if(tagDraft.progress&&tagDraft.progress.payload!==payload&&tagDraft.progress.attempted&&!tagDraft.progress.sent)throw new Error('Há envio anterior sem confirmação. Confira os Eventos antes de iniciar outro.');
-    const progress=tagDraft.progress?.payload===payload?tagDraft.progress:(tagDraft.progress={payload,tagged:false,attempted:false,sent:false});
+    const progress=tagDraft.progress?.payload===payload?tagDraft.progress:(tagDraft.progress={payload,tagged:!selected,skipTag:!selected,attempted:false,sent:false});
+    if(selected&&progress.tagged&&!attachedTags().some(t=>tagKey(t)===tagKey(selected)))progress.tagged=false;
     const events=eventCard(),area=events?.querySelector('textarea[placeholder="Escreva uma nova mensagem..."]');
     if(comment&&!progress.sent){if(!area||area.disabled)throw new Error('Campo de comentário dos Eventos indisponível.');if(area.value.trim()&&!((progress.tagged||progress.attempted)&&area.value.trim()===comment))throw new Error('Existe um comentário em rascunho nos Eventos. Conclua ou limpe por lá antes de anexar.');}
     if(!progress.tagged){
@@ -857,7 +858,7 @@
       try{await until(()=>!area.value.trim()&&occurrences()>before,12000);progress.sent=true;}
       catch(error){throw new Error('Etiqueta aplicada. O envio do comentário não foi confirmado; confira os Eventos antes de repetir.');}
     }
-    note(comment?'Etiqueta anexada e comentário confirmado nos Eventos.':'Etiqueta anexada ao atendimento.');
+    note(selected?(comment?'Etiqueta anexada e comentário confirmado nos Eventos.':'Etiqueta anexada ao atendimento.'):(comment?'Comentário confirmado nos Eventos.':'Preparo externo sem etiqueta nem observação.'));
   }
   const forwardSectors=['Suporte Externo','Financeiro','Liberação','Solicitação de dados','Fidelização','Pós venda','Comercial','Suporte Corporativo'];
   css.textContent+='#rv-mini .external-toggle{display:flex;align-items:center;gap:9px;padding:10px;border:1px solid #9a8de866;border-radius:12px;background:linear-gradient(110deg,#a4e9ed44,#d0b4ff44)}#rv-mini .external-toggle input{width:17px;height:17px;margin:0;accent-color:#7256da}#rv-mini .external-fields,#rv-mini .external-problems{display:grid;gap:8px}#rv-mini .external-fields[hidden],#rv-mini .external-problems[hidden]{display:none}#rv-mini .external-fields{padding:10px;border-radius:12px;background:#e8ecff88}';
@@ -879,16 +880,30 @@
     if(!day||hours?.length!==2)return null;
     return {day,start:hours[0],end:hours[1]};
   }
+  function formatScheduleMessage(data,confirmed=false){
+    const begin=Number(data.start.split(':')[0]),end=Number(data.end.split(':')[0]);
+    const period=end<=12?'no período da manhã':begin>=12?'no período da tarde':'no período informado';
+    return `Olá! Seu atendimento técnico ${confirmed?'foi agendado':'está previsto'} para o dia ${data.day}, ${period}, das ${data.start} às ${data.end}.\n\nO horário de atendimento da empresa é das 08:00 às 18:00.`;
+  }
+  document.addEventListener('change',event=>{
+    if(!root.isConnected)return;
+    const input=event.target;if(!input.matches?.('[data-testid="confirm-schedule-checkbox"] input')||!input.checked)return;
+    const dialog=input.closest('.ant-modal-content');const data=readScheduleReview(dialog);if(!data)return;
+    const message=formatScheduleMessage(data);scheduleMessage={route:location.hash,message,confirmed:false};
+    let feedback=dialog.querySelector('[data-rv-schedule-copy]');if(!feedback){feedback=make('small');feedback.setAttribute('data-rv-schedule-copy','');feedback.style.cssText='display:block;padding:8px;color:#163e73';dialog.querySelector('[data-testid="component-revision-step"],app-revision-confirmation-step').append(feedback);}
+    feedback.textContent='Copiando mensagem…';
+    try{
+      Promise.resolve(navigator.clipboard.writeText(message)).then(()=>{if(!root.isConnected)return;feedback.textContent='Mensagem copiada! Use Ctrl+V. A confirmação final do agendamento continua manual.';$('.launch').title='Mensagem de agendamento copiada. Use Ctrl+V.';},()=>{feedback.textContent='A cópia automática foi bloqueada. A mensagem ficou disponível na aba Etiquetar para copiar manualmente.';});
+    }catch(error){feedback.textContent='A cópia automática está indisponível. Copie a mensagem pela aba Etiquetar.';}
+  },true);
   function finishScheduleMessage(){
     const pending=pendingSchedule;if(!pending)return;
     if(!root.isConnected||pending.route!==location.hash){clearInterval(scheduleMonitor);scheduleMonitor=null;pendingSchedule=null;return;}
     const feedback=commandFeedback();
     if(feedback!==pending.before&&/(?:reagendamento|agendamento)\s+realizado\s+com\s+sucesso/i.test(feedback))pending.confirmed=true;
     if(pending.confirmed&&!scheduleDialog()){
-      const data=pending.data;const begin=Number(data.start.split(':')[0]),end=Number(data.end.split(':')[0]);
-      const period=end<=12?'no período da manhã':begin>=12?'no período da tarde':'no período informado';
-      const message=`Olá! Seu atendimento técnico foi agendado para o dia ${data.day}, ${period}, das ${data.start} às ${data.end}.\n\nO horário de atendimento da empresa é das 08:00 às 18:00.`;
-      scheduleMessage={route:pending.route,message};pendingSchedule=null;clearInterval(scheduleMonitor);scheduleMonitor=null;
+      const message=formatScheduleMessage(pending.data,true);
+      scheduleMessage={route:pending.route,message,confirmed:true};pendingSchedule=null;clearInterval(scheduleMonitor);scheduleMonitor=null;
       if(!card?.isConnected){card=cards()[0]||null;route=location.hash;}
       if(card?.isConnected){tabName='Etiquetar';opened=true;$('.panel').hidden=false;$('.launch').hidden=true;note('Agendamento confirmado pelo Revan. Mensagem pronta para copiar.');render();$('.panel').scrollTop=0;}
     }else if(Date.now()-pending.started>45000){pendingSchedule=null;clearInterval(scheduleMonitor);scheduleMonitor=null;note('A confirmação do agendamento não foi identificada. Nenhuma mensagem de confirmação foi gerada.');}
@@ -906,10 +921,10 @@
   },true);
   function renderScheduleMessage(body){
     if(!scheduleMessage||scheduleMessage.route!==location.hash)return;
-    const box=make('div','field save-review');box.append(make('strong','','Agendamento confirmado · mensagem para o cliente'));
+    const box=make('div','field save-review');box.append(make('strong','',scheduleMessage.confirmed?'Agendamento confirmado · mensagem para o cliente':'Prévia do agendamento · confirmação final pendente'));
     const area=make('textarea');area.readOnly=true;area.rows=5;area.value=scheduleMessage.message;area.setAttribute('aria-label','Mensagem de agendamento');
     box.append(area,actionButton('Copiar mensagem de agendamento',async()=>{await navigator.clipboard.writeText(scheduleMessage.message);note('Mensagem de agendamento copiada.');}));
-    box.append(make('small','','Gerada a partir da revisão e da confirmação de sucesso do Revan.'));body.append(box);
+    box.append(make('small','',scheduleMessage.confirmed?'Gerada a partir da revisão e da confirmação de sucesso do Revan.':'Gerada ao marcar a caixa da revisão. Não conclui o agendamento.'));body.append(box);
   }
   async function chooseForwardOption(dialog,id,name){
     const select=await until(()=>{const e=dialog.querySelector('nz-select#'+id);return e&&!e.classList.contains('ant-select-disabled')&&e;},6000);
@@ -982,7 +997,6 @@
   async function attachAndForward(){
     if(!tagDraft.external){await attachTag();return;}
     valid();
-    if(!tagDraft.selected&&!tagDraft.query.trim())throw new Error('Escolha a etiqueta do atendimento antes de Anexar.');
     if(!forwardSectors.includes(tagDraft.destination))throw new Error('Escolha um destino válido.');
     if(tagDraft.destination==='Suporte Externo'&&!tagDraft.problem&&!tagDraft.problemQuery.trim())throw new Error('Escolha o problema ou digite o nome para pesquisar ao Anexar.');
     if(tagDraft.destination==='Suporte Externo'&&tagDraft.problem&&!tagDraft.service)throw new Error('Escolha o tipo de serviço do chamado externo.');
@@ -991,7 +1005,7 @@
     if(previous?.started&&previous.payload!==JSON.stringify([route,tagDraft.destination,tagDraft.problem,tagDraft.service]))throw new Error('Há um encaminhamento iniciado com outros dados. Confira o Revan antes de continuar.');
     if(!previous?.started&&(scheduleDialog()||forwardDialog()))throw new Error('Já há um formulário de encaminhamento aberto no Revan. Conclua ou cancele por lá.');
     minimize();
-    try{await attachTag();await forwardExternal();$('.launch').title=$('.status').textContent;}
+    try{if(!tagDraft.onlyExternal)await attachTag(true);await forwardExternal();$('.launch').title=$('.status').textContent;}
     catch(error){$('.launch').title=error.message;if(!scheduleDialog()&&!forwardDialog()){opened=true;$('.panel').hidden=false;$('.launch').hidden=true;tabName='Etiquetar';render();}throw error;}
   }
   async function attachRequested(){
@@ -1005,6 +1019,8 @@
   function renderExternalFields(field){
     const toggleLabel=make('label','external-toggle');const toggle=make('input');toggle.type='checkbox';toggle.checked=tagDraft.external;toggle.setAttribute('aria-label','Abrir chamado externo');toggleLabel.append(toggle,make('strong','','Abrir chamado externo'));field.append(toggleLabel);
     const extra=make('div','external-fields');extra.hidden=!tagDraft.external;
+    const onlyLabel=make('label','external-toggle');const only=make('input');only.type='checkbox';only.checked=tagDraft.onlyExternal;only.setAttribute('aria-label','Somente abrir externo');only.addEventListener('change',()=>{tagDraft.onlyExternal=only.checked;});onlyLabel.append(only,make('strong','','Somente abrir externo · ignorar etiqueta e observação'));extra.append(onlyLabel);
+    extra.append(make('small','','Para abrir somente o chamado externo, deixe a etiqueta e a observação em branco. Nenhuma etiqueta nem comentário serão exigidos no interno.'));
     if(tagDraft.forwardProgress?.started&&!scheduleDialog()&&!forwardDialog()){
       const recovery=make('div','save-review');recovery.append(make('strong','','O formulário anterior foi fechado.'));
       recovery.append(make('small','','Para iniciar outro preparo, confira os Eventos e o agendamento no Revan. A etiqueta e o comentário já confirmados serão preservados.'));
@@ -1043,7 +1059,7 @@
     field.append(make('small','','A busca acima é local. O Revan só será aberto após Anexar. Se faltar uma etiqueta, digite o nome e clique em Anexar; resultados ambíguos serão apresentados para sua escolha.'));
     const messageLabel=make('label','','Informações para os Eventos (opcional)');const message=make('textarea');message.rows=4;message.value=tagDraft.comment;message.placeholder='Digite a observação do atendimento…';message.setAttribute('aria-label','Informações para os Eventos');message.addEventListener('input',()=>{tagDraft.comment=message.value;});messageLabel.append(message);field.append(messageLabel);
     field.append(make('small','','Anexar aplica a etiqueta selecionada e publica o texto acima como comentário interno nos Eventos deste atendimento. Categoria é opcional e não será selecionada.'));
-    if(tagDraft.progress)field.append(make('small','',`Etiqueta: ${tagDraft.progress.tagged?'confirmada':'não confirmada'} · Comentário: ${tagDraft.progress.sent?'confirmado':tagDraft.progress.attempted?'enviado, confira os Eventos':'não enviado'}`));
+    if(tagDraft.progress)field.append(make('small','',`Etiqueta: ${tagDraft.progress.skipTag?'não solicitada':tagDraft.progress.tagged?'confirmada':'não confirmada'} · Comentário: ${tagDraft.progress.sent?'confirmado':tagDraft.progress.attempted?'enviado, confira os Eventos':'não enviado'}`));
     renderExternalFields(field);
     updateResults();body.append(field);
   }
