@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Revan — Minidashboard de equipamentos
 // @namespace    local.revan.minidashboard
-// @version      4.8.1
+// @version      4.9.0
 // @updateURL    https://raw.githubusercontent.com/kingoffjoss/Meus-Scripts/main/Revan/outputs/revan-minidashboard.user.js
 // @downloadURL  https://raw.githubusercontent.com/kingoffjoss/Meus-Scripts/main/Revan/outputs/revan-minidashboard.user.js
 // @description  Campos próprios e ações integradas aos controles originais do Revan.
@@ -12,13 +12,14 @@
 
 (() => {
   'use strict';
+  if(document.getElementById('rv-mini')?.dataset.draft==='true'){alert('Salve ou cancele o rascunho antes de atualizar o dashboard.');return;}
   document.getElementById('rv-mini')?.remove();
   document.querySelectorAll('style').forEach(style => {
     if (style.textContent.includes('#rv-mini')) style.remove();
   });
   const root = document.createElement('section');
   root.id = 'rv-mini';
-  root.dataset.version = '4.8.1';
+  root.dataset.version = '4.9.0';
   root.innerHTML = `<button class="launch" aria-expanded="false"><span class="launch-icon">◈</span> Equipamentos <span class="launch-dot"></span></button><div class="panel" hidden><header><strong><span class="brand-icon">◈</span> Equipamentos <small>REDE & CONEXÃO</small></strong><button class="close" aria-label="Minimizar" title="Minimizar para botão">−</button></header><div class="context"></div><select class="equipment" aria-label="Equipamento"></select><nav></nav><p class="status" role="status"></p><div class="body"></div><footer></footer></div>`;
   const refreshButton=document.createElement('button');refreshButton.className='refresh-panel';refreshButton.type='button';refreshButton.textContent='↻';refreshButton.setAttribute('aria-label','Atualizar painel');refreshButton.title='Atualizar painel e recuperar os controles';
   root.querySelector('header').insertBefore(refreshButton,root.querySelector('.close'));
@@ -283,6 +284,7 @@
   const pause = ms => {const token=operationEpoch;return new Promise((resolve,reject)=>setTimeout(()=>token===operationEpoch?resolve():reject(interrupted()),ms));};
   let card = null, opened = false, editing = false, busy = false, tabName = 'Rede', route = location.hash;
   let options = new Map(), changed = false, timer;
+  let networkDraft=null,pendingAction=null,authResult=null;
   const generatedPasswords = new Map();
   let editBaseline=null, reviewRequested=false, savedNetwork=null, commandWatch=null;
   const commandHistory=[];
@@ -373,8 +375,10 @@
   }
   function lock() {
     root.dataset.busy=String(busy);
+    root.dataset.draft=String(Boolean(networkDraft||pendingAction));
     all(root, 'button,input,select,textarea').forEach(e => {
       if (!e.classList.contains('launch') && !e.classList.contains('close') && !e.classList.contains('refresh-panel')) e.disabled = busy || e.dataset.lock === 'true';
+      if(tabName==='Rede'&&networkDraft&&networkDraft.state!=='draft'&&e.matches('input,select,textarea'))e.disabled=true;
     });
   }
   function make(tag, className, content) {
@@ -383,6 +387,7 @@
   }
   function actionButton(name, action, className = '', disabled = false) {
     const b = make('button', className, name); b.type = 'button';
+    b.setAttribute('aria-label',name);
     b.dataset.lock = String(disabled); b.disabled = disabled;
     b.addEventListener('click', () => void run(action,name==='Cancelar'||name==='Recarregar opções')); return b;
   }
@@ -440,10 +445,10 @@
     match.closest('.ion-dropdown-item').click();
     await until(() => selectedValue(element) === value);
     await pause(100);
-    await loadOptions();
     changed = true; note('Alteração preparada. Clique em Salvar para enviar ao Revan.');
   }
   async function switchTab(name) {
+    pendingAction=null;
     if (editing || nativeEditing()) throw new Error('Salve ou cancele a edição antes de trocar de aba.');
     if (['Testes', 'Autenticação','Etiquetar'].includes(name)) { tabName = name; note(name === 'Etiquetar'?'Pesquise, escolha a etiqueta e clique em Anexar. O texto será registrado nos Eventos.':name === 'Testes' ? 'Resultados lidos do Revan. Expanda cada teste para ver os detalhes.' : 'Login de autenticação do cliente e ações disponíveis no Revan.'); return; }
     nativeButton(name).click(); tabName = name; await pause(100);
@@ -456,42 +461,119 @@
     } else note(name === 'Rede' ? 'Clique em Editar para alterar as configurações pelo painel.' : 'Ações da ONU disponíveis abaixo.');
     options.clear();
   }
-  async function startEdit() {
-    if (nativeEditing()) throw new Error('Já existe uma edição na tela original. Salve ou cancele antes de começar pelo painel.');
-    const edit = nativeButton('Editar');
-    if (!edit || edit.disabled) throw new Error('O Revan não disponibilizou a edição.');
-    edit.click(); await until(() => nativeEditing() && nativeButton('Salvar'));
-    editing = true; changed = false; generatedPasswords.clear();editBaseline=networkSnapshot();reviewRequested=false;savedNetwork=null;
-    note('Carregando as opções do Revan…');
-    const failures = await loadOptions();
-    if (!failures) note('Edite os campos abaixo e clique em Salvar. As alterações ficam em edição até salvar.');
+  function networkLabel(e){const copy=e.parentElement.cloneNode(true);all(copy,'ion-select').forEach(n=>n.remove());return text(copy);}
+  function networkSwitchTitle(e){const parent=e.closest('.fiber-network__toggle-item,.network-config__toggle-item')||e.parentElement;const copy=parent.cloneNode(true);all(copy,'ion-switch').forEach(n=>n.remove());return ['Rede unificada','Rede visível','Ativar UPnP'].find(name=>normalized(text(copy))===normalized(name))||'';}
+  function networkSignature(){return JSON.stringify(networkSnapshot());}
+  function captureNetworkPlan(baseline){
+    const fields=all(card,'ion-select').map((e,index)=>({index,band:headingFor(e),label:networkLabel(e),value:selectedValue(e),choices:[...new Set([selectedValue(e),...(options.get(e)||[])])],available:options.has(e)})).filter(f=>['Modo do Wi-Fi','Largura de banda','Canal'].includes(f.label));
+    const ssids=all(card,'input[placeholder="Nome da rede Wi-Fi"]').map((e,index)=>({index,band:headingFor(e),value:e.value,max:e.maxLength>0?e.maxLength:32,generate:false,restore:false}));
+    const switches={};for(const e of all(card,'ion-switch')){const title=networkSwitchTitle(e);if(title)switches[title]=e.querySelector('button')?.classList.contains('ion-switch--active')||false;}
+    return {route,card,baseline,fields,ssids,switches,power:nativeButton('Habilitar rede')?false:nativeButton('Desabilitar rede')?true:null,powerChanged:false,optimize:false,state:'draft'};
   }
-  async function save(confirmed=false) {
-    if (!nativeEditing() || !nativeButton('Salvar')) {await refreshDashboard();note('A edição já foi encerrada no Revan. Painel atualizado.');return;}
-    const invalid = card.querySelector('input.ng-invalid,input[aria-invalid="true"]');
-    if (invalid) throw new Error('Há um campo inválido no Revan. Corrija antes de salvar.');
-    if (!changed) { note('Nenhuma alteração para salvar.'); return; }
-    if(!confirmed){reviewRequested=true;note('Confira o resumo e clique em Confirmar salvar.');return;}
-    const b = nativeButton('Salvar');
-    if (b.disabled) throw new Error('O Revan ainda não liberou Salvar. Confira os campos.');
-    const prepared=networkSnapshot();b.click();
-    note('Salvar acionado no Revan. Aguardando saída do modo de edição…');
-    try {
-      await until(() => nativeButton('Editar') && !nativeEditing(), 12000);
-      editing = false; changed = false; options.clear();reviewRequested=false;editBaseline=null;savedNetwork=prepared;
-      note('O Revan encerrou a edição após Salvar. Confira as mensagens do sistema e a aplicação no equipamento.');
-    } catch (e) { if(e.code==='RV_REFRESH')throw e;note('O salvamento não foi confirmado. Confira os avisos do Revan; o painel não reenviará automaticamente.'); }
+  function planSnapshot(){
+    const data={};if(!networkDraft)return networkSnapshot();
+    networkDraft.ssids.forEach((s,i)=>{data[`${s.band} · Nome da rede Wi-Fi · ${i}`]=s.restore?'Restaurar SSID ao aplicar':s.value;if(s.generate)data[`${s.band} · Senha · ${i}`]='Gerar ao aplicar';});
+    networkDraft.fields.forEach(f=>data[`${f.band} · ${f.label} · ${f.index}`]=f.value);
+    Object.entries(networkDraft.switches).forEach(([k,v])=>data[k]=String(v));if(networkDraft.powerChanged)data['Habilitar rede']=String(networkDraft.power);if(networkDraft.optimize)data['Otimizar canal']='Executar após salvar';return data;
   }
-  async function cancel() {
-    if(!card?.isConnected||route!==location.hash){await refreshDashboard();note('Controles recuperados a partir do atendimento atual.');return;}
-    const b = nativeButton('Cancelar');
-    if (!b) {await refreshDashboard();note('A edição já não está ativa no Revan. Os controles foram recuperados.');return;}
-    b.click(); await until(() => !nativeEditing());
-    editing = false; changed = false; options.clear(); generatedPasswords.clear();reviewRequested=false;editBaseline=null;savedNetwork=null;note('Edição cancelada no Revan.');
+  async function startEdit(){
+    if(networkDraft)return;
+    if(nativeEditing())throw new Error('Há uma edição aberta no Revan. Conclua ou cancele por lá antes de criar o rascunho.');
+    const edit=nativeButton('Editar');if(!edit||edit.disabled)throw new Error('Edição de rede indisponível neste equipamento.');
+    const baseline=networkSignature();let plan;
+    try{
+      edit.click();await until(()=>nativeEditing()&&nativeButton('Salvar'));
+      await loadOptions();plan=captureNetworkPlan(baseline);
+    }finally{
+      const stop=nativeButton('Cancelar');if(stop){stop.click();await until(()=>!nativeEditing(),4000);}
+      options.clear();
+    }
+    if(!plan)throw new Error('Não foi possível ler as opções de rede. Nenhuma configuração foi salva.');
+    networkDraft=plan;editing=true;changed=false;generatedPasswords.clear();editBaseline=networkSnapshot();reviewRequested=false;savedNetwork=null;autoReport='';
+    note('Rascunho local. O formulário original foi cancelado após a leitura das opções. Escolha tudo e clique em Salvar.');
   }
+  function requireDraft(){valid();if(!networkDraft||networkDraft.route!==location.hash||networkDraft.card!==card)throw new Error('Abra Editar para preparar as configurações.');if(networkDraft.state!=='draft')throw new Error('Há uma aplicação sem confirmação. Confira o Revan antes de iniciar outra.');}
+  function draftChanged(){requireDraft();changed=true;reviewRequested=false;note('Escolha guardada somente no dashboard. Nada foi enviado ao Revan.');}
+  async function save(confirmed=false){
+    requireDraft();const plan=networkDraft;
+    if(!changed){note('Nenhuma alteração para salvar.');return;}
+    for(const s of plan.ssids)if(!s.restore&&(!s.value.trim()||s.value.length>s.max))throw new Error('Confira o nome da rede antes de aplicar.');
+    if(!confirmed){reviewRequested=true;note('Confira o rascunho. Confirmar salvar aplica todas as escolhas no Revan.');return;}
+    if(nativeEditing())throw new Error('Existe outra edição aberta no Revan. Cancele ou conclua por lá.');
+    if(networkSignature()!==plan.baseline)throw new Error('As configurações do Revan mudaram após a leitura. Cancele o rascunho e releia antes de salvar.');
+    plan.state='applying';minimize();let remoteAttempted=false,saveAttempted=false;
+    try{
+      const edit=nativeButton('Editar');if(!edit||edit.disabled)throw new Error('O Revan não liberou a edição.');edit.click();await until(()=>nativeEditing()&&nativeButton('Salvar'));
+      for(const [title,value] of Object.entries(plan.switches)){
+        const item=all(card,'ion-switch').find(e=>networkSwitchTitle(e)===title);const b=item?.querySelector('button');
+        if(!b)throw new Error('Controle indisponível: '+title);
+        if(b.classList.contains('ion-switch--active')!==value){if(b.disabled)throw new Error('Controle bloqueado: '+title);b.click();await pause(120);}
+      }
+      const sources=all(card,'input[placeholder="Nome da rede Wi-Fi"]');
+      for(let i=0;i<sources.length;i++){
+        const source=sources[i],item=plan.ssids.find(s=>s.band===headingFor(source))||plan.ssids[i]||plan.ssids[0];if(!item)throw new Error('O formulário de nomes de rede mudou.');
+        if(item.restore){const b=all(card,'button').filter(e=>matches(e,'Restaurar SSID'))[i];if(!b||b.disabled)throw new Error('Restaurar SSID indisponível.');b.click();await pause(100);}
+        else if(source.value!==item.value){if(source.disabled||source.readOnly)throw new Error('O Revan bloqueou a edição do SSID.');setNativeText(source,item.value);source.dispatchEvent(new FocusEvent('blur',{bubbles:true}));}
+      }
+      for(const item of plan.fields){
+        const source=all(card,'ion-select').find(e=>headingFor(e)===item.band&&networkLabel(e)===item.label);
+        if(!source)throw new Error('Campo de rede não encontrado: '+item.band+' · '+item.label);
+        if(selectedValue(source)===item.value)continue;
+        const available=await readOptions(source);if(!available.includes(item.value))throw new Error('A combinação escolhida não está disponível: '+item.band+' · '+item.label+' = '+item.value+'. Revise o rascunho.');
+        await setSelect(source,item.value);
+      }
+      for(let i=0;i<sources.length;i++){
+        const source=all(card,'input[placeholder="Nome da rede Wi-Fi"]')[i],item=plan.ssids.find(s=>s.band===headingFor(source))||plan.ssids[i]||plan.ssids[0];if(!item?.generate)continue;
+        const b=all(card,'button').filter(e=>matches(e,'Gerar senha'))[i];if(!b||b.disabled)throw new Error('Geração de senha Wi-Fi indisponível.');
+        const previous=all(card,'input[placeholder="Senha da rede"]')[i]?.value;remoteAttempted=true;b.click();
+        const password=await until(()=>{const v=all(card,'input[placeholder="Senha da rede"]')[i]?.value;return v&&v!==previous&&v;},6000);generatedPasswords.set(item.band+':'+i,password);
+      }
+      if(card.querySelector('input.ng-invalid,input[aria-invalid="true"]'))throw new Error('O Revan informou um campo inválido.');
+      const button=nativeButton('Salvar');if(!button||button.disabled)throw new Error('O Revan ainda não liberou Salvar para essa combinação.');
+      const prepared=networkSnapshot();saveAttempted=true;button.click();await until(()=>nativeButton('Editar')&&!nativeEditing(),12000);
+      savedNetwork=prepared;networkDraft=null;editing=false;changed=false;reviewRequested=false;editBaseline=null;options.clear();
+      if(plan.powerChanged){const b=nativeButton(plan.power?'Habilitar rede':'Desabilitar rede');if(b){remoteAttempted=true;b.click();await pause(150);syncDialogs();}}
+      if(plan.optimize){const b=nativeButton('Otimizar canal');if(!b||b.disabled)throw new Error('Rede salva, mas a otimização nativa não está disponível.');remoteAttempted=true;b.click();await pause(150);syncDialogs();}
+      note('Salvar foi confirmado pela saída da edição no Revan. Confira o retorno e a aplicação no equipamento.');$('.launch').title=$('.status').textContent;
+    }catch(error){
+      if(!saveAttempted){const stop=nativeButton('Cancelar');if(stop){stop.click();await pause(150);}}
+      if(networkDraft)networkDraft.state=(remoteAttempted||saveAttempted)?'uncertain':'draft';
+      note((saveAttempted||remoteAttempted?'Há ação enviada sem confirmação completa. Confira o Revan antes de repetir. ':'Nenhuma configuração foi salva. ')+error.message);
+      $('.launch').title=$('.status').textContent;opened=true;$('.panel').hidden=false;$('.launch').hidden=true;throw new Error($('.status').textContent);
+    }
+  }
+  async function cancel(){
+    if(networkDraft?.state!=='draft'&&networkDraft)throw new Error('Confira a aplicação no Revan antes de descartar o acompanhamento.');
+    networkDraft=null;editing=false;changed=false;reviewRequested=false;editBaseline=null;options.clear();generatedPasswords.clear();autoReport='';note('Rascunho descartado. Nenhuma configuração foi enviada.');
+  }
+  async function automaticNetwork(){
+    if(!networkDraft)await startEdit();requireDraft();
+    for(const f of networkDraft.fields){const automatic=f.choices.find(v=>/^(auto|automatico|todos)/.test(normalized(v)));if(f.label==='Modo do Wi-Fi'&&automatic)f.value=automatic;if(f.label==='Largura de banda'&&f.band.startsWith('2.4'))f.value=f.choices.find(v=>/^20\s*mhz$/i.test(v))||f.value;if(f.label==='Largura de banda'&&f.band.startsWith('5.8')&&automatic)f.value=automatic;}
+    networkDraft.optimize=Boolean(nativeButton('Otimizar canal'));draftChanged();autoReport='Perfil preparado localmente. A otimização nativa, quando disponível, só será acionada após Confirmar salvar.';
+  }
+  function renderNetwork(body){
+    const readonly=!networkDraft,plan=networkDraft||captureNetworkPlan(networkSignature());const actions=make('div','actions network-toolbar');
+    const devices=nativeButton('Dispositivos conectados');actions.append(actionButton('Dispositivos conectados',async()=>{if(!devices||devices.disabled)throw new Error('Consulta indisponível.');devices.click();await pause(100);syncDialogs();},'',!devices||devices.disabled||editing));body.append(actions);
+    if(readonly)body.append(make('small','','Clique em Editar para ler as opções e montar um rascunho local. As escolhas só serão aplicadas depois de Confirmar salvar.'));
+    for(const [title,value] of Object.entries(plan.switches)){const label=make('label','toggle',title),input=make('input');input.type='checkbox';input.checked=value;input.dataset.lock=String(readonly);input.addEventListener('change',()=>{plan.switches[title]=input.checked;if(title==='Rede unificada'&&!input.checked&&plan.ssids.length===1){const first=plan.ssids[0],bands=[...new Set(plan.fields.map(f=>f.band))];if(bands.length>1)plan.ssids=bands.map((band,index)=>({...first,band,index}));}draftChanged();render();});label.append(input);body.append(label);}
+    if(plan.power!==null){const label=make('label','toggle','Habilitar rede'),input=make('input');input.type='checkbox';input.checked=plan.power;input.dataset.lock=String(readonly);input.addEventListener('change',()=>{plan.power=input.checked;plan.powerChanged=true;draftChanged();});label.append(input);body.append(label);}
+    body.append(actionButton('Configuração automática · preparar',automaticNetwork));if(autoReport)body.append(make('small','',autoReport));
+    const groups=new Map();function group(band){if(!groups.has(band)){const e=make('div','network-band');e.append(make('h3','band',band));groups.set(band,e);body.append(e);}return groups.get(band);}
+    plan.ssids.forEach((item,index)=>{
+      if(plan.switches['Rede unificada']&&index>0)return;
+      const field=make('div','field ssid-field'),label=make('label','','Nome da rede Wi-Fi (SSID)'),input=make('input');input.value=item.value;input.maxLength=item.max;input.dataset.lock=String(readonly);input.addEventListener('input',()=>{item.value=input.value;item.restore=false;draftChanged();});label.append(input);field.append(label);
+      field.append(actionButton(item.generate?'Cancelar geração de senha':'Gerar senha ao salvar',()=>{item.generate=!item.generate;draftChanged();},'',readonly),actionButton(item.restore?'Cancelar restauração do SSID':'Restaurar SSID ao salvar',()=>{item.restore=!item.restore;draftChanged();},'',readonly));
+      if(item.generate)field.append(make('small','','A senha será gerada pelo Revan somente durante a aplicação após Confirmar salvar.'));
+      if(item.restore)field.append(make('small','','O nome padrão será solicitado ao Revan somente ao aplicar.'));
+      group(item.band).append(field);
+    });
+    for(const f of plan.fields){const field=make('div','field select-field'),label=make('label','',f.label),select=make('select');for(const value of f.choices){const o=make('option','',value);o.value=value;select.append(o);}select.value=f.value;select.dataset.lock=String(readonly||!f.available);select.addEventListener('change',()=>{f.value=select.value;draftChanged();});label.append(select);field.append(label);group(f.band).append(field);}
+  }
+
   async function refreshDashboard() {
     const token=++operationEpoch;busy=true;lock();
     try{
+      if(networkDraft&&card?.isConnected&&route===location.hash){if(networkDraft.state==='applying')networkDraft.state='uncertain';note(networkDraft.state==='draft'?'Rascunho local preservado. Nenhuma configuração foi reenviada.':'Aplicação interrompida. Confira o Revan antes de repetir.');return;}
       note('Atualizando painel e localizando os controles do Revan…');
       const list=cards();const previous=card;
       card=list.includes(previous)?previous:list[Number($('.equipment').value)||0]||list[0];route=location.hash;
@@ -510,174 +592,6 @@
       syncDialogs();
     }catch(error){if(token===operationEpoch)note(error.message);}
     finally{if(token===operationEpoch){busy=false;if(opened&&card?.isConnected)render();lock();}}
-  }
-  async function prepareAutomaticRadios() {
-    if(root.classList.contains('rv-dialog-open'))throw new Error('Conclua primeiro o diálogo de otimização do Revan.');
-    if(!editing)await startEdit();
-    const report=[];
-    for(const band of ['2.4','5.8']){
-      const selectors=()=>all(card,'ion-select').filter(e=>headingFor(e).replace(/\s/g,'').startsWith(band));
-      const fieldName=e=>{const copy=e.parentElement.cloneNode(true);all(copy,'ion-select').forEach(n=>n.remove());return normalized(text(copy));};
-      const mode=selectors().find(e=>fieldName(e)==='modo do wi-fi');
-      const widths=()=>selectors().find(e=>fieldName(e)==='largura de banda');
-      if(!mode||!widths()){report.push(`${band}GHz: campos não disponíveis.`);continue;}
-      const choices=options.get(mode)||[];
-      const automatic=choices.find(v=>/^(auto|automatico|todos)/.test(normalized(v)));
-      const compact=v=>normalized(v).replace(/[^a-z]/g,'');
-      const priority=band==='2.4'?['bgnax','bgn','ax','gn','n']:['anacax','anac','acax','ax','ac','an'];
-      const targetMode=automatic||priority.map(v=>choices.find(c=>compact(c)===v)).find(Boolean)||selectedValue(mode);
-      if(targetMode!==selectedValue(mode))await setSelect(mode,targetMode);
-      const width=widths(), available=options.get(width)||[];
-      const dynamicWidth=available.find(v=>/^(auto|automatico|todos|all)/.test(normalized(v)))||available.find(v=>(v.match(/20|40|80|160/g)||[]).length>1);
-      const targetWidth=band==='2.4'?(available.find(v=>/^20\s*mhz$/i.test(v))||selectedValue(width)):(dynamicWidth||selectedValue(width));
-      if(targetWidth!==selectedValue(width))await setSelect(width,targetWidth);
-      const channel=selectors().find(e=>fieldName(e)==='canal');
-      report.push(`${band}GHz · modo ${targetMode} · largura ${targetWidth} · canal ${channel?selectedValue(channel):'não informado'}${band==='5.8'&&!dynamicWidth?' (largura atual preservada)':''}`);
-    }
-    autoPending=false;
-    if(!changed){
-      const stop=nativeButton('Cancelar');if(stop){stop.click();await until(()=>!nativeEditing());editing=false;options.clear();}
-      autoReport=['Otimização dos canais solicitada ao Revan.',...report,'Modo e largura já atendem ao perfil. Nenhuma alteração adicional para salvar.'].join('\n');
-      note('Otimização nativa solicitada. Modo/largura já atendem ao perfil.');return;
-    }
-    autoReport=['Otimização dos canais solicitada ao Revan.',...report,'Modo/largura preparados. Revise e clique em Salvar.'].join('\n');
-    note('Configuração automática preparada para as duas bandas. Revise e clique em Salvar.');
-  }
-  async function automaticNetwork() {
-    if(autoPending){await prepareAutomaticRadios();return;}
-    if(editing||nativeEditing())throw new Error('Salve ou cancele a edição antes de executar a otimização nativa.');
-    const optimizer=nativeButton('Otimizar canal');
-    if(!optimizer||optimizer.disabled)throw new Error('O Revan não oferece Otimizar canal neste equipamento.');
-    autoPending=true;
-    optimizer.click();await pause(300);syncDialogs();
-    if(root.classList.contains('rv-dialog-open')){
-      autoReport='Conclua a otimização no diálogo original do Revan e clique em Continuar configuração automática. A otimização nativa pode aplicar canais diretamente.';
-      note('O Revan abriu a otimização de canais. Conclua o diálogo para continuar.');return;
-    }
-    await until(()=>{const button=nativeButton('Otimizar canal');return button&&!button.disabled&&button.getAttribute('loading')!=='true'},15000);
-    await prepareAutomaticRadios();
-  }
-  function renderNetwork(body) {
-    const actions = make('div', 'actions network-toolbar');
-    const devices = nativeButton('Dispositivos conectados');
-    actions.append(actionButton('Dispositivos conectados', async () => {
-      if (!devices?.isConnected || devices.disabled) throw new Error('Dispositivos conectados indisponível no Revan.');
-      devices.click();
-      await pause(100); syncDialogs();
-      note('Consulta de dispositivos acionada no Revan. O painel permanece aberto.');
-    }, '', !devices || devices.disabled || editing));
-    body.append(actions);
-    const enableNetwork=nativeButton('Habilitar rede');
-    const disableNetwork=nativeButton('Desabilitar rede');
-    const power=enableNetwork||disableNetwork;
-    if(power){
-      const label=enableNetwork?'Habilitar rede':'Desabilitar rede';
-      actions.append(actionButton(label,async()=>{
-        const latest=nativeButton(label);
-        if(!latest?.isConnected||latest.disabled)throw new Error('Controle da rede indisponível no Revan.');
-        latest.click();await pause(150);syncDialogs();
-        note(`${label} acionado no Revan. Confira o retorno ou a confirmação do sistema.`);
-      },enableNetwork?'':'danger',power.disabled||editing));
-    }
-    const networkOptions=make('div','network-options');
-    for (const switchElement of all(card, 'ion-switch')) {
-      const native = switchElement.querySelector('button');
-      const title = text(switchElement.closest('.fiber-network__toggle-item'));
-      if (!native || !['Rede unificada','Rede visível','Ativar UPnP'].includes(title)) continue;
-      const wrap = make('label', 'toggle', title); const input = make('input'); input.type = 'checkbox';
-      input.checked = native.classList.contains('ion-switch--active');
-      // Unificação muda os campos. O fluxo nativo continua em edição e só persiste ao salvar.
-      input.dataset.lock = String(!editing || native.disabled);
-      input.addEventListener('change', () => void run(async () => {
-        if (!native.isConnected || native.disabled) throw new Error('O controle mudou ou está bloqueado.');
-        native.click(); changed = true;
-        if(title==='Rede unificada'){generatedPasswords.clear();await pause(100);await loadOptions();}
-        note('Alteração preparada. Revise os campos e clique em Salvar.');
-      })); wrap.append(input); networkOptions.append(wrap);
-    }
-    if(networkOptions.children.length)body.append(networkOptions);
-    const auto=make('div','auto-network');
-    const optimizer=nativeButton('Otimizar canal');
-    auto.append(actionButton(autoPending?'Continuar configuração automática':'Configuração automática · 2.4 + 5.8GHz',automaticNetwork,'',editing||(!autoPending&&(!optimizer||optimizer.disabled))));
-    const explanation=make('small','',optimizer?'Canais: Revan · 2.4: 20MHz · 5.8: Auto, se disponível. A etapa nativa pode aplicar canais diretamente.':'Otimização nativa indisponível neste equipamento.');
-    explanation.title='Perfil de compatibilidade baseado nas recomendações de Wi-Fi da Apple. Em 5GHz, a largura atual é mantida se o equipamento não oferece Auto ou larguras combinadas. A seleção do canal depende da otimização nativa do Revan e das condições locais.';
-    auto.append(explanation);
-    if(autoReport)auto.append(make('div','auto-report',autoReport));
-    body.append(auto);
-    const groups = new Map();
-    function groupFor(name) {
-      if (!groups.has(name)) {
-        const group = make('div', 'network-band');
-        group.append(make('h3', 'band', name));
-        groups.set(name, group); body.append(group);
-      }
-      return groups.get(name);
-    }
-    const ssids = all(card, 'input[placeholder="Nome da rede Wi-Fi"]');
-    const generators = all(card, 'button').filter(e => matches(e, 'Gerar senha'));
-    const restorers = all(card, 'button').filter(e => matches(e, 'Restaurar SSID'));
-    ssids.forEach((source, index) => {
-      const bandName = headingFor(source);
-      const key = `${bandName}:${index}`;
-      const group = groupFor(bandName);
-      const field = make('div', 'field ssid-field');
-      const label = make('label', '', 'Nome da rede Wi-Fi (SSID)');
-      const input = make('input'); input.type = 'text'; input.value = source.value;
-      input.maxLength = source.maxLength > 0 ? source.maxLength : 32;
-      input.autocomplete = 'off'; input.dataset.lock = String(!editing || source.disabled || source.readOnly);
-      input.addEventListener('input', () => { try { changeSSID(source, input.value); } catch (error) { note(error.message); } });
-      label.append(input); field.append(label);
-      input.title = 'Edite o SSID permitido pelo Revan. Prefixos e sufixos fixos são mantidos pelo sistema.';
-      const buttons = make('div', 'actions');
-      const generator = generators[index];
-      buttons.append(actionButton('Gerar senha', async () => {
-        if (!editing || !generator?.isConnected || generator.disabled) throw new Error('Gerar senha indisponível. Clique em Editar.');
-        const previous = all(card, 'input[placeholder="Senha da rede"]')[index]?.value;
-        generator.click(); changed = true;
-        const newPassword = await until(() => {
-          const value = all(card, 'input[placeholder="Senha da rede"]')[index]?.value;
-          return value && value !== previous ? value : false;
-        }, 5000);
-        generatedPasswords.set(key, newPassword);
-        syncDialogs(); note('Senha gerada e capturada. Clique em Salvar antes de enviar ao cliente.');
-      }, '', !editing || !generator || generator.disabled));
-      const restorer = restorers[index];
-      buttons.append(actionButton('Restaurar SSID', async () => {
-        if (!editing || !restorer?.isConnected || restorer.disabled) throw new Error('Restaurar SSID indisponível. Clique em Editar.');
-        restorer.click(); changed = true; await pause(100); syncDialogs();
-        note('Restauração do SSID acionada. Revise o nome e clique em Salvar.');
-      }, '', !editing || !restorer || restorer.disabled));
-      field.append(buttons);
-      const password = generatedPasswords.get(key);
-      if (password) {
-        const passwordLabel = make('label', '', 'Senha gerada');
-        const output = make('input'); output.type = 'text'; output.readOnly = true;
-        output.value = password; output.autocomplete = 'off'; passwordLabel.append(output); field.append(passwordLabel);
-        field.append(actionButton('Copiar senha para o cliente', async () => {
-          await navigator.clipboard.writeText(`Senha do Wi-Fi (${bandName}): ${password}`);
-          note(editing ? 'Senha copiada. Salve as alterações antes de enviar ao cliente.' : 'Senha copiada para enviar ao cliente.');
-        }));
-        output.title = 'Salve as alterações antes de enviar a senha ao cliente.';
-      }
-      group.append(field);
-    });
-    for (const source of all(card, 'ion-select')) {
-      const bandName = headingFor(source);
-      const labelCopy = source.parentElement.cloneNode(true);
-      all(labelCopy, 'ion-select').forEach(e => e.remove());
-      const name = text(labelCopy);
-      if (!['Modo do Wi-Fi', 'Largura de banda', 'Canal'].includes(name)) continue;
-      groupFor(bandName);
-      const field = make('div', 'field select-field');
-      const label = make('label', '', name);
-      const select = make('select'); const current = selectedValue(source);
-      const choices = [...new Set([current, ...(options.get(source) || [])])].filter(Boolean);
-      for (const value of choices) { const o = make('option', '', value); o.value = value; select.append(o); }
-      select.value = current;
-      select.dataset.lock = String(!editing || source.querySelector('input')?.disabled || !options.has(source));
-      select.addEventListener('change', () => void run(() => setSelect(source, select.value)));
-      label.append(select); field.append(label); groups.get(bandName).append(field);
-    }
   }
   function renderDevice(body) {
     renderCommandHistory(body);
@@ -706,6 +620,7 @@
       const source = nativeButton(name);
       actions.append(actionButton(name, async () => {
         if (!source?.isConnected || source.disabled) throw new Error('Ação indisponível no Revan.');
+        if(!/^(Consultar|Verificar)/.test(name)){pendingAction={tab:tabName,name,kind:'device',route};note('Ação selecionada localmente. Clique em Executar ação para acionar o Revan.');return;}
         monitorCommand(name);source.click();
         // Mantém o painel aberto; confirmações originais ficam à frente dele.
         await pause(100); syncDialogs();
@@ -793,7 +708,32 @@
   function authControl(section, mode) {
     if (!section) return null;
     if (mode === 'password') return section.querySelector('ion-button[icontype="security"] button') || all(section, 'button').find(b => b.querySelector('[id="ion-icon-security"]'));
-    return section.querySelector('button[nztooltiptitle="Criar login"]') || all(section, 'button').find(b => b.querySelector('[data-icon="plus"]'));
+    const create=section.querySelector('button[nztooltiptitle="Criar login"]') || all(section, 'button').find(b => b.querySelector('[data-icon="plus"]'));
+    return create?.querySelector('i[nztype="plus"]')||create;
+  }
+  async function executePreparedAction(){
+    valid();const pending=pendingAction;if(!pending||pending.route!==route||pending.tab!==tabName)throw new Error('Selecione a ação novamente no atendimento atual.');
+    const source=pending.kind==='device'?nativeButton(pending.name):authControl(pageSection('AUTENTICAÇÃO','brisanet-auth-card'),pending.mode);
+    if(!source?.isConnected||source.disabled||source.closest('button')?.disabled)throw new Error('O Revan não disponibilizou essa ação. Nenhum comando foi enviado.');
+    pendingAction=null;minimize();
+    if(pending.mode==='password'){
+      const before=commandFeedback(),previousNotices=new Map(visibleNative('.ant-notification-notice').map(e=>[e,text(e)]));source.click();
+      try{await until(()=>visibleNative('.ion-popconfirm,.ant-popover,.sup-container,[role="dialog"],.ant-modal-content').some(e=>/gerar.*senha/i.test(text(e)))||commandFeedback()!==before,5000);}
+      catch(error){throw new Error('A confirmação de senha não apareceu. Nenhuma geração foi confirmada; confira o botão de segurança do Revan.');}
+      note('Aguardando sua confirmação no Revan para gerar a senha PPPoE. O painel não considera a senha gerada antes da resposta.');$('.launch').title=$('.status').textContent;
+      watchAuthPassword(before,previousNotices);return;
+    }
+    monitorCommand(pending.name);source.click();await pause(150);syncDialogs();note('Ação acionada: '+pending.name+'. Confira a confirmação ou o retorno original do Revan.');$('.launch').title=$('.status').textContent;
+  }
+  function watchAuthPassword(before,previousNotices){
+    const origin=route;let tries=0;
+    const monitor=setInterval(()=>{
+      if(!root.isConnected||location.hash!==origin||++tries>1000){clearInterval(monitor);return;}
+      const notices=visibleNative('.ant-notification-notice');
+      const notice=notices.find(e=>/senha gerada/i.test(text(e))&&previousNotices.get(e)!==text(e));
+      if(notice){const description=text(notice.querySelector('.ant-notification-notice-description'))||text(notice);const password=description.match(/Nova senha:\s*(\S+)/i)?.[1];if(password){authResult={route:origin,password};note('Senha PPPoE retornada pelo Revan. Disponível na aba Autenticação.');$('.launch').title=$('.status').textContent;}clearInterval(monitor);}
+      else if(commandFeedback()!==before&&/falha|erro/i.test(commandFeedback())){note('O Revan informou falha na geração de senha. Confira a notificação original.');clearInterval(monitor);}
+    },300);
   }
   css.textContent+='#rv-mini nav{flex-wrap:wrap}#rv-mini .tag-results{max-height:190px;overflow:auto;display:grid;gap:5px}#rv-mini .tag-results button{text-align:left;font-size:11px;padding:7px}#rv-mini .tag-results button.active{background:linear-gradient(110deg,#d5f5ef,#e7deff);border-color:#8d8be2}#rv-mini .tagger{display:grid;gap:10px}';
   const tagKey=value=>normalized(value).replace(/[\u200b-\u200d\ufeff]/g,'');
@@ -1080,17 +1020,18 @@
       actions.append(actionButton(label, async () => {
         const latest = authControl(pageSection('AUTENTICAÇÃO', 'brisanet-auth-card'), mode);
         if (!latest?.isConnected || latest.disabled) throw new Error('Esta ação não está disponível no Revan.');
-        monitorCommand(label);latest.click(); await pause(100); syncDialogs();
-        note(mode === 'password' ? 'Confirme a geração de senha no diálogo do Revan. O painel continua aberto.' : 'Preencha o novo e-mail no formulário Criar login do Revan e conclua por lá.');
+        pendingAction={tab:tabName,name:label,mode,kind:'auth',route};
+        note('Ação selecionada no dashboard. Clique em Executar ação para abrir o fluxo original do Revan.');
       }, '', !native || native.disabled));
     }
     body.append(actions);
+    if(authResult?.route===route){const label=make('label','','Senha PPPoE retornada pelo Revan'),output=make('input');output.type='text';output.readOnly=true;output.value=authResult.password;label.append(output);body.append(label,actionButton('Copiar senha PPPoE',async()=>{await navigator.clipboard.writeText(authResult.password);note('Senha PPPoE copiada.');}));}
     body.append(actionButton('Atualizar leitura', async () => { note('Autenticação atualizada a partir da tela do Revan.'); },'refresh-reading'));
     body.append(make('small', '', 'Estas ações alteram o login de autenticação do contrato. O e-mail mostrado é o usuário de acesso, não necessariamente o e-mail de contato.'));
   }
   function render() {
     if (!card?.isConnected) return;
-    if(editing&&!nativeEditing()&&nativeButton('Editar')){editing=false;changed=false;options.clear();generatedPasswords.clear();}
+    if(editing&&!networkDraft&&!nativeEditing()&&nativeButton('Editar')){editing=false;changed=false;options.clear();generatedPasswords.clear();}
     const ips = fixedIPs();
     $('.context').textContent = `Atendimento ${route.split('/').pop()} · ${clientName()}${ips.length ? ` · IP fixo: ${ips.join(', ')}` : ''} · ${technology()}`;
     const financial=financialStatus();
@@ -1105,22 +1046,23 @@
     if(tabName==='Rede'){
       if(reviewRequested&&editing){
         const box=make('div','save-review');box.append(make('strong','','Revisar alterações'));
-        const current=networkSnapshot();const keys=[...new Set([...Object.keys(editBaseline||{}),...Object.keys(current)])];let count=0;
+        const current=planSnapshot();const keys=[...new Set([...Object.keys(editBaseline||{}),...Object.keys(current)])];let count=0;
         for(const key of keys){if(editBaseline&&editBaseline[key]===current[key])continue;count++;const secret=/Senha/i.test(key);box.append(make('div','',`${key.replace(/ · \d+$/,'')}: ${secret?'••••••':editBaseline?.[key]??'Não registrado'} → ${secret?'Nova senha':current[key]??'Campo removido'}`));}
         if(!count)box.append(make('small','','Nenhuma diferença detectada nos campos lidos. Confira também a tela original.'));
         box.append(make('small','','Use Confirmar salvar no rodapé fixo para aplicar as alterações.'));body.prepend(box);
       }
       const message=make('details','client-message');message.append(make('summary','','Mensagem para o cliente'));
-      const config=savedNetwork||networkSnapshot();const lines=Object.entries(config).filter(([k])=>/Nome da rede Wi-Fi|Senha da rede/.test(k));
+      const config=savedNetwork||(networkDraft?planSnapshot():networkSnapshot());const lines=Object.entries(config).filter(([k])=>/Nome da rede Wi-Fi|Senha da rede/.test(k));
       const status=editing?'RASCUNHO — alterações ainda não salvas':savedNetwork?'Salvamento confirmado pela saída do modo de edição do Revan. Confira a aplicação no equipamento.':'Configurações lidas da tela. Salvamento não acompanhado pelo painel.';
       const payload=[status,...lines.filter(([k,v])=>!/Senha/.test(k)||(v&&!/^[*•]+$/.test(v))).map(([k,v])=>`${k.replace(/ · \d+$/,'')}: ${v}`)].join('\n');
       const area=make('textarea');area.readOnly=true;area.value=payload;area.rows=5;message.append(area,actionButton('Copiar mensagem',async()=>{await navigator.clipboard.writeText(payload);note(editing?'Rascunho copiado. Salve antes de enviar ao cliente.':'Mensagem copiada.');}));body.append(message);
     }
     const footer = $('footer'); footer.replaceChildren();
+    if(pendingAction&&pendingAction.tab===tabName){const review=make('div','save-review');review.append(make('strong','','Ação selecionada: '+pendingAction.name),make('small','','Nada foi acionado ainda. Executar ação abre o fluxo no Revan; confirmações nativas continuam manuais.'));body.prepend(review);footer.append(actionButton('Executar ação',executePreparedAction,'primary'),actionButton('Cancelar seleção',()=>{pendingAction=null;note('Seleção descartada. Nenhum comando foi enviado.');}));}
     if(tabName==='Etiquetar')footer.append(actionButton('Anexar',attachRequested,'primary'));
     if (tabName === 'Rede') {
       if (editing) {
-        footer.append(actionButton(reviewRequested?'Confirmar salvar':'Salvar',()=>save(reviewRequested),'primary'));
+        footer.append(actionButton(reviewRequested?'Confirmar salvar':'Salvar',()=>save(reviewRequested),'primary',Boolean(networkDraft&&networkDraft.state!=='draft')));
         if(reviewRequested)footer.append(actionButton('Voltar à edição',()=>{reviewRequested=false;note('Continue editando.');}));
         footer.append(actionButton('Cancelar', cancel), actionButton('Recarregar opções', refreshDashboard));
       }
@@ -1138,7 +1080,7 @@
     const list = cards(); const picker = $('.equipment'); picker.replaceChildren();
     list.forEach((c, i) => { const o = make('option','',`Equipamento ${i + 1} · ${text(c.querySelector('ion-tab-group')?.previousElementSibling).slice(0,80)}`); o.value = String(i); picker.append(o); });
     picker.hidden = list.length < 2;
-    if (card?.isConnected && route === location.hash && editing && nativeEditing()) { picker.value = String(list.indexOf(card)); render(); return; }
+    if (card?.isConnected && route === location.hash && editing && (networkDraft||nativeEditing())) { picker.value = String(list.indexOf(card)); render(); return; }
     if (card !== list[0] || route !== location.hash) {generatedPasswords.clear();savedNetwork=null;editBaseline=null;reviewRequested=false;tagDraft=emptyTagDraft();}
     card = list[0]; route = location.hash; editing = false; changed = false;
     if (!card) { $('.context').textContent = `Atendimento ${route.split('/').pop()}`; $('nav').replaceChildren(); $('.body').replaceChildren(); $('footer').replaceChildren(); note('Não localizei as abas dos equipamentos nesta tela. Aguarde o atendimento carregar e abra o painel novamente.'); return; }
@@ -1157,7 +1099,7 @@
     if (editing || nativeEditing()) { $('.equipment').value = String(cards().indexOf(card)); note('Salve ou cancele antes de trocar de equipamento.'); return; }
     generatedPasswords.clear(); savedNetwork=null;editBaseline=null;reviewRequested=false;autoPending=false;autoReport='';card = cards()[Number($('.equipment').value)]; void run(() => switchTab(technology() === 'FWA' ? 'CPE' : 'ONU'));
   });
-  window.addEventListener('hashchange', () => { minimize(); tagDraft=emptyTagDraft();savedNetwork=null;editBaseline=null;reviewRequested=false;card = null; editing = false; changed = false; options.clear(); generatedPasswords.clear();autoPending=false;autoReport='';$('.context').textContent = ''; $('nav').replaceChildren(); $('.body').replaceChildren(); $('footer').replaceChildren(); });
+  window.addEventListener('hashchange', () => { minimize(); networkDraft=null;pendingAction=null;authResult=null; tagDraft=emptyTagDraft();savedNetwork=null;editBaseline=null;reviewRequested=false;card = null; editing = false; changed = false; options.clear(); generatedPasswords.clear();autoPending=false;autoReport='';$('.context').textContent = ''; $('nav').replaceChildren(); $('.body').replaceChildren(); $('footer').replaceChildren(); });
   document.addEventListener('keydown', e => { if (e.key === 'Escape') minimize(); });
   new MutationObserver(records => {
     syncDialogs();
