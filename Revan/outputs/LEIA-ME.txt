@@ -114,3 +114,14 @@ Correção 4.6.3: clique no nz-tag interno do botão +; catálogo inicial de 229
 Correção da consulta: aguarda o debounce nativo de 1 segundo e valida resultados correspondentes antes de selecionar. Sufixo visual (Carimbo) é removido somente do termo de pesquisa.
 
 Fluxo 4.6.3: nenhuma consulta ao Revan durante a digitação. Categoria, busca nativa, seleção, inclusão da etiqueta e comentário só são acionados após Anexar. Selecione um resultado local ou digite o nome de uma etiqueta ausente. Resultados ambíguos exigem escolha e novo clique em Anexar.
+
+
+## Abrir chamado externo — 4.7.0
+
+Na aba Etiquetar, marque Abrir chamado externo. Escolha o destino (padrão: Suporte Externo), o problema do agendamento e o tipo de serviço. A escolha do problema preenche o tipo de reparo, que pode ser revisado. A lista do agendamento é independente das etiquetas do atendimento. O catálogo observado reúne oito destinos e 15 problemas para cliente Fibra; outros clientes podem apresentar opções diferentes.
+
+Preencher, pesquisar e marcar a caixa não aciona o Revan. Anexar minimiza o dashboard, aplica a etiqueta e a observação, abre Enviar, marca Aguardar chamado e seleciona o destino. Em Suporte Externo, preenche problema e serviço, avança uma vez e para no calendário. Data, janela, revisão e conclusão ficam manuais. Para outros destinos, usa Encaminhar quando liberado; se o Revan exigir dados adicionais, a operação para no formulário.
+
+Se a etiqueta ou o comentário não forem confirmados, o encaminhamento não começa. Se uma opção não existir para o cliente, nenhuma substituição é escolhida: o formulário original permanece para continuação manual. Encaminhamentos iniciados não são reenviados automaticamente quando sua confirmação é incerta. Não há transação única entre as etapas; etiquetas e comentários já confirmados permanecem se uma etapa seguinte falhar.
+
+Catálogo: [texto](outputs/revan-catalogo-encaminhamento.txt) e [JSON](outputs/revan-catalogo-encaminhamento.json). Validação: testes de navegador em página simulada cobrem ausência de ações durante preenchimento, validação prévia, minimização, etiqueta/comentário, Aguardar chamado, problema/serviço, parada na data, ausência de duplicação e opção indisponível. Os formulários e a transição Serviço → Data também foram inspecionados manualmente no Revan, sem escolher data nem concluir.

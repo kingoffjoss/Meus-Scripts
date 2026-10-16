@@ -1,0 +1,29 @@
+{
+  "setores": [
+    "Suporte Externo",
+    "Financeiro",
+    "Liberação",
+    "Solicitação de dados",
+    "Fidelização",
+    "Pós venda",
+    "Comercial",
+    "Suporte Corporativo"
+  ],
+  "problemasSuporteExterno": [
+    "Suspeita de LOS (reparo físico)",
+    "Problema na Maquineta de Cartão (reparo rápido)",
+    "PON Piscando (reparo físico)",
+    "PON Apagada (reparo rápido)",
+    "Telefone mudo (reparo rápido)",
+    "Cabo da Fibra Rompido (reparo físico)",
+    "Cabo desconectado (reparo físico)",
+    "Suporte a equipamento particular (serviço adicional)",
+    "Não Efetua Ligações (reparo rápido)",
+    "Instabilidade no WI-FI (reparo rápido)",
+    "Alcance do Wi-Fi (reparo rápido)",
+    "Plano não chega o contratado (reparo rápido)",
+    "Problema em Redes sociais (reparo rápido)",
+    "Sinal Irregular Fibra (reparo físico)",
+    "Perda de pacotes (reparo rápido)"
+  ]
+}

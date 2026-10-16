@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Revan — Minidashboard de equipamentos
 // @namespace    local.revan.minidashboard
-// @version      4.6.3
+// @version      4.7.0
 // @updateURL    https://raw.githubusercontent.com/kingoffjoss/Meus-Scripts/main/Revan/outputs/revan-minidashboard.user.js
 // @downloadURL  https://raw.githubusercontent.com/kingoffjoss/Meus-Scripts/main/Revan/outputs/revan-minidashboard.user.js
 // @description  Campos próprios e ações integradas aos controles originais do Revan.
@@ -18,7 +18,7 @@
   });
   const root = document.createElement('section');
   root.id = 'rv-mini';
-  root.dataset.version = '4.6.3';
+  root.dataset.version = '4.7.0';
   root.innerHTML = `<button class="launch" aria-expanded="false"><span class="launch-icon">◈</span> Equipamentos <span class="launch-dot"></span></button><div class="panel" hidden><header><strong><span class="brand-icon">◈</span> Equipamentos <small>REDE & CONEXÃO</small></strong><button class="close" aria-label="Minimizar" title="Minimizar para botão">−</button></header><div class="context"></div><select class="equipment" aria-label="Equipamento"></select><nav></nav><p class="status" role="status"></p><div class="body"></div><footer></footer></div>`;
   const refreshButton=document.createElement('button');refreshButton.className='refresh-panel';refreshButton.type='button';refreshButton.textContent='↻';refreshButton.setAttribute('aria-label','Atualizar painel');refreshButton.title='Atualizar painel e recuperar os controles';
   root.querySelector('header').insertBefore(refreshButton,root.querySelector('.close'));
@@ -320,7 +320,8 @@
   }
   let autoPending=false, autoReport='';
   const tagNames=new Set(["(Desativada) Brisa Play","Agendamento de Retorno","Alannio / Concluido","Alannio / Pendência","Alannio / Trabalhando","Alcance do Wi-Fi","Alteração de cômodo","Alteração de dados cadastrais - (Carimbo)","Alteração de Senha do WIFI","Alteração de Senha TV (autocensura)","Alterar data de vencimento","Alterar modo da ONU","Amaury Bezerra / Concluído","Amaury Bezerra / Pendência","Amaury Bezerra / Trabalhando","Área do Cliente - (Carimbo)","Ativo sem contato/Env. SMS","Atualização de E-mail","Atualização de telefone","Atualização do Plano","Aumento/Redução do Limite da Telefonia","Bloqueio de chamadas fixo","Brisa Móvel","BrisaCliente","BrisaMusic","BrisaMusicPremium","BrisaPlay","Cabo da Fibra Rompido","Cabo de fibra baixo/remanejamento - FTTH","Cabo de Rede não disponibilizado no ato da Instalação - até 7d","Cabo desconectado","Caio Vinicius / Pendência","Canais Quadriculando","Canal Em Manutenção","Chamado IMOC","Chamado interno incorreto (suporte interno)","Chamado proativo","Chamado Teste","Cliente desistiu da visita técnica","Cliente já atendido","Cliente Não Localizado - AGR","Cliente não pagou","Cliente priorizado - atendimento","Cob. Alteração de Plano (dentro do prazo)","Cob. Alteração de Plano (fora do prazo)","Cobrança de equipamento danificado/perdido","Cobrança De Instalação Dentro Do Prazo","Cobrança De Instalação Fora Do Prazo","COBRANÇA DE RECOLHIMENTO DE KIT","COBRANÇA DE REPARO DENTRO DO PRAZO","COBRANÇA DE REPARO FORA DO PRAZO","Cobrança de Retorno Interno","Compartilhamento de Rede","Conecta+","Configuração de roteador não realizada n​a instalação - 7d","Configuração Estruturada de Rede Interna","David Myquellyson / Concluido","David Myquellyson / Pendência","David Myquellyson / Trabalhando","Declaração de débito","Declaração de quitação anual","Desbloqueio temporário","Desbloqueio temporário - (Carimbo)","Desbloqueio/Bloqueio para ligações 0300/0500","Desbloqueio/Bloqueio para ligações internacionais","Desbloqueio/Bloqueio para números especifico","Desbloqueio/Bloqueio para realizar ligações a cobrar","Desconto sem acesso","Discovery Kids","E00","Eliwelton Alves / Concluído","Eliwelton Alves / Pendência","Eliwelton Alves / Trabalhando","Encerrado por falta de cordialidade","Endereços de pontos de pagamento","Expansão dos pontos de pagamento","Facebook","Falha de Autenticação","Falta de Recolhimento de equipamento","Fidelização (termos do contrato)","Formas de pagamento - (Carimbo)","FOX","Francielio / Concluido","Francielio / Pendência","Francielio / Trabalhando","Globoplay","Heroapp","Histórico de Ligações do Fixo","Horários de funcionamento de escritórios","Indisponibilidade area de risco","Informação APP/SITE","Informação atendimento","Informação de nota fiscal","Informação Técnica","Informações do Serviço","Informações sobre cartão brisanet","Informações sobre vencimento","Insatisfeito com o equipamento instalado - 7d","Instabilidade no WI-FI","Instabilidade TP-LINK","Instagram","Instalação de Roteador TP-LINK","Instalação Inadequada (local) - 7d","Instalação mal sucedida (sem acesso) - 7d","IPTV - (Carimbo)","Israel Henrick / Pendência","Jaquicione / Pendência","Jaquicione / Trabalhando","Jean Aires / Concluído","Jean Aires / Pendência","Jean Aires / Trabalhando","Jeymerson / Pendência","Jeymerson / Trabalhando","João Neto / Concluido","João Neto / Pendência","João Neto / Trabalhando","Klaus Vasconcelos / Concluído","Klaus Vasconcelos / Pendência","Klaus Vasconcelos / Trabalhando","Latência alta para servidor do jogo","Ligação caiu","LinkedIn","Live FC","Mau atendimento de vendedor externo","Max","Max Walney / Concluído","Max Walney / Pendência","Max Walney / Trabalhando","Monitoria CSAT","Mudança de Numero Fixo","Multas e juros","Multas e Juros","Não Efetua Ligações","Não recebe Ligações","Nat Geo kid's","Netflix","Nooggin","Notificação de débito/bloqueio ou desativação","Pendências / Agend. J.A - Kaio","Perda de pacotes","Personalização da Rede wifi","Ping alto","Plano não chega o contratado - FTTH","Pon apagada - FTTH","Pon piscando - FTTH","Porta Incorreta","Portas virtuais bloqueadas","Pós atendimento","Pós-Venda (CX)","Premiere","Problema em Redes sociais","Problema na Maquineta de Cartão","Problema na OLT","Problema na portabilidade","Problema no Áudio","Problema no Pabx do Cliente","Problema no Replay","Problemas com o Telefone Fixo","Qualifica","Reagendou visita","Receptor Bloqueado","Reclamação de jogos online","Recolher roteador","Recolhimento Desativado automático","REPARO MAL SUCEDIDO","Restrição de NAT","Retenção Suporte","Revisão de Equipamento","Rota Inoperante - FTTH","Sebastião Felix / Concluido","Sebastião Felix / Pendência","Sebastião Felix / Trabalhando","sem Acesso","Sem acesso","Sem acesso site ou sistema específico - FTTH","Sem acesso site ou sistema específico - FWA","Sem acesso TP-LINK","Sem contato","Senha de Autenticação","Servidor do jogo em manutenção","Servidor Inoperante (Rádio)","Sinal da fibra do cliente irregular - FTTH","Skeelo","SKY+ - Informações do plano","Solicitação de alteração de parede","Solicitação de alteração na Forma Pagamento não disponibilizada","Solicitação para separar redes Wi-Fi - FTTH","Solicitação para separar redes Wi-Fi - FWA","Solicitação para unificar redes Wi-Fi - FTTH","Solicitação para unificar redes Wi-Fi - FWA","Suporte a equipamento particular","Suporte ao técnico - (Carimbo)","Suspeita de LOS","Tarifação da telefonia","Taxa de alteração de Cômodo","Taxa de mudança de endereço","Tela Preta","Telecine","Telefone mudo","Telefonia - (Carimbo)","Troca de Cabo de Rede","Troca de Cabo Fibra - FTTH","Troca de Cabo HDMI/RCA","Troca de Conector (ONU)","Troca de Conector (RJ)","Troca de Conector (Splitter)","Troca de Controle","Troca de Equipamento","Troca de Fonte - FTTH","Troca de onu - FTTH","Troca de Radio","Troca de Receptor","Troca de roteador - FTTH","Troca de Telefone","Twitter","Ubook Select","Upgrade de roteador","Valor de fatura divergente","Valor de IP fixo","Valores cobrados durante bloqueio/desativação/sem acesso","Velocidade (Taxa de Download/Upload)","Visita sem êxito","Visita sem êxito 2","Visita sem êxito 3","Visita técnica (dentro do prazo)","Visita técnica (fora do prazo)","Watch Espn","Webmail","Wi-Fi da ONU/Roteador desativado"]);
-  let tagDraft={query:'',selected:'',comment:'',progress:null};
+  const emptyTagDraft=()=>({query:'',selected:'',comment:'',progress:null,external:false,destination:'Suporte Externo',problem:'',service:'',forwardProgress:null});
+  let tagDraft=emptyTagDraft();
   const selectedValue = e => text(e.querySelector('.ion-select-item__content'));
   const note = message => { $('.status').textContent = message; };
   const technology = () => nativeButton('CPE') ? 'FWA' : 'Fibra';
@@ -858,6 +859,87 @@
     }
     note(comment?'Etiqueta anexada e comentário confirmado nos Eventos.':'Etiqueta anexada ao atendimento.');
   }
+  const forwardSectors=['Suporte Externo','Financeiro','Liberação','Solicitação de dados','Fidelização','Pós venda','Comercial','Suporte Corporativo'];
+  css.textContent+='#rv-mini .external-toggle{display:flex;align-items:center;gap:9px;padding:10px;border:1px solid #9a8de866;border-radius:12px;background:linear-gradient(110deg,#a4e9ed44,#d0b4ff44)}#rv-mini .external-toggle input{width:17px;height:17px;margin:0;accent-color:#7256da}#rv-mini .external-fields,#rv-mini .external-problems{display:grid;gap:8px}#rv-mini .external-fields[hidden],#rv-mini .external-problems[hidden]{display:none}#rv-mini .external-fields{padding:10px;border-radius:12px;background:#e8ecff88}';
+  const externalProblems=['Suspeita de LOS (reparo físico)','Problema na Maquineta de Cartão (reparo rápido)','PON Piscando (reparo físico)','PON Apagada (reparo rápido)','Telefone mudo (reparo rápido)','Cabo da Fibra Rompido (reparo físico)','Cabo desconectado (reparo físico)','Suporte a equipamento particular (serviço adicional)','Não Efetua Ligações (reparo rápido)','Instabilidade no WI-FI (reparo rápido)','Alcance do Wi-Fi (reparo rápido)','Plano não chega o contratado (reparo rápido)','Problema em Redes sociais (reparo rápido)','Sinal Irregular Fibra (reparo físico)','Perda de pacotes (reparo rápido)'];
+  const serviceForProblem=name=>/reparo físico\)/i.test(name)?'Reparo Físico':/reparo rápido\)/i.test(name)?'Reparo Rápido':/serviço adicional\)/i.test(name)?'Serviço adicional':'';
+  const visibleNative=selector=>all(document,selector).filter(e=>!root.contains(e)&&e.getClientRects().length&&getComputedStyle(e).visibility!=='hidden');
+  const scheduleDialog=()=>visibleNative('.ant-modal-content').find(e=>e.querySelector('app-new-schedule'));
+  const forwardDialog=()=>visibleNative('.ant-modal-content').find(e=>e.querySelector('app-brisanet-forward-form'));
+  const calendarVisible=()=>Boolean(scheduleDialog()?.querySelector('[data-testid="component-calendar-step"]'));
+  async function chooseForwardOption(dialog,id,name){
+    const select=await until(()=>{const e=dialog.querySelector('nz-select#'+id);return e&&!e.classList.contains('ant-select-disabled')&&e;},6000);
+    const choices=all(select,'.ant-select-selection__choice').map(text);
+    if(choices.length){if(choices.length===1&&tagKey(choices[0])===tagKey(name))return;throw new Error('Há outra seleção em '+id+'. Confira o formulário original antes de continuar.');}
+    if(tagKey(text(select.querySelector('.ant-select-selection-selected-value')))===tagKey(name))return;
+    dialog.querySelector('.ant-modal-title,app-new-schedule header')?.click();
+    select.querySelector('.ant-select-selection')?.click();await pause(120);
+    if(!select.classList.contains('ant-select-open'))select.querySelector('.ant-select-selection')?.dispatchEvent(new MouseEvent('mousedown',{bubbles:true,cancelable:true,view:window}));
+    const row=await until(()=>{const matches=visibleNative('.ant-select-dropdown li[nz-option-li]').filter(e=>tagKey(text(e))===tagKey(name));return matches.length===1&&matches[0];},6500).catch(()=>{throw new Error('A opção “'+name+'” não está disponível neste cliente. Continue no formulário do Revan; nenhuma alternativa será escolhida.');});
+    valid();row.click();await until(()=>all(select,'.ant-select-selection__choice,.ant-select-selection-selected-value').some(e=>tagKey(text(e))===tagKey(name)),3000);
+    dialog.querySelector('.ant-modal-title,app-new-schedule header')?.click();
+  }
+  async function forwardExternal(){
+    const payload=JSON.stringify([route,tagDraft.destination,tagDraft.problem,tagDraft.service]);
+    let progress=tagDraft.forwardProgress;
+    if(progress?.started&&progress.payload!==payload)throw new Error('Um encaminhamento já foi iniciado. Conclua ou cancele no Revan antes de preparar outro.');
+    if(!progress)progress=tagDraft.forwardProgress={payload,started:false,calendar:false,submitted:false};
+    if(progress.calendar){note('A etapa de data já foi aberta. Continue o agendamento manualmente no Revan.');return;}
+    if(progress.submitted){note('Encaminhamento já confirmado. Nenhum novo envio foi feito.');return;}
+    let dialog=scheduleDialog();
+    if(progress.started&&!dialog)throw new Error('O encaminhamento já foi iniciado, mas a tela não está aberta. Confira o Revan; o painel não repetirá o envio.');
+    if(!progress.started){
+      if(dialog||forwardDialog())throw new Error('Já há um encaminhamento ou agendamento aberto. Conclua ou cancele por lá antes de Anexar.');
+      const send=document.querySelector('#forward');if(!send)throw new Error('Botão Enviar não encontrado no atendimento.');
+      valid();send.click();const form=await until(()=>forwardDialog()?.querySelector('nz-switch#blocking button')&&forwardDialog(),6000);
+      const wait=form.querySelector('nz-switch#blocking button');if(!wait.classList.contains('ant-switch-checked'))wait.click();
+      await until(()=>wait.classList.contains('ant-switch-checked'),2500);
+      progress.started=true;
+      await chooseForwardOption(form,'sector',tagDraft.destination);
+      if(tagDraft.destination!=='Suporte Externo'){
+        const submit=all(form,'button').find(b=>text(b)==='Encaminhar');
+        if(!submit||submit.disabled)throw new Error('Este destino exige dados adicionais. Preencha e conclua no formulário do Revan.');
+        const events=eventCard();const before=text(events);
+        valid();submit.click();await until(()=>!form.isConnected||!form.getClientRects().length,10000);
+        await until(()=>text(eventCard())!==before&&tagKey(text(eventCard())).includes(tagKey(tagDraft.destination)),10000);
+        progress.submitted=true;note('Encaminhamento confirmado para '+tagDraft.destination+'.');return;
+      }
+      dialog=await until(()=>scheduleDialog(),7000);
+    }
+    if(calendarVisible()){progress.calendar=true;note('Escolha a data e conclua manualmente no Revan.');return;}
+    await chooseForwardOption(dialog,'problem',tagDraft.problem);
+    await chooseForwardOption(dialog,'service',tagDraft.service);
+    const next=all(dialog,'button').find(b=>text(b)==='Continuar');if(!next||next.disabled)throw new Error('O Revan não liberou Continuar. Confira os dados do serviço no formulário original.');
+    valid();next.click();await until(()=>calendarVisible(),10000);progress.calendar=true;
+    note('Problema e serviço preenchidos. Escolha a data e conclua manualmente no Revan.');
+  }
+  async function attachAndForward(){
+    if(!tagDraft.external){await attachTag();return;}
+    valid();
+    if(!tagDraft.selected&&!tagDraft.query.trim())throw new Error('Escolha a etiqueta do atendimento antes de Anexar.');
+    if(!forwardSectors.includes(tagDraft.destination))throw new Error('Escolha um destino válido.');
+    if(tagDraft.destination==='Suporte Externo'&&(!tagDraft.problem||!tagDraft.service))throw new Error('Escolha o problema e o tipo de serviço do chamado externo.');
+    const previous=tagDraft.forwardProgress;
+    if(previous?.started&&previous.payload!==JSON.stringify([route,tagDraft.destination,tagDraft.problem,tagDraft.service]))throw new Error('Há um encaminhamento iniciado com outros dados. Confira o Revan antes de continuar.');
+    if(!previous?.started&&(scheduleDialog()||forwardDialog()))throw new Error('Já há um formulário de encaminhamento aberto no Revan. Conclua ou cancele por lá.');
+    minimize();
+    try{await attachTag();await forwardExternal();$('.launch').title=$('.status').textContent;}
+    catch(error){$('.launch').title=error.message;if(!scheduleDialog()&&!forwardDialog()){opened=true;$('.panel').hidden=false;$('.launch').hidden=true;tabName='Etiquetar';render();}throw error;}
+  }
+  function renderExternalFields(field){
+    const toggleLabel=make('label','external-toggle');const toggle=make('input');toggle.type='checkbox';toggle.checked=tagDraft.external;toggle.setAttribute('aria-label','Abrir chamado externo');toggleLabel.append(toggle,make('strong','','Abrir chamado externo'));field.append(toggleLabel);
+    const extra=make('div','external-fields');extra.hidden=!tagDraft.external;
+    toggle.addEventListener('change',()=>{tagDraft.external=toggle.checked;extra.hidden=!toggle.checked;});
+    const destLabel=make('label','','Encaminhar para');const dest=make('select');dest.setAttribute('aria-label','Encaminhar para');for(const name of forwardSectors){const o=make('option','',name);o.value=name;dest.append(o);}dest.value=tagDraft.destination;destLabel.append(dest);extra.append(destLabel);
+    const problemFields=make('div','external-problems');const problemLabel=make('label','','Problema do agendamento · catálogo próprio');const search=make('input');search.type='search';search.placeholder='Pesquisar problema…';search.setAttribute('aria-label','Buscar problema do chamado externo');problemLabel.append(search);problemFields.append(problemLabel);
+    const list=make('select');list.setAttribute('aria-label','Problema do chamado externo');
+    const update=()=>{list.replaceChildren(make('option','','Selecione o problema'));list.firstChild.value='';for(const name of externalProblems.filter(n=>tagKey(n).includes(tagKey(search.value))||n===tagDraft.problem).sort((a,b)=>a.localeCompare(b,'pt-BR'))){const o=make('option','',name);o.value=name;list.append(o);}list.value=tagDraft.problem;};update();search.addEventListener('input',update);problemFields.append(list);
+    const serviceLabel=make('label','','Tipo de serviço');const service=make('select');service.setAttribute('aria-label','Tipo de serviço do chamado externo');for(const name of ['','Reparo Rápido','Reparo Físico','Serviço adicional']){const o=make('option','',name||'Selecione o serviço');o.value=name;service.append(o);}service.value=tagDraft.service;serviceLabel.append(service);problemFields.append(serviceLabel);
+    list.addEventListener('change',()=>{tagDraft.problem=list.value;tagDraft.service=serviceForProblem(list.value);service.value=tagDraft.service;});service.addEventListener('change',()=>{tagDraft.service=service.value;});
+    problemFields.append(make('small','','15 problemas catalogados em cliente Fibra. O Revan confirma a disponibilidade para este cliente ao anexar.'));
+    extra.append(problemFields);const info=make('small');extra.append(info);
+    const updateDest=()=>{problemFields.hidden=dest.value!=='Suporte Externo';info.textContent=dest.value==='Suporte Externo'?'Após Anexar: minimizar → etiqueta e Eventos → Enviar → Aguardar chamado → Suporte Externo → problema → serviço → calendário. Data e conclusão são manuais.':'Após Anexar: minimizar → etiqueta e Eventos → Enviar → Aguardar chamado → destino → Encaminhar. Se houver campos adicionais, continue no Revan.';};dest.addEventListener('change',()=>{tagDraft.destination=dest.value;updateDest();});updateDest();field.append(extra);
+  }
   function renderTagger(body){
     const field=make('div','field tagger');const label=make('label','','Nome, parte do nome ou letra');
     const query=make('input');query.type='search';query.value=tagDraft.query;query.placeholder='Ex.: wifi, sinal, retorno…';query.setAttribute('aria-label','Buscar etiqueta');label.append(query);field.append(label);
@@ -873,6 +955,7 @@
     const messageLabel=make('label','','Informações para os Eventos (opcional)');const message=make('textarea');message.rows=4;message.value=tagDraft.comment;message.placeholder='Digite a observação do atendimento…';message.setAttribute('aria-label','Informações para os Eventos');message.addEventListener('input',()=>{tagDraft.comment=message.value;});messageLabel.append(message);field.append(messageLabel);
     field.append(make('small','','Anexar aplica a etiqueta selecionada e publica o texto acima como comentário interno nos Eventos deste atendimento. Categoria é opcional e não será selecionada.'));
     if(tagDraft.progress)field.append(make('small','',`Etiqueta: ${tagDraft.progress.tagged?'confirmada':'não confirmada'} · Comentário: ${tagDraft.progress.sent?'confirmado':tagDraft.progress.attempted?'enviado, confira os Eventos':'não enviado'}`));
+    renderExternalFields(field);
     updateResults();body.append(field);
   }
   function renderAuthentication(body) {
@@ -929,7 +1012,7 @@
       const area=make('textarea');area.readOnly=true;area.value=payload;area.rows=5;message.append(area,actionButton('Copiar mensagem',async()=>{await navigator.clipboard.writeText(payload);note(editing?'Rascunho copiado. Salve antes de enviar ao cliente.':'Mensagem copiada.');}));body.append(message);
     }
     const footer = $('footer'); footer.replaceChildren();
-    if(tabName==='Etiquetar')footer.append(actionButton('Anexar',attachTag,'primary'));
+    if(tabName==='Etiquetar')footer.append(actionButton('Anexar',attachAndForward,'primary'));
     if (tabName === 'Rede') {
       if (editing) {
         footer.append(actionButton(reviewRequested?'Confirmar salvar':'Salvar',()=>save(reviewRequested),'primary'));
@@ -951,7 +1034,7 @@
     list.forEach((c, i) => { const o = make('option','',`Equipamento ${i + 1} · ${text(c.querySelector('ion-tab-group')?.previousElementSibling).slice(0,80)}`); o.value = String(i); picker.append(o); });
     picker.hidden = list.length < 2;
     if (card?.isConnected && route === location.hash && editing && nativeEditing()) { picker.value = String(list.indexOf(card)); render(); return; }
-    if (card !== list[0] || route !== location.hash) {generatedPasswords.clear();savedNetwork=null;editBaseline=null;reviewRequested=false;tagDraft={query:'',selected:'',comment:'',progress:null};}
+    if (card !== list[0] || route !== location.hash) {generatedPasswords.clear();savedNetwork=null;editBaseline=null;reviewRequested=false;tagDraft=emptyTagDraft();}
     card = list[0]; route = location.hash; editing = false; changed = false;
     if (!card) { $('.context').textContent = `Atendimento ${route.split('/').pop()}`; $('nav').replaceChildren(); $('.body').replaceChildren(); $('footer').replaceChildren(); note('Não localizei as abas dos equipamentos nesta tela. Aguarde o atendimento carregar e abra o painel novamente.'); return; }
     if (nativeEditing()) { tabName = 'Rede'; note('Há edição na tela original. Conclua ou cancele antes de editar pelo painel.'); render(); return; }
@@ -969,7 +1052,7 @@
     if (editing || nativeEditing()) { $('.equipment').value = String(cards().indexOf(card)); note('Salve ou cancele antes de trocar de equipamento.'); return; }
     generatedPasswords.clear(); savedNetwork=null;editBaseline=null;reviewRequested=false;autoPending=false;autoReport='';card = cards()[Number($('.equipment').value)]; void run(() => switchTab(technology() === 'FWA' ? 'CPE' : 'ONU'));
   });
-  window.addEventListener('hashchange', () => { minimize(); tagDraft={query:'',selected:'',comment:'',progress:null};savedNetwork=null;editBaseline=null;reviewRequested=false;card = null; editing = false; changed = false; options.clear(); generatedPasswords.clear();autoPending=false;autoReport='';$('.context').textContent = ''; $('nav').replaceChildren(); $('.body').replaceChildren(); $('footer').replaceChildren(); });
+  window.addEventListener('hashchange', () => { minimize(); tagDraft=emptyTagDraft();savedNetwork=null;editBaseline=null;reviewRequested=false;card = null; editing = false; changed = false; options.clear(); generatedPasswords.clear();autoPending=false;autoReport='';$('.context').textContent = ''; $('nav').replaceChildren(); $('.body').replaceChildren(); $('footer').replaceChildren(); });
   document.addEventListener('keydown', e => { if (e.key === 'Escape') minimize(); });
   new MutationObserver(records => {
     syncDialogs();

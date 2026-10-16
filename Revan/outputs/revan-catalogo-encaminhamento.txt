@@ -1,0 +1,33 @@
+CATÁLOGO DE ENCAMINHAMENTO — observado no Revan em 16/10/2026
+
+DESTINOS
+- Suporte Externo
+- Financeiro
+- Liberação
+- Solicitação de dados
+- Fidelização
+- Pós venda
+- Comercial
+- Suporte Corporativo
+
+PROBLEMAS DO AGENDAMENTO — SUPORTE EXTERNO (CLIENTE FIBRA)
+- Suspeita de LOS (reparo físico)
+- Problema na Maquineta de Cartão (reparo rápido)
+- PON Piscando (reparo físico)
+- PON Apagada (reparo rápido)
+- Telefone mudo (reparo rápido)
+- Cabo da Fibra Rompido (reparo físico)
+- Cabo desconectado (reparo físico)
+- Suporte a equipamento particular (serviço adicional)
+- Não Efetua Ligações (reparo rápido)
+- Instabilidade no WI-FI (reparo rápido)
+- Alcance do Wi-Fi (reparo rápido)
+- Plano não chega o contratado (reparo rápido)
+- Problema em Redes sociais (reparo rápido)
+- Sinal Irregular Fibra (reparo físico)
+- Perda de pacotes (reparo rápido)
+
+Os problemas do agendamento são uma lista separada das etiquetas do atendimento.
+Os outros sete destinos exibiram encaminhamento/checklist, sem a lista de problemas de agendamento nesta inspeção.
+A disponibilidade depende do cliente, tecnologia e setor. O dashboard confirma o nome exato no formulário nativo.
+Nenhuma data, janela ou conclusão de agendamento foi automatizada.
