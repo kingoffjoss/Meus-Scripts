@@ -1,6 +1,6 @@
 # Revan — Equipamentos e rede
 
-Minidashboard flutuante para o Revan. Versão 4.5.2.
+Minidashboard flutuante para o Revan. Versão 4.6.0.
 
 ## Instalar o favorito
 
@@ -36,3 +36,8 @@ O gerador valida a sintaxe e recria o instalador, o arquivo de importação e o 
 O painel depende da estrutura da interface do Revan. Alterações nessa interface podem exigir ajustes nos seletores. Os detalhes de operação estão em [LEIA-ME.txt](outputs/LEIA-ME.txt).
 
 O repositório contém apenas o código e os instaladores, sem capturas de atendimentos ou dados de clientes. As ações usam a sessão já aberta no Revan.
+
+
+ETIQUETAR — versão 4.6
+Aba Etiquetar: busque nome, trecho ou letra; a lista local ignora acentos e é ordenada alfabeticamente. Escolha o nome exato. Buscar mais no Revan consulta a lista nativa e incorpora os resultados à sessão. O catálogo inicial contém etiquetas de atendimento observadas, sem nomes de colaboradores. Não garante totalidade.
+Digite uma observação opcional. Anexar aplica a etiqueta no atendimento e publica a observação como comentário interno nos Eventos. A categoria não é selecionada. O painel preserva comentários já em rascunho e evita repetir envios acompanhados nesta sessão. Confira confirmações e erros: etiqueta e comentário são etapas separadas, sem transação única. Se o comentário ficar sem confirmação, confira os Eventos antes de repetir; atualizar o painel não reenvia.
