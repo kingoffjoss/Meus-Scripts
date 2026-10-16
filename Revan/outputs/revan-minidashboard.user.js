@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Revan — Minidashboard de equipamentos
 // @namespace    local.revan.minidashboard
-// @version      4.7.0
+// @version      4.7.1
 // @updateURL    https://raw.githubusercontent.com/kingoffjoss/Meus-Scripts/main/Revan/outputs/revan-minidashboard.user.js
 // @downloadURL  https://raw.githubusercontent.com/kingoffjoss/Meus-Scripts/main/Revan/outputs/revan-minidashboard.user.js
 // @description  Campos próprios e ações integradas aos controles originais do Revan.
@@ -18,7 +18,7 @@
   });
   const root = document.createElement('section');
   root.id = 'rv-mini';
-  root.dataset.version = '4.7.0';
+  root.dataset.version = '4.7.1';
   root.innerHTML = `<button class="launch" aria-expanded="false"><span class="launch-icon">◈</span> Equipamentos <span class="launch-dot"></span></button><div class="panel" hidden><header><strong><span class="brand-icon">◈</span> Equipamentos <small>REDE & CONEXÃO</small></strong><button class="close" aria-label="Minimizar" title="Minimizar para botão">−</button></header><div class="context"></div><select class="equipment" aria-label="Equipamento"></select><nav></nav><p class="status" role="status"></p><div class="body"></div><footer></footer></div>`;
   const refreshButton=document.createElement('button');refreshButton.className='refresh-panel';refreshButton.type='button';refreshButton.textContent='↻';refreshButton.setAttribute('aria-label','Atualizar painel');refreshButton.title='Atualizar painel e recuperar os controles';
   root.querySelector('header').insertBefore(refreshButton,root.querySelector('.close'));
@@ -884,7 +884,10 @@
     let progress=tagDraft.forwardProgress;
     if(progress?.started&&progress.payload!==payload)throw new Error('Um encaminhamento já foi iniciado. Conclua ou cancele no Revan antes de preparar outro.');
     if(!progress)progress=tagDraft.forwardProgress={payload,started:false,calendar:false,submitted:false};
-    if(progress.calendar){note('A etapa de data já foi aberta. Continue o agendamento manualmente no Revan.');return;}
+    if(progress.calendar){
+      if(scheduleDialog()){note('Continue o agendamento manualmente no formulário aberto do Revan.');return;}
+      throw new Error('A tela do agendamento foi fechada. Clique em Preparar novamente e depois em Anexar para reabrir o fluxo.');
+    }
     if(progress.submitted){note('Encaminhamento já confirmado. Nenhum novo envio foi feito.');return;}
     let dialog=scheduleDialog();
     if(progress.started&&!dialog)throw new Error('O encaminhamento já foi iniciado, mas a tela não está aberta. Confira o Revan; o painel não repetirá o envio.');
@@ -920,15 +923,29 @@
     if(!forwardSectors.includes(tagDraft.destination))throw new Error('Escolha um destino válido.');
     if(tagDraft.destination==='Suporte Externo'&&(!tagDraft.problem||!tagDraft.service))throw new Error('Escolha o problema e o tipo de serviço do chamado externo.');
     const previous=tagDraft.forwardProgress;
+    if(previous?.started&&!scheduleDialog()&&!forwardDialog())throw new Error('O formulário anterior foi fechado. Clique em Preparar novamente e depois em Anexar. O comentário confirmado não será reenviado.');
     if(previous?.started&&previous.payload!==JSON.stringify([route,tagDraft.destination,tagDraft.problem,tagDraft.service]))throw new Error('Há um encaminhamento iniciado com outros dados. Confira o Revan antes de continuar.');
     if(!previous?.started&&(scheduleDialog()||forwardDialog()))throw new Error('Já há um formulário de encaminhamento aberto no Revan. Conclua ou cancele por lá.');
     minimize();
     try{await attachTag();await forwardExternal();$('.launch').title=$('.status').textContent;}
     catch(error){$('.launch').title=error.message;if(!scheduleDialog()&&!forwardDialog()){opened=true;$('.panel').hidden=false;$('.launch').hidden=true;tabName='Etiquetar';render();}throw error;}
   }
+  async function attachRequested(){
+    try{await attachAndForward();}
+    catch(error){
+      note(error.message);
+      if(!scheduleDialog()&&!forwardDialog()){opened=true;$('.panel').hidden=false;$('.launch').hidden=true;render();$('.panel').scrollTop=0;}
+      throw error;
+    }
+  }
   function renderExternalFields(field){
     const toggleLabel=make('label','external-toggle');const toggle=make('input');toggle.type='checkbox';toggle.checked=tagDraft.external;toggle.setAttribute('aria-label','Abrir chamado externo');toggleLabel.append(toggle,make('strong','','Abrir chamado externo'));field.append(toggleLabel);
     const extra=make('div','external-fields');extra.hidden=!tagDraft.external;
+    if(tagDraft.forwardProgress?.started&&!scheduleDialog()&&!forwardDialog()){
+      const recovery=make('div','save-review');recovery.append(make('strong','','O formulário anterior foi fechado.'));
+      recovery.append(make('small','','Para iniciar outro preparo, confira os Eventos e o agendamento no Revan. A etiqueta e o comentário já confirmados serão preservados.'));
+      const reset=make('button','','Preparar novamente');reset.type='button';reset.addEventListener('click',()=>{tagDraft.forwardProgress=null;note('Novo preparo liberado. Revise os dados e clique em Anexar.');render();$('.panel').scrollTop=0;});recovery.append(reset);extra.append(recovery);
+    }
     toggle.addEventListener('change',()=>{tagDraft.external=toggle.checked;extra.hidden=!toggle.checked;});
     const destLabel=make('label','','Encaminhar para');const dest=make('select');dest.setAttribute('aria-label','Encaminhar para');for(const name of forwardSectors){const o=make('option','',name);o.value=name;dest.append(o);}dest.value=tagDraft.destination;destLabel.append(dest);extra.append(destLabel);
     const problemFields=make('div','external-problems');const problemLabel=make('label','','Problema do agendamento · catálogo próprio');const search=make('input');search.type='search';search.placeholder='Pesquisar problema…';search.setAttribute('aria-label','Buscar problema do chamado externo');problemLabel.append(search);problemFields.append(problemLabel);
@@ -1012,7 +1029,7 @@
       const area=make('textarea');area.readOnly=true;area.value=payload;area.rows=5;message.append(area,actionButton('Copiar mensagem',async()=>{await navigator.clipboard.writeText(payload);note(editing?'Rascunho copiado. Salve antes de enviar ao cliente.':'Mensagem copiada.');}));body.append(message);
     }
     const footer = $('footer'); footer.replaceChildren();
-    if(tabName==='Etiquetar')footer.append(actionButton('Anexar',attachAndForward,'primary'));
+    if(tabName==='Etiquetar')footer.append(actionButton('Anexar',attachRequested,'primary'));
     if (tabName === 'Rede') {
       if (editing) {
         footer.append(actionButton(reviewRequested?'Confirmar salvar':'Salvar',()=>save(reviewRequested),'primary'));
