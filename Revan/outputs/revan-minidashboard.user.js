@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Revan — Minidashboard de equipamentos
 // @namespace    local.revan.minidashboard
-// @version      4.12.0
+// @version      4.12.1
 // @updateURL    https://raw.githubusercontent.com/kingoffjoss/Meus-Scripts/main/Revan/outputs/revan-minidashboard.user.js
 // @downloadURL  https://raw.githubusercontent.com/kingoffjoss/Meus-Scripts/main/Revan/outputs/revan-minidashboard.user.js
 // @description  Campos próprios e ações integradas aos controles originais do Revan.
@@ -24,7 +24,7 @@
   });
   const root = document.createElement('section');
   root.id = 'rv-mini';
-  root.dataset.version = '4.12.0';
+  root.dataset.version = '4.12.1';
   root.innerHTML = `<button class="launch" aria-expanded="false"><span class="launch-icon">◈</span> Equipamentos <span class="launch-dot"></span></button><div class="panel" hidden><header><strong><span class="brand-icon">◈</span> Revan <small>REDE & CONEXÃO</small></strong><button class="close" aria-label="Minimizar" title="Minimizar para botão">−</button></header><div class="context"></div><select class="equipment" aria-label="Equipamento"></select><nav></nav><p class="status" role="status"></p><div class="body"></div><footer></footer></div>`;
   const refreshButton=document.createElement('button');refreshButton.className='refresh-panel';refreshButton.type='button';refreshButton.textContent='↻';refreshButton.setAttribute('aria-label','Atualizar painel');refreshButton.title='Atualizar painel e recuperar os controles';
   root.querySelector('header').insertBefore(refreshButton,root.querySelector('.close'));
@@ -203,7 +203,7 @@
     let limit;
     try { if(!allowStale)valid(); await Promise.race([Promise.resolve().then(action),new Promise((_,reject)=>{limit=setTimeout(()=>reject(Object.assign(new Error('Tempo limite da operação. Use ↻ para reler os controles antes de repetir.'),{code:'RV_TIMEOUT'})),45000);})]); }
     catch (e) { if(token===operationEpoch)note(e.message); }
-    finally { clearTimeout(limit);if(token===operationEpoch){operationEpoch++;busy = false; if (opened && card?.isConnected) render(); lock();} }
+    finally { clearTimeout(limit);if(token===operationEpoch){operationEpoch++;busy = false; if (card?.isConnected) render(); lock();} }
   }
   function lock() {
     root.dataset.busy=String(busy);
@@ -326,6 +326,35 @@
   }
   function requireDraft(){valid();if(!networkDraft||networkDraft.route!==location.hash||networkDraft.card!==card)throw new Error('Abra Editar para preparar as configurações.');if(networkDraft.state!=='draft')throw new Error('Há uma aplicação sem confirmação. Confira o Revan antes de iniciar outra.');}
   function draftChanged(){requireDraft();changed=true;reviewRequested=false;note('Escolha guardada somente no dashboard. Nada foi enviado ao Revan.');}
+  async function returnToInitial(message){
+    valid();
+    if(networkDraft)throw new Error('Há um rascunho ou aplicação sem confirmação. Confira a rede antes de voltar.');
+    if(nativeEditing())throw new Error('O Revan ainda está em edição. Conclua ou cancele antes de voltar.');
+    pendingAction=null;editing=false;changed=false;reviewRequested=false;editBaseline=null;options.clear();autoPending=false;autoReport='';
+    const initial=technology()==='FWA'?'CPE':'ONU';
+    if(tabName!==initial){await until(()=>{const b=nativeButton(initial);return b&&!b.disabled&&b;},10000);await switchTab(initial);}
+    tabName=initial;opened=true;$('.panel').hidden=false;$('.launch').hidden=true;$('.launch').setAttribute('aria-expanded','true');
+    note(message||'Página inicial do equipamento.');$('.launch').title=$('.status').textContent;render();
+  }
+  async function activateOnuAutomatically(source){
+    const origin=route,before=new Set(visibleNative('.ant-popover,.sup-container,.ant-modal-content,[role="dialog"]'));
+    const feedback=commandFeedback();monitorCommand('Ativar ONU');source.click();
+    const popup=await until(()=>{
+      if(route!==origin||location.hash!==origin)throw new Error('O atendimento mudou. A confirmação de ativação não foi acionada.');
+      const candidates=visibleNative('.ant-popover,.sup-container,.ant-modal-content,[role="dialog"]').filter(e=>!before.has(e)&&/deseja realmente ativar a onu\s*\?/i.test(normalized(text(e))));
+      const unique=candidates.filter(e=>!candidates.some(other=>other!==e&&e.contains(other)));
+      if(unique.length>1)throw new Error('Mais de uma confirmação de ativação foi encontrada. Confira o Revan.');
+      if(unique.length===1)return unique[0];
+      const response=commandFeedback();if(response!==feedback&&/erro|falh|não foi|nao foi/i.test(response))throw new Error(response);
+      return null;
+    },6000);
+    valid();if(!source.isConnected||nativeButton('Ativar ONU')!==source)throw new Error('O equipamento mudou antes da confirmação. Nenhum OK foi acionado.');
+    const controls=all(popup,'button').filter(b=>b.getClientRects().length&&!b.disabled&&/^(ok|sim|confirmar)$/i.test(text(b)));
+    if(controls.length!==1)throw new Error('Não identifiquei um único OK da ativação da ONU. Confira a confirmação do Revan.');
+    controls[0].click();await pause(150);syncDialogs();
+    await returnToInitial('Solicitação de ativação da ONU enviada com OK automático. Acompanhe o resultado em Últimas ações e Comandos.');
+  }
+
   async function save(confirmed=false){
     requireDraft();const plan=networkDraft;
     if(!changed){note('Nenhuma alteração para salvar.');return;}
@@ -366,7 +395,7 @@
       savedNetwork=prepared;networkDraft=null;editing=false;changed=false;reviewRequested=false;editBaseline=null;options.clear();
       if(plan.powerChanged){const b=nativeButton(plan.power?'Habilitar rede':'Desabilitar rede');if(b){remoteAttempted=true;b.click();await pause(150);syncDialogs();}}
       if(plan.optimize){const b=nativeButton('Otimizar canal');if(!b||b.disabled)throw new Error('Rede salva, mas a otimização nativa não está disponível.');remoteAttempted=true;b.click();await pause(150);syncDialogs();}
-      note('Salvar foi confirmado pela saída da edição no Revan. Confira o retorno e a aplicação no equipamento.');$('.launch').title=$('.status').textContent;
+      await returnToInitial('Edição de rede concluída no Revan. Voltamos à página inicial; confira o retorno dos comandos no equipamento.');
     }catch(error){
       if(!saveAttempted){const stop=nativeButton('Cancelar');if(stop){stop.click();await pause(150);}}
       if(networkDraft)networkDraft.state=(remoteAttempted||saveAttempted)?'uncertain':'draft';
@@ -569,6 +598,7 @@
       note('Aguardando sua confirmação no Revan para gerar a senha PPPoE. O painel não considera a senha gerada antes da resposta.');$('.launch').title=$('.status').textContent;
       watchAuthPassword(before,previousNotices);return;
     }
+    if(pending.kind==='device'&&pending.name==='Ativar ONU'){await activateOnuAutomatically(source);return;}
     monitorCommand(pending.name);source.click();await pause(150);syncDialogs();note('Ação acionada: '+pending.name+'. Confira a confirmação ou o retorno original do Revan.');$('.launch').title=$('.status').textContent;
   }
   function watchAuthPassword(before,previousNotices){
@@ -909,7 +939,7 @@
     }
     const footer = $('footer'); footer.replaceChildren();
     if(networkDraft)footer.append(make('div','draft-banner','Rascunho local · alterações ainda não aplicadas')); 
-    if(pendingAction&&pendingAction.tab===tabName){const review=make('div','save-review');review.append(make('strong','','Ação selecionada: '+pendingAction.name),make('small','','Nada foi acionado ainda. Executar ação abre o fluxo no Revan; confirmações nativas continuam manuais.'));body.prepend(review);footer.append(actionButton('Executar ação',executePreparedAction,'primary'),actionButton('Cancelar seleção',()=>{pendingAction=null;note('Seleção descartada. Nenhum comando foi enviado.');}));}
+    if(pendingAction&&pendingAction.tab===tabName){const review=make('div','save-review');review.append(make('strong','','Ação selecionada: '+pendingAction.name),make('small','',pendingAction.name==='Ativar ONU'?'Ao executar, o painel confirma automaticamente o OK de ativação da ONU.':'Nada foi acionado ainda. Executar ação abre o fluxo no Revan; confirmações nativas continuam manuais.'));body.prepend(review);footer.append(actionButton('Executar ação',executePreparedAction,'primary'),actionButton('Cancelar seleção',()=>{pendingAction=null;note('Seleção descartada. Nenhum comando foi enviado.');}));}
     if(tabName==='Etiquetar')footer.append(actionButton('Anexar',attachRequested,'primary'));
     if (tabName === 'Rede') {
       if (editing) {
@@ -917,7 +947,7 @@
         if(reviewRequested)footer.append(actionButton('Voltar à edição',()=>{reviewRequested=false;note('Continue editando.');}));
         footer.append(actionButton('Cancelar', cancel), actionButton('Recarregar opções', refreshDashboard));
       }
-      else footer.append(actionButton('Editar', startEdit, 'primary', !nativeButton('Editar')));
+      else footer.append(actionButton('Voltar à '+(technology()==='FWA'?'CPE':'ONU'),()=>returnToInitial()),actionButton('Editar', startEdit, 'primary', !nativeButton('Editar')));
     }
     if(queue.current||queue.active)footer.append(queueSummary());
     lock();
