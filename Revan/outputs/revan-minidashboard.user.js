@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Revan — Minidashboard de equipamentos
 // @namespace    local.revan.minidashboard
-// @version      4.15.1
+// @version      4.15.2
 // @updateURL    https://raw.githubusercontent.com/kingoffjoss/Meus-Scripts/main/Revan/outputs/revan-minidashboard.user.js
 // @downloadURL  https://raw.githubusercontent.com/kingoffjoss/Meus-Scripts/main/Revan/outputs/revan-minidashboard.user.js
 // @description  Campos próprios e ações integradas aos controles originais do Revan.
@@ -24,7 +24,7 @@
   });
   const root = document.createElement('section');
   root.id = 'rv-mini';
-  root.dataset.version = '4.15.1';
+  root.dataset.version = '4.15.2';
   root.innerHTML = `<button class="launch" aria-expanded="false"><span class="launch-icon">◈</span> Equipamentos <span class="launch-dot"></span></button><div class="panel" hidden><header><strong><span class="brand-icon">◈</span> Revan <small>REDE & CONEXÃO</small></strong><span class="version-badge">v${root.dataset.version}</span><button class="close" aria-label="Minimizar" title="Minimizar para botão">−</button></header><div class="context"></div><select class="equipment" aria-label="Equipamento"></select><nav></nav><p class="status" role="status"></p><div class="body"></div><footer></footer></div>`;
   const refreshButton=document.createElement('button');refreshButton.className='refresh-panel';refreshButton.type='button';refreshButton.textContent='↻';refreshButton.setAttribute('aria-label','Atualizar painel');refreshButton.title='Atualizar painel e recuperar os controles';
   root.querySelector('header').insertBefore(refreshButton,root.querySelector('.close'));
@@ -221,11 +221,13 @@
     const e = document.createElement(tag); if (className) e.className = className;
     if (content !== undefined) e.textContent = content; return e;
   }
-  function actionButton(name, action, className = '', disabled = false) {
+  function actionButton(name, action, className = '', disabled = false, immediate = false) {
     const b = make('button', className, name); b.type = 'button';
     b.setAttribute('aria-label',name);
     b.dataset.lock = String(disabled); b.disabled = disabled;
-    b.addEventListener('click', () => void run(action,name==='Cancelar'||name==='Recarregar opções')); return b;
+    let invoked=false;const fire=()=>{if(invoked)return;invoked=true;void run(action,name==='Cancelar'||name==='Recarregar opções');};
+    if(immediate)b.addEventListener('pointerdown',event=>{if(event.button!==0||b.disabled)return;event.preventDefault();fire();});
+    b.addEventListener('click', fire); return b;
   }
   function headingFor(element) {
     const band = element.closest('.fiber-network__band,.network-config__band');
@@ -515,7 +517,7 @@
         // Mantém o painel aberto; confirmações originais ficam à frente dele.
         await pause(100); syncDialogs();
         note(`Comando acionado no Revan: ${name}. Confira o resultado ou a confirmação do sistema.`);
-      }, /Reconfigurar|Ativar/.test(name) ? 'danger' : '', !source || source.disabled));
+      }, /Reconfigurar|Ativar/.test(name) ? 'danger' : '', !source || source.disabled, /^(Consultar|Verificar)/.test(name)));
     }
     body.append(actions);
   }
