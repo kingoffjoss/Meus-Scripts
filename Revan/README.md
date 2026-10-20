@@ -1,6 +1,6 @@
 # Revan — Equipamentos e rede
 
-Minidashboard flutuante para o Revan. Versão 4.14.2.
+Minidashboard flutuante para o Revan. Versão 4.14.3.
 
 ## Instalar o favorito
 
@@ -113,3 +113,5 @@ Melhorias 4.14.0: mostra a versão no cabeçalho e oferece atualização pelo bo
 Correção 4.14.1: a geração da mensagem de agendamento também reconhece a caixa real da revisão do chamado externo mesmo quando o Revan não fornece os identificadores esperados. Ao marcar “O cliente está ciente e confirma o agendamento”, a mensagem com data, período e expediente de 08:00 às 18:00 é copiada para o Ctrl+V. O botão Confirmar continua manual e não é acionado pelo painel.
 
 Alteração 4.14.2: inclui visivelmente no código público a chave de teste excluída e sem validade indicada pelo proprietário. Ela serve apenas como referência e pode ser substituída na guia Configuração. Remover chave desativa o valor incorporado neste navegador até que outra seja salva.
+
+Correção 4.14.3: mantém a barra de rolagem principal visível, mais larga e com contraste. A roda do mouse sobre o painel também movimenta a área principal, inclusive depois de consultar sinal ou splitter, sem impedir a rolagem das listas internas.
