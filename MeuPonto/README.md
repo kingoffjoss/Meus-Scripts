@@ -14,7 +14,7 @@ O favorito carrega painel.js da branch main deste repositório a cada abertura e
 
 Começa pausado e em simulação. Testar em 1 minuto registra o disparo e procura o controle sem clicar nele. Selecione dias e horários locais; para o modo real, desmarque Simulação e ative o agendamento. Uma tentativa por horário/dia, sem confirmação automática de diálogos. Confira as batidas no próprio Meu RH.
 
-O navegador deve ficar aberto, com uma única aba ativa, e o computador acordado. Suspensão detectada pausa o agendamento. O clique neutro opcional a cada cinco minutos não garante evitar logout pelo servidor.
+O navegador deve ficar aberto, com uma única aba ativa, e o computador acordado. Trocar de guia não pausa o agendamento. Se o navegador suspender a execução e o horário ultrapassar a janela de 10 segundos após o disparo previsto, essa batida não é compensada; o agendamento permanece ativo para os próximos horários. O clique neutro opcional a cada cinco minutos não garante evitar logout pelo servidor.
 
 ## Privacidade e limitações
 
