@@ -1,6 +1,6 @@
 # Revan — Equipamentos e rede
 
-Minidashboard flutuante para o Revan. Versão 4.14.0.
+Minidashboard flutuante para o Revan. Versão 4.14.1.
 
 ## Instalar o favorito
 
@@ -109,3 +109,5 @@ Correção 4.13.3: inclui Quedas na conexão - FTTH e Quedas na conexão - FWA o
 Correção 4.13.4: remove a escolha automática de resultado parcial único. A busca nativa pode omitir o sufixo FTTH/FWA para localizar variantes, mas a seleção exige o nome completo exato. O etiquetador manual também bloqueia variantes incompatíveis com ONU/Fibra ou CPE/FWA. Testes simulam ausência de FTTH, retorno único FWA, duas variantes e tentativa de selecionar FWA em Fibra; nenhum comentário enviado nesses testes. No teste real da versão antiga, uma etiqueta FWA incorreta foi aplicada e removida imediatamente, com ambas as ações registradas nos Eventos; nenhum comentário foi duplicado.
 
 Melhorias 4.14.0: mostra a versão no cabeçalho e oferece atualização pelo botão ⇧, preservando chave e preferências locais. A revisão do Aja agora resume tecnologia, tabulação, etiqueta e andamento das etapas. CPF, CNPJ, telefone, e-mail, nascimento, CEP e endereço são retirados localmente da cópia enviada à IA, enquanto o relato original permanece no campo. Relatórios com saudação, terceira pessoa ou conclusão sem confirmação são bloqueados. Etiquetas confirmadas pela busca nativa ficam em um catálogo local persistente separado por FTTH, FWA e genéricas. Quando uma etapa falha, o painel mantém as confirmações anteriores e apresenta Retomar etapas pendentes, sem repetir ações já confirmadas.
+
+Correção 4.14.1: a geração da mensagem de agendamento também reconhece a caixa real da revisão do chamado externo mesmo quando o Revan não fornece os identificadores esperados. Ao marcar “O cliente está ciente e confirma o agendamento”, a mensagem com data, período e expediente de 08:00 às 18:00 é copiada para o Ctrl+V. O botão Confirmar continua manual e não é acionado pelo painel.

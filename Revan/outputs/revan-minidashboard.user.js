@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Revan — Minidashboard de equipamentos
 // @namespace    local.revan.minidashboard
-// @version      4.14.0
+// @version      4.14.1
 // @updateURL    https://raw.githubusercontent.com/kingoffjoss/Meus-Scripts/main/Revan/outputs/revan-minidashboard.user.js
 // @downloadURL  https://raw.githubusercontent.com/kingoffjoss/Meus-Scripts/main/Revan/outputs/revan-minidashboard.user.js
 // @description  Campos próprios e ações integradas aos controles originais do Revan.
@@ -24,7 +24,7 @@
   });
   const root = document.createElement('section');
   root.id = 'rv-mini';
-  root.dataset.version = '4.14.0';
+  root.dataset.version = '4.14.1';
   root.innerHTML = `<button class="launch" aria-expanded="false"><span class="launch-icon">◈</span> Equipamentos <span class="launch-dot"></span></button><div class="panel" hidden><header><strong><span class="brand-icon">◈</span> Revan <small>REDE & CONEXÃO</small></strong><span class="version-badge">v${root.dataset.version}</span><button class="close" aria-label="Minimizar" title="Minimizar para botão">−</button></header><div class="context"></div><select class="equipment" aria-label="Equipamento"></select><nav></nav><p class="status" role="status"></p><div class="body"></div><footer></footer></div>`;
   const refreshButton=document.createElement('button');refreshButton.className='refresh-panel';refreshButton.type='button';refreshButton.textContent='↻';refreshButton.setAttribute('aria-label','Atualizar painel');refreshButton.title='Atualizar painel e recuperar os controles';
   root.querySelector('header').insertBefore(refreshButton,root.querySelector('.close'));
@@ -814,10 +814,12 @@
   const calendarVisible=()=>Boolean(scheduleDialog()?.querySelector('[data-testid="component-calendar-step"]'));
   let scheduleMessage=null,pendingSchedule=null,scheduleMonitor=null;
   window.addEventListener('hashchange',()=>{scheduleMessage=null;pendingSchedule=null;if(scheduleMonitor)clearInterval(scheduleMonitor);scheduleMonitor=null;});
+  function scheduleReview(dialog){return dialog?.querySelector('[data-testid="component-revision-step"],app-revision-confirmation-step')||all(dialog||document,'section,main,div').find(e=>/revise e confirme os dados com o cliente/i.test(text(e)));}
+  function scheduleConfirmationInput(dialog){return dialog?.querySelector('[data-testid="confirm-schedule-checkbox"] input')||all(dialog||document,'input[type="checkbox"]').find(input=>/cliente está ciente e confirma o agendamento/i.test(text(input.closest('label')||input.parentElement?.parentElement)));}
   function readScheduleReview(dialog){
-    const review=dialog?.querySelector('[data-testid="component-revision-step"],app-revision-confirmation-step');
+    const review=scheduleReview(dialog);
     if(!review)return null;
-    const values=all(review,'[data-testid="data-to-confirm"]').map(text);
+    const marked=all(review,'[data-testid="data-to-confirm"]').map(text);const values=marked.length?marked:all(review,'span,p,small,div').map(text).filter(v=>v.length<100);
     const day=values.find(v=>/^\d{1,2}\s+de\s+\S+\s+de\s+\d{4}$/i.test(v));
     const windowText=values.find(v=>/\d{1,2}:\d{2}.*\d{1,2}:\d{2}/.test(v));
     const hours=windowText?.match(/\d{1,2}:\d{2}/g);
@@ -831,10 +833,9 @@
   }
   document.addEventListener('change',event=>{
     if(!root.isConnected)return;
-    const input=event.target;if(!input.matches?.('[data-testid="confirm-schedule-checkbox"] input')||!input.checked)return;
-    const dialog=input.closest('.ant-modal-content');const data=readScheduleReview(dialog);if(!data)return;
+    const input=event.target;const dialog=input.closest?.('.ant-modal-content');if(input!==scheduleConfirmationInput(dialog)||!input.checked)return;const data=readScheduleReview(dialog);if(!data)return;
     const message=formatScheduleMessage(data);scheduleMessage={route:location.hash,message,confirmed:false};
-    let feedback=dialog.querySelector('[data-rv-schedule-copy]');if(!feedback){feedback=make('small');feedback.setAttribute('data-rv-schedule-copy','');feedback.style.cssText='display:block;padding:8px;color:#163e73';dialog.querySelector('[data-testid="component-revision-step"],app-revision-confirmation-step').append(feedback);}
+    let feedback=dialog.querySelector('[data-rv-schedule-copy]');if(!feedback){feedback=make('small');feedback.setAttribute('data-rv-schedule-copy','');feedback.style.cssText='display:block;padding:8px;color:#163e73';scheduleReview(dialog).append(feedback);}
     feedback.textContent='Copiando mensagem…';
     try{
       Promise.resolve(navigator.clipboard.writeText(message)).then(()=>{if(!root.isConnected)return;feedback.textContent='Mensagem copiada! Use Ctrl+V. A confirmação final do agendamento continua manual.';$('.launch').title='Mensagem de agendamento copiada. Use Ctrl+V.';},()=>{feedback.textContent='A cópia automática foi bloqueada. A mensagem ficou disponível na aba Etiquetar para copiar manualmente.';});
@@ -856,8 +857,8 @@
     if(!root.isConnected)return;
     const button=event.target.closest?.('button');if(!button||button.disabled||text(button)!=='Confirmar')return;
     const dialog=button.closest('.ant-modal-content');
-    if(!dialog?.querySelector('app-new-schedule [data-testid="component-revision-step"],app-new-schedule app-revision-confirmation-step'))return;
-    const check=dialog.querySelector('[data-testid="confirm-schedule-checkbox"] input');if(!check?.checked)return;
+    if(!dialog?.querySelector('app-new-schedule')||!scheduleReview(dialog))return;
+    const check=scheduleConfirmationInput(dialog);if(!check?.checked)return;
     const data=readScheduleReview(dialog);if(!data)return;
     if(scheduleMonitor)clearInterval(scheduleMonitor);
     pendingSchedule={route:location.hash,data,before:commandFeedback(),started:Date.now(),confirmed:false};
