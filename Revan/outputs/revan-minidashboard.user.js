@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Revan — Minidashboard de equipamentos
 // @namespace    local.revan.minidashboard
-// @version      4.14.3
+// @version      4.14.4
 // @updateURL    https://raw.githubusercontent.com/kingoffjoss/Meus-Scripts/main/Revan/outputs/revan-minidashboard.user.js
 // @downloadURL  https://raw.githubusercontent.com/kingoffjoss/Meus-Scripts/main/Revan/outputs/revan-minidashboard.user.js
 // @description  Campos próprios e ações integradas aos controles originais do Revan.
@@ -24,7 +24,7 @@
   });
   const root = document.createElement('section');
   root.id = 'rv-mini';
-  root.dataset.version = '4.14.3';
+  root.dataset.version = '4.14.4';
   root.innerHTML = `<button class="launch" aria-expanded="false"><span class="launch-icon">◈</span> Equipamentos <span class="launch-dot"></span></button><div class="panel" hidden><header><strong><span class="brand-icon">◈</span> Revan <small>REDE & CONEXÃO</small></strong><span class="version-badge">v${root.dataset.version}</span><button class="close" aria-label="Minimizar" title="Minimizar para botão">−</button></header><div class="context"></div><select class="equipment" aria-label="Equipamento"></select><nav></nav><p class="status" role="status"></p><div class="body"></div><footer></footer></div>`;
   const refreshButton=document.createElement('button');refreshButton.className='refresh-panel';refreshButton.type='button';refreshButton.textContent='↻';refreshButton.setAttribute('aria-label','Atualizar painel');refreshButton.title='Atualizar painel e recuperar os controles';
   root.querySelector('header').insertBefore(refreshButton,root.querySelector('.close'));
@@ -367,7 +367,7 @@
     if(!confirmed){reviewRequested=true;note('Confira o rascunho. Confirmar salvar aplica todas as escolhas no Revan.');return;}
     if(nativeEditing())throw new Error('Existe outra edição aberta no Revan. Cancele ou conclua por lá.');
     if(networkSignature()!==plan.baseline)throw new Error('As configurações do Revan mudaram após a leitura. Cancele o rascunho e releia antes de salvar.');
-    plan.state='applying';minimize();let remoteAttempted=false,saveAttempted=false;
+    plan.state='applying';minimize();let remoteAttempted=false,saveAttempted=false,preparedNetwork=null;
     try{
       const edit=nativeButton('Editar');if(!edit||edit.disabled)throw new Error('O Revan não liberou a edição.');edit.click();await until(()=>nativeEditing()&&nativeButton('Salvar'));
       for(const [title,value] of Object.entries(plan.switches)){
@@ -396,12 +396,17 @@
       }
       if(card.querySelector('input.ng-invalid,input[aria-invalid="true"]'))throw new Error('O Revan informou um campo inválido.');
       const button=nativeButton('Salvar');if(!button||button.disabled)throw new Error('O Revan ainda não liberou Salvar para essa combinação.');
-      const prepared=networkSnapshot();saveAttempted=true;button.click();await until(()=>nativeButton('Editar')&&!nativeEditing(),12000);
-      savedNetwork=prepared;networkDraft=null;editing=false;changed=false;reviewRequested=false;editBaseline=null;options.clear();
+      preparedNetwork=networkSnapshot();saveAttempted=true;button.click();await until(()=>nativeButton('Editar')&&!nativeEditing(),12000);
+      savedNetwork=preparedNetwork;networkDraft=null;editing=false;changed=false;reviewRequested=false;editBaseline=null;options.clear();
       if(plan.powerChanged){const b=nativeButton(plan.power?'Habilitar rede':'Desabilitar rede');if(b){remoteAttempted=true;b.click();await pause(150);syncDialogs();}}
       if(plan.optimize){const b=nativeButton('Otimizar canal');if(!b||b.disabled)throw new Error('Rede salva, mas a otimização nativa não está disponível.');remoteAttempted=true;b.click();await pause(150);syncDialogs();}
       await returnToInitial('Edição de rede concluída no Revan. Voltamos à página inicial; confira o retorno dos comandos no equipamento.');
     }catch(error){
+      if(saveAttempted&&!nativeEditing()&&nativeButton('Editar')){
+        savedNetwork=preparedNetwork||planSnapshot();networkDraft=null;editing=false;changed=false;reviewRequested=false;editBaseline=null;options.clear();
+        await returnToInitial('O Revan encerrou a edição e confirmou o salvamento. Voltamos à página inicial; confira o retorno dos comandos no equipamento.');
+        return;
+      }
       if(!saveAttempted){const stop=nativeButton('Cancelar');if(stop){stop.click();await pause(150);}}
       if(networkDraft)networkDraft.state=(remoteAttempted||saveAttempted)?'uncertain':'draft';
       note((saveAttempted||remoteAttempted?'Há ação enviada sem confirmação completa. Confira o Revan antes de repetir. ':'Nenhuma configuração foi salva. ')+error.message);
@@ -409,7 +414,12 @@
     }
   }
   async function cancel(){
-    if(networkDraft?.state!=='draft'&&networkDraft)throw new Error('Confira a aplicação no Revan antes de descartar o acompanhamento.');
+    if(networkDraft?.state!=='draft'&&networkDraft){
+      if(nativeEditing()){
+        const stop=nativeButton('Cancelar');if(!stop||stop.disabled)throw new Error('O Revan ainda está processando. Use ↻ para verificar novamente.');
+        stop.click();await until(()=>!nativeEditing(),5000);
+      }else if(!nativeButton('Editar'))throw new Error('O Revan ainda está processando. Use ↻ para verificar novamente.');
+    }
     networkDraft=null;editing=false;changed=false;reviewRequested=false;editBaseline=null;options.clear();generatedPasswords.clear();autoReport='';note('Rascunho descartado. Nenhuma configuração foi enviada.');
   }
   async function automaticNetwork(){

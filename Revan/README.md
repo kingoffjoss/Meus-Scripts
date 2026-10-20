@@ -1,6 +1,6 @@
 # Revan — Equipamentos e rede
 
-Minidashboard flutuante para o Revan. Versão 4.14.3.
+Minidashboard flutuante para o Revan. Versão 4.14.4.
 
 ## Instalar o favorito
 
@@ -115,3 +115,5 @@ Correção 4.14.1: a geração da mensagem de agendamento também reconhece a ca
 Alteração 4.14.2: inclui visivelmente no código público a chave de teste excluída e sem validade indicada pelo proprietário. Ela serve apenas como referência e pode ser substituída na guia Configuração. Remover chave desativa o valor incorporado neste navegador até que outra seja salva.
 
 Correção 4.14.3: mantém a barra de rolagem principal visível, mais larga e com contraste. A roda do mouse sobre o painel também movimenta a área principal, inclusive depois de consultar sinal ou splitter, sem impedir a rolagem das listas internas.
+
+Correção 4.14.4: recupera o painel após o salvamento da rede quando o Revan demora a responder. Ao detectar que a edição nativa terminou, volta automaticamente à ONU/CPE. O botão Cancelar também libera um acompanhamento interrompido sem reenviar configurações.
