@@ -1,4 +1,4 @@
-MINIDASHBOARD REVAN — VERSÃO 4.13.4
+MINIDASHBOARD REVAN — VERSÃO 4.14.0
 
 INSTALAR / ATUALIZAR FAVORITO
 Importe revan-favoritos.html no gerenciador de favoritos do Chrome ou Edge.
@@ -166,3 +166,5 @@ Correção 4.13.3: a leitura do protocolo aceita títulos com ou sem números e 
 Correção 4.13.3: inclui Quedas na conexão - FTTH e Quedas na conexão - FWA observadas na busca nativa. Aja identifica ONU como Fibra/FTTH e CPE como FWA e exclui etiquetas da tecnologia oposta. A geração retorna quatro seções separadas e um identificador restrito ao catálogo; o painel monta os títulos e resolve o nome exato da etiqueta. Continua validando a disponibilidade no Revan antes de anexar. Testes: geração real com relato fictício; anexação de protocolo revisado e etiqueta FTTH confirmadas no Revan; regressões simuladas sem novos envios reais.
 
 Correção 4.13.4: remove a escolha automática de resultado parcial único. A busca nativa pode omitir o sufixo FTTH/FWA para localizar variantes, mas a seleção exige o nome completo exato. O etiquetador manual também bloqueia variantes incompatíveis com ONU/Fibra ou CPE/FWA. Testes simulam ausência de FTTH, retorno único FWA, duas variantes e tentativa de selecionar FWA em Fibra; nenhum comentário enviado nesses testes. No teste real da versão antiga, uma etiqueta FWA incorreta foi aplicada e removida imediatamente, com ambas as ações registradas nos Eventos; nenhum comentário foi duplicado.
+
+Melhorias 4.14.0: mostra a versão no cabeçalho e oferece atualização pelo botão ⇧, preservando chave e preferências locais. A revisão do Aja agora resume tecnologia, tabulação, etiqueta e andamento das etapas. CPF, CNPJ, telefone, e-mail, nascimento, CEP e endereço são retirados localmente da cópia enviada à IA, enquanto o relato original permanece no campo. Relatórios com saudação, terceira pessoa ou conclusão sem confirmação são bloqueados. Etiquetas confirmadas pela busca nativa ficam em um catálogo local persistente separado por FTTH, FWA e genéricas. Quando uma etapa falha, o painel mantém as confirmações anteriores e apresenta Retomar etapas pendentes, sem repetir ações já confirmadas.
