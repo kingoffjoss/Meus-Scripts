@@ -1,6 +1,6 @@
 # Revan — Equipamentos e rede
 
-Minidashboard flutuante para o Revan. Versão 4.15.2.
+Minidashboard flutuante para o Revan. Versão 4.15.3.
 
 ## Instalar o favorito
 
@@ -123,3 +123,5 @@ Versão 4.15.0: ao marcar Abrir chamado externo no Assistente Aja, não é neces
 Correção 4.15.1: preserva o botão que recebeu o clique enquanto o Revan atualiza os resultados ao fundo. Isso evita perder o clique em Consultar spliter logo depois de fechar a janela de Sinal; consultas consecutivas continuam funcionando também pelo mouse.
 
 Correção 4.15.2: os botões de consulta respondem no início do toque do mouse, evitando a cobertura transparente que o Revan mantém brevemente ao fechar o resultado anterior. Isso se aplica somente a Consultar e Verificar; ações que alteram o equipamento continuam usando o clique normal e a revisão existente.
+
+Correção 4.15.3: mantém os comandos Sinal e Splitter no início da aba ONU. O histórico de ações e os dados do equipamento aparecem abaixo, portanto uma nova consulta não empurra o Splitter para fora da área visível.
