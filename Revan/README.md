@@ -1,6 +1,6 @@
 # Revan — Equipamentos e rede
 
-Minidashboard flutuante para o Revan. Versão 4.15.0.
+Minidashboard flutuante para o Revan. Versão 4.15.1.
 
 ## Instalar o favorito
 
@@ -119,3 +119,5 @@ Correção 4.14.3: mantém a barra de rolagem principal visível, mais larga e c
 Correção 4.14.4: recupera o painel após o salvamento da rede quando o Revan demora a responder. Ao detectar que a edição nativa terminou, volta automaticamente à ONU/CPE. O botão Cancelar também libera um acompanhamento interrompido sem reenviar configurações.
 
 Versão 4.15.0: ao marcar Abrir chamado externo no Assistente Aja, não é necessário escolher problema nem serviço. A IA classifica o relato usando o catálogo do Suporte Externo; o painel valida o resultado, deriva Reparo Rápido, Reparo Físico ou Serviço Adicional, preenche os campos nativos e para no calendário. Se a classificação não corresponder exatamente a uma opção válida, o fluxo para sem escolher uma alternativa.
+
+Correção 4.15.1: preserva o botão que recebeu o clique enquanto o Revan atualiza os resultados ao fundo. Isso evita perder o clique em Consultar spliter logo depois de fechar a janela de Sinal; consultas consecutivas continuam funcionando também pelo mouse.

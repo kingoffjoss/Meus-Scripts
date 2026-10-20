@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Revan — Minidashboard de equipamentos
 // @namespace    local.revan.minidashboard
-// @version      4.15.0
+// @version      4.15.1
 // @updateURL    https://raw.githubusercontent.com/kingoffjoss/Meus-Scripts/main/Revan/outputs/revan-minidashboard.user.js
 // @downloadURL  https://raw.githubusercontent.com/kingoffjoss/Meus-Scripts/main/Revan/outputs/revan-minidashboard.user.js
 // @description  Campos próprios e ações integradas aos controles originais do Revan.
@@ -24,7 +24,7 @@
   });
   const root = document.createElement('section');
   root.id = 'rv-mini';
-  root.dataset.version = '4.15.0';
+  root.dataset.version = '4.15.1';
   root.innerHTML = `<button class="launch" aria-expanded="false"><span class="launch-icon">◈</span> Equipamentos <span class="launch-dot"></span></button><div class="panel" hidden><header><strong><span class="brand-icon">◈</span> Revan <small>REDE & CONEXÃO</small></strong><span class="version-badge">v${root.dataset.version}</span><button class="close" aria-label="Minimizar" title="Minimizar para botão">−</button></header><div class="context"></div><select class="equipment" aria-label="Equipamento"></select><nav></nav><p class="status" role="status"></p><div class="body"></div><footer></footer></div>`;
   const refreshButton=document.createElement('button');refreshButton.className='refresh-panel';refreshButton.type='button';refreshButton.textContent='↻';refreshButton.setAttribute('aria-label','Atualizar painel');refreshButton.title='Atualizar painel e recuperar os controles';
   root.querySelector('header').insertBefore(refreshButton,root.querySelector('.close'));
@@ -118,7 +118,7 @@
   const interrupted=()=>Object.assign(new Error('Operação interrompida para atualizar o painel.'),{code:'RV_REFRESH'});
   const pause = ms => {const token=operationEpoch;return new Promise((resolve,reject)=>setTimeout(()=>token===operationEpoch?resolve():reject(interrupted()),ms));};
   let card = null, opened = false, editing = false, busy = false, tabName = 'Rede', route = location.hash;
-  let options = new Map(), changed = false, timer;
+  let options = new Map(), changed = false, timer, pointerInteractionUntil=0;
   let networkDraft=null,pendingAction=null,authResult=null;
   const generatedPasswords = new Map();
   let editBaseline=null, reviewRequested=false, savedNetwork=null, commandWatch=null;
@@ -1286,6 +1286,9 @@
   }
   function bindDashboardShell(){
     draggable($('.launch'),root,'widget');draggable($('header'),root,'widget');
+    root.addEventListener('pointerdown',()=>{pointerInteractionUntil=Date.now()+1000;},true);
+    root.addEventListener('pointerup',()=>{pointerInteractionUntil=Date.now()+180;},true);
+    root.addEventListener('pointercancel',()=>{pointerInteractionUntil=0;},true);
     $('.panel').addEventListener('wheel',event=>{const area=$('.body'),nested=event.target.closest?.('.tag-results,nav,textarea,select');if(!area||nested&&nested!==area&&nested.scrollHeight>nested.clientHeight+2||area.scrollHeight<=area.clientHeight+2)return;area.scrollTop+=event.deltaY;event.preventDefault();},{passive:false});
   $('.launch').addEventListener('click', () => { if (suppressLaunchClick) { suppressLaunchClick = false; return; } if(busy){opened=true;$('.panel').hidden=false;$('.launch').hidden=true;if(assistantOpen)renderAssistant();else if(isDashboard())renderQueue();else if(card?.isConnected)render();note('Operação em andamento. Reiniciar dashboard recupera o painel sem reenviar comandos.');lock();return;} if (opened) minimize(); else void open(); });
   $('.close').addEventListener('click', minimize);
@@ -1306,7 +1309,7 @@
     const sections=[card,commandSection(),financialSection(),pageSection('RESULTADOS DOS TESTES','brisanet-config-report'),pageSection('AUTENTICAÇÃO','brisanet-auth-card')].filter(Boolean);
     if (!opened || busy || !card || !records.some(r => sections.some(section=>section.contains(r.target)))) return;
     clearTimeout(timer); timer = setTimeout(() => {
-      if (busy || !opened || (root.contains(document.activeElement) && document.activeElement.matches('input:not([readonly]),select,textarea'))) return;
+      if (busy || !opened || Date.now()<pointerInteractionUntil || (root.contains(document.activeElement) && document.activeElement.matches('input:not([readonly]),select,textarea'))) return;
       render();
     }, 150);
   }).observe(document.body, {childList:true, subtree:true});
