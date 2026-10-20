@@ -1,6 +1,6 @@
 # Revan — Equipamentos e rede
 
-Minidashboard flutuante para o Revan. Versão 4.14.1.
+Minidashboard flutuante para o Revan. Versão 4.14.2.
 
 ## Instalar o favorito
 
@@ -111,3 +111,5 @@ Correção 4.13.4: remove a escolha automática de resultado parcial único. A b
 Melhorias 4.14.0: mostra a versão no cabeçalho e oferece atualização pelo botão ⇧, preservando chave e preferências locais. A revisão do Aja agora resume tecnologia, tabulação, etiqueta e andamento das etapas. CPF, CNPJ, telefone, e-mail, nascimento, CEP e endereço são retirados localmente da cópia enviada à IA, enquanto o relato original permanece no campo. Relatórios com saudação, terceira pessoa ou conclusão sem confirmação são bloqueados. Etiquetas confirmadas pela busca nativa ficam em um catálogo local persistente separado por FTTH, FWA e genéricas. Quando uma etapa falha, o painel mantém as confirmações anteriores e apresenta Retomar etapas pendentes, sem repetir ações já confirmadas.
 
 Correção 4.14.1: a geração da mensagem de agendamento também reconhece a caixa real da revisão do chamado externo mesmo quando o Revan não fornece os identificadores esperados. Ao marcar “O cliente está ciente e confirma o agendamento”, a mensagem com data, período e expediente de 08:00 às 18:00 é copiada para o Ctrl+V. O botão Confirmar continua manual e não é acionado pelo painel.
+
+Alteração 4.14.2: inclui visivelmente no código público a chave de teste excluída e sem validade indicada pelo proprietário. Ela serve apenas como referência e pode ser substituída na guia Configuração. Remover chave desativa o valor incorporado neste navegador até que outra seja salva.
