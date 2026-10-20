@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Revan — Minidashboard de equipamentos
 // @namespace    local.revan.minidashboard
-// @version      4.15.2
+// @version      4.15.3
 // @updateURL    https://raw.githubusercontent.com/kingoffjoss/Meus-Scripts/main/Revan/outputs/revan-minidashboard.user.js
 // @downloadURL  https://raw.githubusercontent.com/kingoffjoss/Meus-Scripts/main/Revan/outputs/revan-minidashboard.user.js
 // @description  Campos próprios e ações integradas aos controles originais do Revan.
@@ -24,7 +24,7 @@
   });
   const root = document.createElement('section');
   root.id = 'rv-mini';
-  root.dataset.version = '4.15.2';
+  root.dataset.version = '4.15.3';
   root.innerHTML = `<button class="launch" aria-expanded="false"><span class="launch-icon">◈</span> Equipamentos <span class="launch-dot"></span></button><div class="panel" hidden><header><strong><span class="brand-icon">◈</span> Revan <small>REDE & CONEXÃO</small></strong><span class="version-badge">v${root.dataset.version}</span><button class="close" aria-label="Minimizar" title="Minimizar para botão">−</button></header><div class="context"></div><select class="equipment" aria-label="Equipamento"></select><nav></nav><p class="status" role="status"></p><div class="body"></div><footer></footer></div>`;
   const refreshButton=document.createElement('button');refreshButton.className='refresh-panel';refreshButton.type='button';refreshButton.textContent='↻';refreshButton.setAttribute('aria-label','Atualizar painel');refreshButton.title='Atualizar painel e recuperar os controles';
   root.querySelector('header').insertBefore(refreshButton,root.querySelector('.close'));
@@ -486,6 +486,21 @@
     finally{if(token===operationEpoch){busy=false;if(opened&&card?.isConnected)render();lock();}}
   }
   function renderDevice(body) {
+    const actions = make('div', 'actions device-actions');
+    const requested = tabName === 'CPE' ? ['Trocar', 'Troca de Chip', 'Reiniciar'] : tabName === 'ONU'
+      ? ['Consultar sinal', 'Consultar spliter', 'Ativar ONU', 'Reconfigurar']
+      : ['Ativar', 'Verificar gerência'];
+    for (const name of requested) {
+      const source = nativeButton(name);
+      actions.append(actionButton(name, async () => {
+        if (!source?.isConnected || source.disabled) throw new Error('Ação indisponível no Revan.');
+        if(!/^(Consultar|Verificar)/.test(name)){pendingAction={tab:tabName,name,kind:'device',route};note('Ação selecionada localmente. Clique em Executar ação para acionar o Revan.');return;}
+        monitorCommand(name);source.click();
+        await pause(100); syncDialogs();
+        note(`Comando acionado no Revan: ${name}. Confira o resultado ou a confirmação do sistema.`);
+      }, /Reconfigurar|Ativar/.test(name) ? 'danger' : '', !source || source.disabled, /^(Consultar|Verificar)/.test(name)));
+    }
+    body.append(actions);
     renderCommandHistory(body);
     if (tabName === 'ONU' || tabName === 'CPE') renderCommands(body);
     const container = card.querySelector('ion-tab-group')?.nextElementSibling;
@@ -504,22 +519,6 @@
       else summary.textContent = text(copy).replace(/Operações sensíveis/g,'').trim();
       body.append(summary);
     }
-    const actions = make('div', 'actions device-actions');
-    const requested = tabName === 'CPE' ? ['Trocar', 'Troca de Chip', 'Reiniciar'] : tabName === 'ONU'
-      ? ['Consultar sinal', 'Consultar spliter', 'Ativar ONU', 'Reconfigurar']
-      : ['Ativar', 'Verificar gerência'];
-    for (const name of requested) {
-      const source = nativeButton(name);
-      actions.append(actionButton(name, async () => {
-        if (!source?.isConnected || source.disabled) throw new Error('Ação indisponível no Revan.');
-        if(!/^(Consultar|Verificar)/.test(name)){pendingAction={tab:tabName,name,kind:'device',route};note('Ação selecionada localmente. Clique em Executar ação para acionar o Revan.');return;}
-        monitorCommand(name);source.click();
-        // Mantém o painel aberto; confirmações originais ficam à frente dele.
-        await pause(100); syncDialogs();
-        note(`Comando acionado no Revan: ${name}. Confira o resultado ou a confirmação do sistema.`);
-      }, /Reconfigurar|Ativar/.test(name) ? 'danger' : '', !source || source.disabled, /^(Consultar|Verificar)/.test(name)));
-    }
-    body.append(actions);
   }
   function commandSection() {
     return card?.closest('.middleContainer')?.querySelector('brisanet-commands-card') || pageSection('COMANDOS','brisanet-commands-card');
