@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Revan — Minidashboard de equipamentos
 // @namespace    local.revan.minidashboard
-// @version      4.13.3
+// @version      4.13.4
 // @updateURL    https://raw.githubusercontent.com/kingoffjoss/Meus-Scripts/main/Revan/outputs/revan-minidashboard.user.js
 // @downloadURL  https://raw.githubusercontent.com/kingoffjoss/Meus-Scripts/main/Revan/outputs/revan-minidashboard.user.js
 // @description  Campos próprios e ações integradas aos controles originais do Revan.
@@ -24,7 +24,7 @@
   });
   const root = document.createElement('section');
   root.id = 'rv-mini';
-  root.dataset.version = '4.13.3';
+  root.dataset.version = '4.13.4';
   root.innerHTML = `<button class="launch" aria-expanded="false"><span class="launch-icon">◈</span> Equipamentos <span class="launch-dot"></span></button><div class="panel" hidden><header><strong><span class="brand-icon">◈</span> Revan <small>REDE & CONEXÃO</small></strong><button class="close" aria-label="Minimizar" title="Minimizar para botão">−</button></header><div class="context"></div><select class="equipment" aria-label="Equipamento"></select><nav></nav><p class="status" role="status"></p><div class="body"></div><footer></footer></div>`;
   const refreshButton=document.createElement('button');refreshButton.className='refresh-panel';refreshButton.type='button';refreshButton.textContent='↻';refreshButton.setAttribute('aria-label','Atualizar painel');refreshButton.title='Atualizar painel e recuperar os controles';
   root.querySelector('header').insertBefore(refreshButton,root.querySelector('.close'));
@@ -751,7 +751,7 @@
     if(!select.classList.contains('ant-select-open'))select.querySelector('.ant-select-selection')?.click();await pause(100);
     if(!select.classList.contains('ant-select-open')){select.querySelector('.ant-select-selection')?.dispatchEvent(new MouseEvent('mousedown',{bubbles:true,cancelable:true,view:window}));await pause(100);}
     if(!select.classList.contains('ant-select-open'))throw new Error('O segundo campo de etiquetas não abriu no Revan.');
-    const term=query.replace(/\s*-\s*\(Carimbo\)\s*$/i,'');setNativeText(input,term);await pause(1300);
+    const term=query.replace(/\s*-\s*\(Carimbo\)\s*$/i,'').replace(/\s*-\s*(FTTH|FWA)\s*$/i,'');setNativeText(input,term);await pause(1300);
     let previous='',since=Date.now();
     return await until(()=>{
       const rows=all(document,'.ant-select-dropdown li[nz-option-li]').filter(e=>e.getClientRects().length);
@@ -762,7 +762,7 @@
     },8000);
   }
   async function attachTag(allowNoTag=false){
-    valid();let selected=tagDraft.selected||tagDraft.query.trim();const comment=tagDraft.comment.trim();if(!selected&&!allowNoTag)throw new Error('Digite o nome ou escolha uma etiqueta antes de anexar.');
+    valid();let selected=tagDraft.selected||tagDraft.query.trim();const comment=tagDraft.comment.trim();if(selected&&!ajaTagCatalog().includes(selected)&&/\b(?:FTTH|FWA)\b/i.test(selected)&&((technology()==='FWA'&&/\bFTTH\b/i.test(selected))||(technology()!=='FWA'&&/\bFWA\b/i.test(selected))))throw new Error('Etiqueta incompatível com a tecnologia deste atendimento: ONU é Fibra/FTTH; CPE é FWA. Nada foi anexado.');if(!selected&&!allowNoTag)throw new Error('Digite o nome ou escolha uma etiqueta antes de anexar.');
     const payload=JSON.stringify([route,selected,comment]);
     if(tagDraft.progress&&tagDraft.progress.payload!==payload&&tagDraft.progress.attempted&&!tagDraft.progress.sent)throw new Error('Há envio anterior sem confirmação. Confira os Eventos antes de iniciar outro.');
     const progress=tagDraft.progress?.payload===payload?tagDraft.progress:(tagDraft.progress={payload,tagged:!selected,skipTag:!selected,attempted:false,sent:false});
@@ -776,9 +776,9 @@
           dialog=await openTagDialog();const {rows}=await nativeTagOptions(dialog,selected);
           rows.forEach(e=>tagNames.add(text(e)));
           const exact=rows.filter(e=>text(e)===selected);let matches=exact.length?exact:rows.filter(e=>tagKey(text(e))===tagKey(selected));
-          if(!matches.length&&rows.length===1&&!tagDraft.exactOnly)matches=rows;if(!matches.length&&tagDraft.exactOnly)throw new Error('A etiqueta escolhida pela IA não está disponível neste cliente. Nenhuma outra etiqueta foi aplicada.');
-          if(matches.length!==1)throw new Error(rows.length?'Encontrei várias etiquetas. Escolha o nome exato na lista e clique em Anexar novamente.':'Nenhuma etiqueta encontrada no Revan. Confira o nome digitado.');
-          selected=text(matches[0]);tagDraft.selected=selected;progress.payload=JSON.stringify([route,selected,comment]);
+          if(!matches.length&&tagDraft.exactOnly)throw new Error('A etiqueta escolhida pela IA não está disponível neste cliente. Nenhuma outra etiqueta foi aplicada.');
+          if(matches.length!==1)throw new Error(rows.length?'A busca retornou outro nome ou mais de uma etiqueta. Escolha o nome exato na lista e clique em Anexar novamente.':'Nenhuma etiqueta encontrada no Revan. Confira o nome digitado.');
+          selected=text(matches[0]);if((technology()==='FWA'&&/\bFTTH\b/i.test(selected))||(technology()!=='FWA'&&/\bFWA\b/i.test(selected)))throw new Error('O Revan retornou uma etiqueta da outra tecnologia. Nada foi anexado.');tagDraft.selected=selected;progress.payload=JSON.stringify([route,selected,comment]);
           valid();matches[0].click();await pause(100);
           const selectedNames=all(dialog,'nz-select#tags .ant-select-selection__choice').map(text);
           if(selectedNames.length!==1||!selectedNames.some(n=>tagKey(n)===tagKey(selected)))throw new Error('Seleção nativa da etiqueta não confirmada.');

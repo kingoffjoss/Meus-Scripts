@@ -1,4 +1,4 @@
-MINIDASHBOARD REVAN — VERSÃO 4.13.3
+MINIDASHBOARD REVAN — VERSÃO 4.13.4
 
 INSTALAR / ATUALIZAR FAVORITO
 Importe revan-favoritos.html no gerenciador de favoritos do Chrome ou Edge.
@@ -164,3 +164,5 @@ Testes desta versão usaram páginas e respostas de API simuladas, sem alteraç�
 Correção 4.13.3: a leitura do protocolo aceita títulos com ou sem números e Markdown, normalizando as quatro seções. Continua recusando seções vazias, ausentes ou fora de ordem. Testado com resposta real do Gemini e relato fictício, incluindo geração pela interface; sem dados de cliente nem anexação ao atendimento real.
 
 Correção 4.13.3: inclui Quedas na conexão - FTTH e Quedas na conexão - FWA observadas na busca nativa. Aja identifica ONU como Fibra/FTTH e CPE como FWA e exclui etiquetas da tecnologia oposta. A geração retorna quatro seções separadas e um identificador restrito ao catálogo; o painel monta os títulos e resolve o nome exato da etiqueta. Continua validando a disponibilidade no Revan antes de anexar. Testes: geração real com relato fictício; anexação de protocolo revisado e etiqueta FTTH confirmadas no Revan; regressões simuladas sem novos envios reais.
+
+Correção 4.13.4: remove a escolha automática de resultado parcial único. A busca nativa pode omitir o sufixo FTTH/FWA para localizar variantes, mas a seleção exige o nome completo exato. O etiquetador manual também bloqueia variantes incompatíveis com ONU/Fibra ou CPE/FWA. Testes simulam ausência de FTTH, retorno único FWA, duas variantes e tentativa de selecionar FWA em Fibra; nenhum comentário enviado nesses testes. No teste real da versão antiga, uma etiqueta FWA incorreta foi aplicada e removida imediatamente, com ambas as ações registradas nos Eventos; nenhum comentário foi duplicado.
