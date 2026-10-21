@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Revan — Minidashboard de equipamentos
 // @namespace    local.revan.minidashboard
-// @version      4.17.1
+// @version      4.17.2
 // @updateURL    https://raw.githubusercontent.com/kingoffjoss/Meus-Scripts/main/Revan/outputs/revan-minidashboard.user.js
 // @downloadURL  https://raw.githubusercontent.com/kingoffjoss/Meus-Scripts/main/Revan/outputs/revan-minidashboard.user.js
 // @description  Campos próprios e ações integradas aos controles originais do Revan.
@@ -24,7 +24,7 @@
   });
   const root = document.createElement('section');
   root.id = 'rv-mini';
-  root.dataset.version = '4.17.1';
+  root.dataset.version = '4.17.2';
   root.innerHTML = `<button class="launch" aria-expanded="false"><span class="launch-icon">◈</span> Equipamentos <span class="launch-dot"></span></button><div class="panel" hidden><header><strong><span class="brand-icon">◈</span> Revan <small>REDE & CONEXÃO</small></strong><span class="version-badge">v${root.dataset.version}</span><button class="close" aria-label="Minimizar" title="Minimizar para botão">−</button></header><div class="context"></div><select class="equipment" aria-label="Equipamento"></select><nav></nav><p class="status" role="status"></p><div class="body"></div><footer></footer></div>`;
   const refreshButton=document.createElement('button');refreshButton.className='refresh-panel';refreshButton.type='button';refreshButton.textContent='↻';refreshButton.setAttribute('aria-label','Atualizar painel');refreshButton.title='Atualizar painel e recuperar os controles';
   root.querySelector('header').insertBefore(refreshButton,root.querySelector('.close'));
@@ -639,11 +639,26 @@
     const text=parts.filter(p=>p.type==='output_text').map(p=>p.text||'').join('\n');if(!text)throw new Error('A OpenAI não retornou texto.');
     return {candidates:[{finishReason:'STOP',content:{parts:[{text}]}}]};
   }
+  function groqCompactRequest(source){
+    const full=source.contents[0].parts[0].text,marker='TEXTO BASE (dados pessoais já removidos pelo navegador):\n',position=full.lastIndexOf(marker);
+    if(position<0)throw new Error('Não foi possível preparar o relato para a Groq.');
+    const relato=full.slice(position+marker.length).replace(/^\s*Menu de contexto\s*$/gmi,'').replace(/^\s*\[\[.*\]\]\s*$/gm,'').replace(/^\s*\d{2}:\d{2}:\d{2}\s*$/gm,'').replace(/\n{3,}/g,'\n\n').trim();
+    const words=value=>normalized(value).replace(/\bwi[\s-]*fi\b/g,'wifi').replace(/[^a-z0-9]+/g,' ').split(' ').filter(w=>(w.length>3||['wifi','pon','onu','cpe','los','lan','wan'].includes(w))&&!['cliente','relato','atendimento','informado','procedimentos','nenhum','apos','para','como','mais','pela','pelo','esta','isso','sobre','aqui','entao'].includes(w));
+    const tokens=new Set(words(relato));
+    function shortlist(list,limit){return list.map((name,index)=>({name,index,score:words(name).reduce((sum,w)=>sum+(tokens.has(w)?1:0),0)})).sort((a,b)=>b.score-a.score||a.index-b.index).slice(0,limit);}
+    const tags=shortlist(ajaTagCatalog(),24),problems=shortlist(externalProblems,14),tabs=shortlist(AJA_TABS.trim().split('\n').map(line=>line.split('\t')[0].trim()),16);
+    const instructions=full.slice(0,full.indexOf('\nTABULAÇÕES DISPONÍVEIS:'));
+    const prompt=instructions+'\nTABULAÇÕES DISPONÍVEIS:\n'+tabs.map(x=>x.name).join('\n')+'\nETIQUETAS SINCRONIZADAS DO DASHBOARD (use o ID em tagId):\n'+tags.map(x=>x.index+': '+x.name).join('\n')+'\nPROBLEMAS DO SUPORTE EXTERNO (use o ID em externalProblemId):\n'+problems.map(x=>x.index+': '+x.name).join('\n')+'\nEscolha somente os identificadores fornecidos.\n'+marker+relato;
+    const original=source.generationConfig.responseSchema,schema={type:'object',properties:Object.fromEntries(Object.entries(original.properties).map(([name,value])=>[name,{...value,type:'string'}])),required:original.required,additionalProperties:false};
+    schema.properties.tagId.enum=tags.map(x=>String(x.index));schema.properties.externalProblemId.enum=problems.map(x=>String(x.index));schema.properties.tab.enum=tabs.map(x=>x.name);
+    const output=1800,estimated=Math.ceil((prompt.length+JSON.stringify(schema).length)/3)+output+128;
+    if(estimated>7600)throw new Error('O relato ainda é grande para o plano gratuito da Groq. Resuma a conversa mantendo problema, procedimentos e conclusão. Nenhum trecho foi cortado automaticamente.');
+    return {prompt,schema,output};
+  }
   async function ajaGroq(options){
     if(!ajaSettings.groqKey)throw new Error('Salve sua chave Groq na guia Configuração.');
-    const source=JSON.parse(options.body),original=source.generationConfig.responseSchema;
-    const schema={type:'object',properties:Object.fromEntries(Object.entries(original.properties).map(([name,value])=>[name,{...value,type:'string'}])),required:original.required,additionalProperties:false};
-    const response=await fetch('https://api.groq.com/openai/v1/chat/completions',{method:'POST',signal:ajaController?.signal,headers:{'Content-Type':'application/json',Authorization:'Bearer '+ajaSettings.groqKey},body:JSON.stringify({model:ajaSettings.groqModel||'openai/gpt-oss-20b',messages:[{role:'user',content:source.contents[0].parts[0].text}],max_completion_tokens:4096,response_format:{type:'json_schema',json_schema:{name:'relatorio_atendimento',strict:true,schema}}})});
+    const source=JSON.parse(options.body),{prompt,schema,output}=groqCompactRequest(source);
+    const response=await fetch('https://api.groq.com/openai/v1/chat/completions',{method:'POST',signal:ajaController?.signal,headers:{'Content-Type':'application/json',Authorization:'Bearer '+ajaSettings.groqKey},body:JSON.stringify({model:ajaSettings.groqModel||'openai/gpt-oss-20b',messages:[{role:'user',content:prompt}],max_completion_tokens:output,response_format:{type:'json_schema',json_schema:{name:'relatorio_atendimento',strict:true,schema}}})});
     const data=await response.json().catch(()=>null);
     if(!response.ok){const detail=String(data?.error?.message||'').split(ajaSettings.groqKey).join('[chave omitida]').slice(0,900),retry=response.headers.get('Retry-After');throw new Error('Groq HTTP '+response.status+(data?.error?.code?' · '+data.error.code:'')+(retry?' · Aguarde '+retry+' segundos':'')+(detail?': '+detail:'.'));}
     const choice=data?.choices?.[0];if(choice?.finish_reason!=='stop')throw new Error('A Groq não concluiu o relatório. Nenhum resultado parcial foi aplicado.');
