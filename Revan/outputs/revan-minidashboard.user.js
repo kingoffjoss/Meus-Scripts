@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Revan — Minidashboard de equipamentos
 // @namespace    local.revan.minidashboard
-// @version      4.15.6
+// @version      4.15.7
 // @updateURL    https://raw.githubusercontent.com/kingoffjoss/Meus-Scripts/main/Revan/outputs/revan-minidashboard.user.js
 // @downloadURL  https://raw.githubusercontent.com/kingoffjoss/Meus-Scripts/main/Revan/outputs/revan-minidashboard.user.js
 // @description  Campos próprios e ações integradas aos controles originais do Revan.
@@ -24,7 +24,7 @@
   });
   const root = document.createElement('section');
   root.id = 'rv-mini';
-  root.dataset.version = '4.15.6';
+  root.dataset.version = '4.15.7';
   root.innerHTML = `<button class="launch" aria-expanded="false"><span class="launch-icon">◈</span> Equipamentos <span class="launch-dot"></span></button><div class="panel" hidden><header><strong><span class="brand-icon">◈</span> Revan <small>REDE & CONEXÃO</small></strong><span class="version-badge">v${root.dataset.version}</span><button class="close" aria-label="Minimizar" title="Minimizar para botão">−</button></header><div class="context"></div><select class="equipment" aria-label="Equipamento"></select><nav></nav><p class="status" role="status"></p><div class="body"></div><footer></footer></div>`;
   const refreshButton=document.createElement('button');refreshButton.className='refresh-panel';refreshButton.type='button';refreshButton.textContent='↻';refreshButton.setAttribute('aria-label','Atualizar painel');refreshButton.title='Atualizar painel e recuperar os controles';
   root.querySelector('header').insertBefore(refreshButton,root.querySelector('.close'));
@@ -613,7 +613,7 @@
   function cancelAja(){ajaEpoch++;ajaController?.abort();ajaController=null;ajaBusy=false;}
   async function ajaRequest(path,options={}){
     if(!ajaSettings.key)throw new Error('Configure a chave Gemini na guia Configuração.');
-    const response=await fetch('https://generativelanguage.googleapis.com/v1beta/'+path,{...options,signal:ajaController?.signal,headers:{'x-goog-api-key':ajaSettings.key,...options.headers}});
+    const response=await fetch('https://generativelanguage.googleapis.com/v1beta/'+path,{...options,signal:options.signal||ajaController?.signal,headers:{'x-goog-api-key':ajaSettings.key,...options.headers}});
     if(!response.ok){
       const body=await response.json().catch(()=>null),detail=String(body?.error?.message||'').split(ajaSettings.key).join('[chave omitida]').slice(0,900);
       const retry=body?.error?.details?.find(d=>d.retryDelay)?.retryDelay||response.headers.get('Retry-After');
@@ -633,9 +633,11 @@
     let last;
     for(let i=0;i<candidates.length;i++){
       if(ajaController?.signal.aborted)throw new DOMException('Consulta cancelada.','AbortError');
-      const model=candidates[i];
-      try{const data=await ajaRequest(model+':generateContent',options);ajaSettings.model=model;saveAjaSettings();return data;}
-      catch(error){last=error;if(![404,503].includes(error.status)||i===candidates.length-1)throw error;ajaMessage='Modelo indisponível. Tentando alternativa compatível ('+(i+2)+'/'+candidates.length+')…';if(assistantOpen)renderAssistant();}
+      const model=candidates[i],attempt=new AbortController(),parent=ajaController?.signal,stop=()=>attempt.abort();
+      parent?.addEventListener('abort',stop,{once:true});const limit=setTimeout(()=>attempt.abort(),18000);
+      try{const data=await ajaRequest(model+':generateContent',{...options,signal:attempt.signal});ajaSettings.model=model;saveAjaSettings();return data;}
+      catch(error){if(parent?.aborted)throw error;if(error.name==='AbortError')error=Object.assign(new Error('O modelo Gemini não respondeu no prazo. Tente novamente mais tarde.'),{status:504});last=error;if(![404,503,504].includes(error.status)||i===candidates.length-1)throw error;ajaMessage='Modelo indisponível. Tentando alternativa compatível ('+(i+2)+'/'+candidates.length+')…';if(assistantOpen)renderAssistant();}
+      finally{clearTimeout(limit);parent?.removeEventListener('abort',stop);}
     }
     throw last||new Error('Nenhum modelo compatível disponível.');
   }
@@ -703,7 +705,7 @@
 
   async function generateAjaReport(){
     if(ajaBusy)return;if(!ajaInput.trim())throw new Error('Digite ou cole o relato do atendimento.');if(!ajaSettings.key)throw new Error('Salve sua chave Gemini na guia Configuração.');if(ajaAttachedPayload){tagDraft.comment='';tagDraft.selected='';tagDraft.query='';tagDraft.progress=null;tagDraft.forwardProgress=null;tagDraft.exactOnly=false;ajaAttachedPayload='';}
-    ajaBusy=true;const epoch=++ajaEpoch,origin=location.hash;const controller=new AbortController();ajaController=controller;const timeout=setTimeout(()=>controller.abort(),40000);ajaMessage='Gerando relatório…';renderAssistant();
+    ajaBusy=true;const epoch=++ajaEpoch,origin=location.hash;const controller=new AbortController();ajaController=controller;const timeout=setTimeout(()=>controller.abort(),65000);ajaMessage='Gerando relatório…';renderAssistant();
     try{
       if(!ajaSettings.model)await loadAjaModels();if(epoch!==ajaEpoch)return;
       if(!/^models\/[a-zA-Z0-9._-]+$/.test(ajaSettings.model))throw new Error('Selecione um modelo compatível na configuração.');
