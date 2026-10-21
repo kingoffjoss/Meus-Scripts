@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Revan — Minidashboard de equipamentos
 // @namespace    local.revan.minidashboard
-// @version      4.18.1
+// @version      4.18.2
 // @updateURL    https://raw.githubusercontent.com/kingoffjoss/Meus-Scripts/main/Revan/outputs/revan-minidashboard.user.js
 // @downloadURL  https://raw.githubusercontent.com/kingoffjoss/Meus-Scripts/main/Revan/outputs/revan-minidashboard.user.js
 // @description  Campos próprios e ações integradas aos controles originais do Revan.
@@ -24,7 +24,7 @@
   });
   const root = document.createElement('section');
   root.id = 'rv-mini';
-  root.dataset.version = '4.18.1';
+  root.dataset.version = '4.18.2';
   root.innerHTML = `<button class="launch" aria-expanded="false"><span class="launch-icon">◈</span> Equipamentos <span class="launch-dot"></span></button><div class="panel" hidden><header><strong><span class="brand-icon">◈</span> Revan <small>REDE & CONEXÃO</small></strong><span class="version-badge">v${root.dataset.version}</span><button class="close" aria-label="Minimizar" title="Minimizar para botão">−</button></header><div class="context"></div><select class="equipment" aria-label="Equipamento"></select><nav></nav><p class="status" role="status"></p><div class="body"></div><footer></footer></div>`;
   const refreshButton=document.createElement('button');refreshButton.className='refresh-panel';refreshButton.type='button';refreshButton.textContent='↻';refreshButton.setAttribute('aria-label','Atualizar painel');refreshButton.title='Atualizar painel e recuperar os controles';
   root.querySelector('header').insertBefore(refreshButton,root.querySelector('.close'));
@@ -175,19 +175,36 @@
   function clientName() {
     return text(document.querySelector('.customer-name')) || 'Nome do cliente não disponível';
   }
+  let profileBirthCache=null;
+  function profileIdentity(){return location.hash+'|'+clientName();}
+  async function readCustomerDetails(){
+    const identity=profileIdentity();profileBirthCache=null;
+    const trigger=document.querySelector('button[nzpopovertitle="Mais informações"]');
+    if(!trigger)return;
+    const alreadyOpen=trigger.classList.contains('ant-popover-open');
+    try{
+      if(!alreadyOpen)trigger.click();
+      for(let i=0;i<20;i++){
+        if(profileIdentity()!==identity)return;
+        const birth=customerProfile().birth;
+        if(birth){profileBirthCache={identity,birth};return;}
+        await new Promise(resolve=>setTimeout(resolve,100));
+      }
+    }finally{if(!alreadyOpen&&trigger.isConnected&&trigger.classList.contains('ant-popover-open'))trigger.click();}
+  }
   function customerProfile(){
-    const name=clientName(),address=all(document,'.address').find(e=>!root.contains(e)&&e.getClientRects().length);
+    const addresses=all(document,'.address').filter(e=>!root.contains(e)&&e.getClientRects().length),name=clientName(),address=addresses.find(e=>e.parentElement.querySelector('.references'))||addresses[0];
     const addressLines=address?[text(address),...all(address.parentElement,'.references').map(text)].filter(Boolean):[];
     const label=all(document,'label,dt,span,div').find(e=>!root.contains(e)&&e.getClientRects().length&&!e.closest('app-new-events-card,textarea')&&!e.children.length&&/^(data de nascimento|nascimento)\s*:?$/i.test(text(e)));
     const candidates=label?[label.nextElementSibling,label.parentElement]:[];
     let birth='';for(const candidate of candidates){if(!candidate)continue;const value=text(candidate);const date=value.match(/\b\d{2}\/\d{2}\/\d{4}\b/)?.[0]||value.match(/\b\d{4}-\d{2}-\d{2}\b/)?.[0];if(date){birth=/^\d{4}-/.test(date)?date.split('-').reverse().join('/'):date;break;}}
-    return {name,birth,address:addressLines.join('\n')};
+    return {name,birth:birth||(profileBirthCache?.identity===profileIdentity()?profileBirthCache.birth:''),address:addressLines.join('\n')};
   }
   function renderCustomerHome(body){
     const data=customerProfile(),heading=make('div','device-heading');heading.append(make('h2','','Início'),make('p','','Dados do cliente deste atendimento'));body.append(heading);
     const grid=make('div','customer-profile');for(const [label,value] of [['Nome completo',data.name],['Data de nascimento',data.birth||'Não disponível na tela do Revan'],['Endereço completo',data.address||'Não disponível na tela do Revan']]){const box=make('div','profile-field');box.append(make('span','',label),make('strong','',value));grid.append(box);}body.append(grid);
     body.append(make('small','','Dados lidos da tela do atendimento. Campos ausentes não são preenchidos com informações do relato ou de outros clientes.'));
-    const actions=make('div','actions');actions.append(actionButton('Atualizar dados',()=>{note('Dados atualizados a partir da tela do Revan.');}),actionButton('Abrir '+(technology()==='FWA'?'CPE':'ONU'),()=>switchTab(technology()==='FWA'?'CPE':'ONU')),actionButton('Abrir Assistente Aja',()=>openAssistant(true),'primary'));body.append(actions);
+    const actions=make('div','actions');actions.append(actionButton('Atualizar dados',async()=>{await readCustomerDetails();note('Dados atualizados a partir da tela do Revan.');}),actionButton('Abrir '+(technology()==='FWA'?'CPE':'ONU'),()=>switchTab(technology()==='FWA'?'CPE':'ONU')),actionButton('Abrir Assistente Aja',()=>openAssistant(true),'primary'));body.append(actions);
   }
   function financialSection() {
     const heading=all(document,'.primary-txt,span').find(e=>!root.contains(e)&&normalized(text(e))==='situacao financeira');
@@ -306,7 +323,7 @@
     if (editing || nativeEditing()) throw new Error('Salve ou cancele a edição antes de trocar de aba.');
     if(name==='Assistente Aja'){if(assistantOpen){closeAssistant();}else openAssistant(true);return;}
     assistantOpen=false;root.classList.add('aja-collapsed');$('.aja-side').hidden=true;
-    if(name==='Início'){tabName=name;note('Dados cadastrais disponíveis no atendimento.');return;}
+    if(name==='Início'){tabName=name;await readCustomerDetails();note('Dados cadastrais disponíveis no atendimento.');return;}
     if (['Testes', 'Autenticação','Etiquetar'].includes(name)) { tabName = name; note(name === 'Etiquetar'?'Pesquise, escolha a etiqueta e clique em Anexar. O texto será registrado nos Eventos.':name === 'Testes' ? 'Resultados lidos do Revan. Expanda cada teste para ver os detalhes.' : 'Login de autenticação do cliente e ações disponíveis no Revan.'); return; }
     nativeButton(name).click(); tabName = name; await pause(100);
     if (name === 'Roteador') {
