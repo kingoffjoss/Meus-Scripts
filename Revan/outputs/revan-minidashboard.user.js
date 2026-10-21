@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Revan — Minidashboard de equipamentos
 // @namespace    local.revan.minidashboard
-// @version      4.19.0
+// @version      4.19.1
 // @updateURL    https://raw.githubusercontent.com/kingoffjoss/Meus-Scripts/main/Revan/outputs/revan-minidashboard.user.js
 // @downloadURL  https://raw.githubusercontent.com/kingoffjoss/Meus-Scripts/main/Revan/outputs/revan-minidashboard.user.js
 // @description  Campos próprios e ações integradas aos controles originais do Revan.
@@ -24,7 +24,7 @@
   });
   const root = document.createElement('section');
   root.id = 'rv-mini';
-  root.dataset.version = '4.19.0';
+  root.dataset.version = '4.19.1';
   root.innerHTML = `<button class="launch" aria-expanded="false"><span class="launch-icon">◈</span> Equipamentos <span class="launch-dot"></span></button><div class="panel" hidden><header><strong><span class="brand-icon">◈</span> Revan <small>REDE & CONEXÃO</small></strong><span class="version-badge">v${root.dataset.version}</span><button class="close" aria-label="Minimizar" title="Minimizar para botão">−</button></header><div class="context"></div><select class="equipment" aria-label="Equipamento"></select><nav></nav><p class="status" role="status"></p><div class="body"></div><footer></footer></div>`;
   const refreshButton=document.createElement('button');refreshButton.className='refresh-panel';refreshButton.type='button';refreshButton.textContent='↻';refreshButton.setAttribute('aria-label','Atualizar painel');refreshButton.title='Atualizar painel e recuperar os controles';
   root.querySelector('header').insertBefore(refreshButton,root.querySelector('.close'));
@@ -211,7 +211,7 @@
       return {due,stamp,index,month:text(e.querySelector('.month')),value:text(e.querySelector('.value .title')),status,native};
     }).sort((a,b)=>(Number.isFinite(b.stamp)?b.stamp:0)-(Number.isFinite(a.stamp)?a.stamp:0)||b.index-a.index).slice(0,2);
   }
-  let homeHistoryCache=null;
+  let homeHistoryCache=null,showHomeHistory=false;
   function contractHistoryModal(){return all(document,'.ant-modal-content').find(e=>!root.contains(e)&&e.getClientRects().length&&text(e.querySelector('.ant-modal-title'))==='Histórico'&&e.querySelector('.history-header'));}
   async function readHomeHistory(){
     const identity=profileIdentity(),existing=contractHistoryModal();let modal=existing;
@@ -223,9 +223,11 @@
         for(let i=0;i<30&&!option;i++){await new Promise(r=>setTimeout(r,100));option=all(document,'.ant-dropdown li').find(e=>e.getClientRects().length&&text(e)==='Histórico');}
         if(!option)throw new Error('Opção Histórico não encontrada.');option.click();
       }
-      for(let i=0;i<60;i++){
+      let selectedHistory=false;
+      for(let i=0;i<120;i++){
         if(profileIdentity()!==identity)throw new Error('O atendimento mudou durante a consulta.');
         modal=contractHistoryModal();
+        if(modal&&!modal.querySelector('.history-container')&&!selectedHistory&&modal.querySelector('.contract-box')){(modal.querySelector('.contract-box.selected')||modal.querySelector('.contract-box')).click();selectedHistory=true;}
         if(modal&&(modal.querySelector('.history-container')||/não há|sem histórico|nenhum registro/i.test(text(modal))))break;
         await new Promise(r=>setTimeout(r,100));
       }
@@ -234,7 +236,7 @@
       const rows=all(modal,'.history-container').map(e=>({state:text(e.querySelector('.info .title')),by:text(e.querySelector('.info .secondary')),when:all(e,'.justify-center .secondary').map(text).join(' às ')}));
       if(!rows.length&&!/não há|sem histórico|nenhum registro/i.test(text(modal)))throw new Error('Histórico ainda não carregado. Tente consultar novamente.');
       homeHistoryCache={identity,contract:text(selected?.querySelector('.title')),rows,multiple:contracts.length>1};
-      note('Histórico do contrato atualizado.');
+      showHomeHistory=true;note('Histórico carregado. Os registros estão abaixo das faturas.');
     }finally{if(!existing&&modal?.isConnected)modal.querySelector('.ant-modal-close')?.click();}
   }
   function renderHomeBilling(body){
@@ -242,10 +244,10 @@
     const invoices=homeInvoices(),grid=make('div','home-invoices');
     for(const invoice of invoices){const box=make('article','home-invoice'),head=make('div','home-invoice-head');head.append(make('strong','',invoice.month||'Fatura'),make('span','invoice-state '+(/Paga/.test(invoice.status)?'paid':/Atrasada/.test(invoice.status)?'late':'pending'),invoice.status));box.append(head,make('strong','invoice-amount',invoice.value||'Valor não disponível'),make('small','','Vencimento: '+(invoice.due||'Não informado')));grid.append(box);}
     if(!invoices.length)grid.append(make('p','home-hint','Nenhuma fatura emitida disponível na tela do Revan.'));section.append(grid);body.append(section);
-    const history=make('section','home-section'),head=make('div','home-section-head');head.append(make('h3','','Histórico do contrato'),actionButton('Consultar histórico',readHomeHistory));history.append(head);
+    const history=make('section','home-section home-history-section'),head=make('div','home-section-head');head.append(make('h3','','Histórico do contrato'),actionButton('Consultar histórico',readHomeHistory));history.append(head);
     const data=homeHistoryCache?.identity===profileIdentity()?homeHistoryCache:null;
     if(data){history.append(make('p','home-hint',data.contract||'Contrato selecionado'));for(const row of data.rows){const item=make('div','home-history-row'),info=make('div','');info.append(make('strong','',row.state),make('small','',row.by));item.append(info,make('small','',row.when));history.append(item);}if(!data.rows.length)history.append(make('p','home-hint','Nenhum registro encontrado.'));if(data.multiple)history.append(make('small','home-hint','Há outros contratos. Esta consulta mostra o contrato selecionado no histórico do Revan.'));}
-    else history.append(make('p','home-hint','Consulte as ativações, bloqueios e demais mudanças registradas no contrato.'));body.append(history);
+    else history.append(make('p','home-hint','Consulte as ativações, bloqueios e demais mudanças registradas no contrato.'));body.append(history);if(showHomeHistory){showHomeHistory=false;requestAnimationFrame(()=>{const scroller=history.closest('.body');if(scroller)scroller.scrollTop+=history.getBoundingClientRect().top-scroller.getBoundingClientRect().top-10;});}
   }
 
   function renderCustomerHome(body){
@@ -1222,6 +1224,7 @@
     if(assistantOpen&&(isDashboard()||!card?.isConnected)){if(root.contains(document.activeElement)&&document.activeElement.matches('input,textarea,select'))return;renderAssistant();return;}
     if(isDashboard()){renderQueue();return;}
     root.classList.remove('queue-view');
+    $('.equipment').hidden=tabName==='Início'||$('.equipment').options.length<2;
     if (!card?.isConnected) return;
     if(editing&&!networkDraft&&!nativeEditing()&&nativeButton('Editar')){editing=false;changed=false;options.clear();generatedPasswords.clear();}
     const ips = fixedIPs();
@@ -1230,7 +1233,7 @@
     const financialClass=/^ativ[oa]$/i.test(financial)?'finance-active':/^(bloquead|suspens|inativ)/i.test(financial)?'finance-blocked':'finance-other';
     const badge=make('span',`finance-badge ${financialClass}`,financial);badge.title='Situação financeira no Revan';
     $('.context').append(' · ',badge);
-    const strip=$('.layout-bottom');if(strip){strip.replaceChildren(make('span','',`● Atendimento #${route.split('/').pop()} · ${clientName()} · ${technology()}`),make('span','',ajaAttachedPayload?'Protocolo anexado':'Protocolo não anexado'));}
+    const strip=$('.layout-bottom');if(strip){strip.replaceChildren(make('span','',`● Atendimento #${route.split('/').pop()} · ${clientName()} · ${technology()}`),make('span','','Protocolo '+(text(all(document,'.protocol-number').find(e=>!root.contains(e)&&e.getClientRects().length))||'não disponível')));}
     const tabs = technology() === 'FWA' ? ['Início','CPE','Rede','Testes','Autenticação','Etiquetar'] : ['Início','ONU','Roteador','Rede','Testes','Autenticação','Etiquetar'];
     tabs.push('Assistente Aja');
     const paths={'Início':'M3 11l9-8 9 8 M5 10v11h14V10 M10 21v-7h4v7','Assistente Aja':'M12 3l2.5 6.5L21 12l-6.5 2.5L12 21l-2.5-6.5L3 12l6.5-2.5z',ONU:'M4 4h16v14H4z M8 21h8 M8 14h1 M12 14h1 M16 14h1',CPE:'M4 6h16v12H4z M8 21h8',Roteador:'M4 13h16v7H4z M8 16h1 M12 16h1 M7 5a8 8 0 0 1 10 0 M9 8a4 4 0 0 1 6 0 M12 11h.01',Rede:'M9 3h6v5H9z M3 16h6v5H3z M15 16h6v5h-6z M12 8v4 M6 16v-4h12v4',Testes:'M8 4h8v3H8z M8 5H5v16h14V5h-3 M8 13l2 2 5-5',Autenticação:'M12 3a4 4 0 1 0 0 8a4 4 0 0 0 0-8 M5 21v-3a7 7 0 0 1 14 0v3z',Etiquetar:'M3 3h8l10 10-8 8L3 11z M7 7h.01'};
