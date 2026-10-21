@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Revan — Minidashboard de equipamentos
 // @namespace    local.revan.minidashboard
-// @version      4.15.3
+// @version      4.15.4
 // @updateURL    https://raw.githubusercontent.com/kingoffjoss/Meus-Scripts/main/Revan/outputs/revan-minidashboard.user.js
 // @downloadURL  https://raw.githubusercontent.com/kingoffjoss/Meus-Scripts/main/Revan/outputs/revan-minidashboard.user.js
 // @description  Campos próprios e ações integradas aos controles originais do Revan.
@@ -125,9 +125,9 @@
   const commandHistory=[];
   function networkSnapshot() {
     const data={};
-    all(card,'input[placeholder="Nome da rede Wi-Fi"],input[placeholder="Senha da rede"]').forEach((e,i)=>{data[`${headingFor(e)} · ${e.placeholder} · ${i}`]=e.value;});
+    for(const placeholder of ['Nome da rede Wi-Fi','Senha da rede'])all(card,`input[placeholder="${placeholder}"]`).forEach((e,i)=>{data[`${headingFor(e)} · ${placeholder} · ${i}`]=e.value;});
     all(card,'ion-select').forEach((e,i)=>{const label=e.parentElement.cloneNode(true);all(label,'ion-select').forEach(n=>n.remove());data[`${headingFor(e)} · ${text(label)} · ${i}`]=selectedValue(e);});
-    all(card,'ion-switch').forEach((e,i)=>{const b=e.querySelector('button');const explicit=b?.getAttribute('aria-checked')??e.getAttribute('aria-checked');data[`Opção ${i+1} · ${text(e.parentElement).slice(0,45)}`]=explicit!==null?explicit:String(b?.classList.contains('ion-switch--active')||e.classList.contains('checked'));});
+    all(card,'ion-switch').forEach((e,i)=>{const b=e.querySelector('button');const explicit=b?.getAttribute('aria-checked')??e.getAttribute('aria-checked');data[networkSwitchTitle(e)||`Opção ${i+1}`]=explicit!==null?explicit:String(b?.classList.contains('ion-switch--active')||e.classList.contains('checked'));});
     return data;
   }
   function commandFeedback() {
@@ -311,7 +311,7 @@
   }
   function planSnapshot(){
     const data={};if(!networkDraft)return networkSnapshot();
-    networkDraft.ssids.forEach((s,i)=>{data[`${s.band} · Nome da rede Wi-Fi · ${i}`]=s.restore?'Restaurar SSID ao aplicar':s.value;if(s.generate)data[`${s.band} · Senha · ${i}`]='Gerar ao aplicar';});
+    networkDraft.ssids.forEach((s,i)=>{data[`${s.band} · Nome da rede Wi-Fi · ${i}`]=s.restore?'Restaurar SSID ao aplicar':s.value;if(s.generate)data[`${s.band} · Senha da rede · ${i}`]='Gerar ao aplicar';});
     networkDraft.fields.forEach(f=>data[`${f.band} · ${f.label} · ${f.index}`]=f.value);
     Object.entries(networkDraft.switches).forEach(([k,v])=>data[k]=String(v));if(networkDraft.powerChanged)data['Habilitar rede']=String(networkDraft.power);if(networkDraft.optimize)data['Otimizar canal']='Executar após salvar';return data;
   }
@@ -394,7 +394,10 @@
         const source=all(card,'input[placeholder="Nome da rede Wi-Fi"]')[i],item=plan.ssids.find(s=>s.band===headingFor(source))||plan.ssids[i]||plan.ssids[0];if(!item?.generate)continue;
         const b=all(card,'button').filter(e=>matches(e,'Gerar senha'))[i];if(!b||b.disabled)throw new Error('Geração de senha Wi-Fi indisponível.');
         const previous=all(card,'input[placeholder="Senha da rede"]')[i]?.value;remoteAttempted=true;b.click();
-        const password=await until(()=>{const v=all(card,'input[placeholder="Senha da rede"]')[i]?.value;return v&&v!==previous&&v;},6000);generatedPasswords.set(item.band+':'+i,password);
+        let password;
+        try{password=await until(()=>{const v=all(card,'input[placeholder="Senha da rede"]')[i]?.value;return v&&v!==previous&&v;},18000);}
+        catch(error){if(error.code==='RV_REFRESH')throw error;throw new Error('O Revan não exibiu uma nova senha Wi-Fi após o comando. Não repita a geração: confira se o formulário original ainda está processando antes de tentar novamente.');}
+        generatedPasswords.set(item.band+':'+i,password);
       }
       if(card.querySelector('input.ng-invalid,input[aria-invalid="true"]'))throw new Error('O Revan informou um campo inválido.');
       const button=nativeButton('Salvar');if(!button||button.disabled)throw new Error('O Revan ainda não liberou Salvar para essa combinação.');
