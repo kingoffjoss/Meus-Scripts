@@ -39,5 +39,5 @@ export function createKantoRenderer(canvas,kind=1,options={}){
     }
     renderer.render(scene,camera);frame=requestAnimationFrame(draw);
   };frame=requestAnimationFrame(draw);
-  return{ready,play,react,feed(){return play(find(['Eating','Yes'])||idle(),4);},setWandering(value){wandering=value;if(!value&&actions.size)play(idle(),1);},get animations(){return [...actions.keys()];},stop(){if(stopped)return;stopped=true;cancelAnimationFrame(frame);mixer?.stopAllAction();if(asset){mixer?.uncacheRoot(asset);disposeObject(asset);}renderer.dispose();renderer.forceContextLoss();}};
+  return{ready,play,react,feed(){return play(find(['Eating','Yes'])||idle(),4);},rest(seconds=90){return play(find(['Idle_Headlow','Idle_2','Flying_Idle'])||idle(),seconds);},setWandering(value){if(wandering===value)return;wandering=value;if(!value&&actions.size)play(idle(),1);},get animations(){return [...actions.keys()];},stop(){if(stopped)return;stopped=true;cancelAnimationFrame(frame);mixer?.stopAllAction();if(asset){mixer?.uncacheRoot(asset);disposeObject(asset);}renderer.dispose();renderer.forceContextLoss();}};
 }
