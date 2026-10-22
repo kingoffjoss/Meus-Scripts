@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Revan — Minidashboard de equipamentos
 // @namespace    local.revan.minidashboard
-// @version      4.21.5
+// @version      4.21.6
 // @updateURL    https://raw.githubusercontent.com/kingoffjoss/Meus-Scripts/main/Revan/outputs/revan-minidashboard.user.js
 // @downloadURL  https://raw.githubusercontent.com/kingoffjoss/Meus-Scripts/main/Revan/outputs/revan-minidashboard.user.js
 // @description  Campos próprios e ações integradas aos controles originais do Revan.
@@ -24,7 +24,7 @@
   });
   const root = document.createElement('section');
   root.id = 'rv-mini';
-  root.dataset.version = '4.21.5';
+  root.dataset.version = '4.21.6';
   root.innerHTML = `<button class="launch" aria-expanded="false"><span class="launch-icon">◈</span> Equipamentos <span class="launch-dot"></span></button><div class="panel" hidden><header><strong><span class="brand-icon">◈</span> Revan <small>REDE & CONEXÃO</small></strong><span class="version-badge">v${root.dataset.version}</span><button class="close" aria-label="Minimizar" title="Minimizar para botão">−</button></header><div class="context"></div><select class="equipment" aria-label="Equipamento"></select><nav></nav><p class="status" role="status"></p><div class="body"></div><footer></footer></div>`;
   const refreshButton=document.createElement('button');refreshButton.className='refresh-panel';refreshButton.type='button';refreshButton.textContent='↻';refreshButton.setAttribute('aria-label','Atualizar painel');refreshButton.title='Atualizar painel e recuperar os controles';
   root.querySelector('header').insertBefore(refreshButton,root.querySelector('.close'));
@@ -950,10 +950,32 @@
       if(ajaModels.length){const label=make('label','field','Modelo Gemini'),select=make('select');select.setAttribute('aria-label','Modelo Gemini');for(const m of ajaModels){const o=make('option','',m.displayName||m.name);o.value=m.name;select.append(o);}select.value=ajaSettings.model;select.addEventListener('change',()=>{ajaSettings.model=select.value;saveAjaSettings();});label.append(select);body.append(label);}
     }
     }else if(ajaScreen==='Protocolos prontos'){
-      const catalog=()=>[...ajaTagCatalog()].sort((a,b)=>a.localeCompare(b,'pt-BR')),tagField=make('label','field','Pesquisar etiqueta'),tagInput=make('input'),tagResults=make('div','aja-combo-list');tagInput.type='search';tagInput.placeholder='Digite parte do nome da etiqueta…';tagInput.value=readyTagQuery||readyTag;tagInput.setAttribute('aria-label','Pesquisar etiqueta do protocolo pronto');const paintTags=()=>{const tokens=normalized(tagInput.value).split(' ').filter(Boolean),matches=catalog().filter(name=>tokens.length&&tokens.every(token=>normalized(name).includes(token))).slice(0,100);tagResults.replaceChildren(...matches.map(name=>{const button=ajaButton(name,()=>{readyTag=name;readyTagQuery=name;readyVariant=0;readyDraft='';renderAssistant();});button.className='aja-combo-option'+(name===readyTag?' current':'');return button;}));if(tokens.length&&!matches.length)tagResults.append(make('div','aja-combo-empty',readySearching?'Buscando etiquetas no Revan…':readySearchError||'Nenhuma etiqueta encontrada'));tagResults.hidden=!tokens.length;};tagInput.addEventListener('input',()=>{readyTagQuery=tagInput.value;if(readyTag!==tagInput.value){readyTag='';readyDraft='';}paintTags();clearTimeout(readySearchTimer);const query=tagInput.value.trim(),epoch=++readySearchEpoch;if(query.length>=2)readySearchTimer=setTimeout(async()=>{readySearching=true;readySearchError='';paintTags();try{await syncReadyTagOptions(query);if(epoch!==readySearchEpoch)return;}catch(error){if(epoch!==readySearchEpoch)return;readySearchError='Não foi possível consultar o Revan: '+error.message;}finally{if(epoch===readySearchEpoch){readySearching=false;renderAssistant();}}},550);});tagInput.addEventListener('focus',paintTags);tagField.append(tagInput,tagResults);body.append(tagField);paintTags();if(readySearching)body.append(make('small','','Buscando também no catálogo nativo do Revan…'));if(readyTag)body.append(make('div','field',`Etiqueta selecionada: ${readyTag}`));
+      const catalog=()=>[...ajaTagCatalog()].sort((a,b)=>a.localeCompare(b,'pt-BR'));
+      const tagField=make('div','field ready-tag-search'),label=make('label','','Pesquisar etiqueta'),tagInput=make('input'),tagResults=make('div','aja-combo-list ready-tag-results');
+      tagInput.type='search';tagInput.id='rv-ready-tag-query';label.htmlFor=tagInput.id;tagInput.placeholder='Digite parte do nome da etiqueta…';tagInput.value=readyTagQuery||readyTag;tagInput.setAttribute('aria-label','Pesquisar etiqueta do protocolo pronto');
+      const paintTags=()=>{
+        if(!tagField.isConnected)return;
+        const tokens=normalized(tagInput.value).split(' ').filter(Boolean);
+        const matches=catalog().filter(name=>tokens.length&&tokens.every(token=>normalized(name).includes(token))).slice(0,100);
+        tagResults.replaceChildren(...matches.map(name=>{
+          const button=ajaButton(name,()=>{clearTimeout(readySearchTimer);readySearchEpoch++;readySearching=false;readyTag=name;readyTagQuery=name;readyDraft='';renderAssistant();});
+          button.className='aja-combo-option'+(name===readyTag?' current':'');return button;
+        }));
+        if(tokens.length&&!matches.length)tagResults.append(make('div','aja-combo-empty',readySearchError||'Nenhuma etiqueta local encontrada. Use Buscar mais etiquetas no Revan.'));
+        tagResults.hidden=!tokens.length||tagInput.value===readyTag;
+      };
+      tagInput.addEventListener('input',()=>{readyTagQuery=tagInput.value;if(readyTag!==tagInput.value){readyTag='';readyDraft='';}paintTags();});
+      tagInput.addEventListener('focus',paintTags);
+      const syncButton=ajaButton('Buscar mais etiquetas no Revan',async()=>{
+        const query=tagInput.value.trim();if(query.length<2){readySearchError='Digite pelo menos duas letras.';paintTags();return;}
+        const epoch=++readySearchEpoch;readySearching=true;readySearchError='';syncButton.disabled=true;syncButton.textContent='Buscando etiquetas…';
+        try{await syncReadyTagOptions(query);}catch(error){if(epoch===readySearchEpoch)readySearchError='Não foi possível consultar: '+error.message;}
+        finally{if(epoch===readySearchEpoch){readySearching=false;if(tagField.isConnected){syncButton.disabled=false;syncButton.textContent='Buscar mais etiquetas no Revan';paintTags();}}}
+      });
+      tagField.append(label,tagInput,tagResults,syncButton);body.append(tagField);paintTags();if(readyTag)body.append(make('div','field','Etiqueta selecionada: '+readyTag));
       const statusActions=make('div','actions');statusActions.setAttribute('aria-label','Situação do protocolo pronto');
       for(const status of ['Resolvido','Não resolvido','Aguardando retorno']){
-        const button=ajaButton(status,()=>{readyStatus=status;readyDraft=readyProtocols(readyTag,status)[0];renderAssistant();},false,!readyTag);
+        const button=ajaButton(status,()=>{readyStatus=status;readyDraft=readyProtocols(readyTag,status)[0];renderAssistant();},false,false);
         button.setAttribute('aria-pressed',String(readyStatus===status));if(readyStatus===status)button.classList.add('active');statusActions.append(button);
       }
       body.append(statusActions);if(!readyDraft)readyDraft=readyProtocols(readyTag,readyStatus)[0];
@@ -1604,6 +1626,7 @@
   css.textContent += "#rv-mini .customer-profile{grid-template-columns:minmax(0,1fr) minmax(140px,.6fr);gap:10px}#rv-mini .profile-field{padding:13px;gap:6px}#rv-mini .profile-field:last-child{grid-column:1/-1}#rv-mini .profile-field strong{font-size:14px}#rv-mini .home-section{margin-top:18px;padding-top:15px;border-top:1px solid #35525c}#rv-mini .home-section h3{margin:0;font-size:15px}#rv-mini .home-hint{font-size:11px;color:#b5cbd2;margin:6px 0 10px}#rv-mini .home-invoices{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}#rv-mini .home-invoice{border:1px solid #35525c;border-radius:9px;padding:12px;display:grid;gap:8px;background:#172d35}#rv-mini .home-invoice-head,#rv-mini .home-section-head,#rv-mini .home-history-row{display:flex;align-items:center;justify-content:space-between;gap:8px}#rv-mini .home-invoice-head{flex-wrap:wrap}#rv-mini .home-invoice-head>strong{text-transform:capitalize}#rv-mini .invoice-amount{font-size:19px;color:#fff}#rv-mini .invoice-state{border-radius:20px;padding:3px 8px;font-size:10px;font-weight:700;background:#594727;color:#ffe2a1}#rv-mini .invoice-state.paid{background:#184d42;color:#95f0cf}#rv-mini .invoice-state.late{background:#612f38;color:#ffc1c9}#rv-mini .home-history-row{padding:10px 0;border-bottom:1px solid #2a414b}#rv-mini .home-history-row>div{display:grid;gap:4px}#rv-mini .home-history-row small{color:#b5cbd2;font-size:11px}#rv-mini .home-history-row>small{text-align:right;flex-shrink:0}#rv-mini .home-section-head button{font-size:11px;padding:6px 9px}@media(max-width:500px){#rv-mini .customer-profile,#rv-mini .home-invoices{grid-template-columns:1fr}#rv-mini .home-history-row{align-items:flex-start;flex-wrap:wrap}}";
   css.textContent += '#rv-mini .body,#rv-mini .aja-side,#rv-mini nav{overscroll-behavior:contain;overflow-anchor:none;scrollbar-gutter:stable;scrollbar-width:auto}#rv-mini .aja-side{min-height:0;overflow-y:auto;max-height:100%}';
   css.textContent += '#rv-mini .aja-review>div.pick{grid-column:1/-1}#rv-mini .aja-combo{position:relative;margin-top:5px}#rv-mini .aja-combo-list{position:relative;z-index:2;display:grid;max-height:170px;overflow:auto;margin-top:4px;border:1px solid #3a5863;border-radius:8px;background:#10232b}#rv-mini .aja-combo-option{border:0;border-radius:0;text-align:left;padding:7px 9px}#rv-mini .aja-combo-option.current{color:#55e3b7}#rv-mini .aja-combo-option.active{background:#214149}#rv-mini .aja-combo-empty{padding:8px;color:#afcbd3;font-size:11px}';
+  css.textContent += '#rv-mini .ready-tag-search{flex-shrink:0;min-height:0}#rv-mini .ready-tag-results{position:static;z-index:auto;max-height:150px;overflow-y:auto;flex-shrink:0}#rv-mini .ready-tag-results button{white-space:normal;overflow-wrap:anywhere;min-height:34px}#rv-mini [aria-label="Situação do protocolo pronto"]{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));flex-shrink:0;gap:6px}#rv-mini [aria-label="Situação do protocolo pronto"] button{white-space:normal;min-height:42px}#rv-mini [aria-pressed="true"]{border-color:#2be1ce;background:#1b4d50}';
   bindDashboardShell();
   window.addEventListener('hashchange', () => { cancelAja();assistantOpen=false;ajaInput='';ajaResult='';ajaTab='';ajaLabel='';ajaClassificationReason='';ajaMessage='';ajaAttachedPayload='';ajaPreview=null;minimize(); networkDraft=null;pendingAction=null;authResult=null; tagDraft=emptyTagDraft();savedNetwork=null;editBaseline=null;reviewRequested=false;card = null; editing = false; changed = false; options.clear(); generatedPasswords.clear();autoPending=false;autoReport='';$('.context').textContent = ''; $('nav').replaceChildren(); $('.body').replaceChildren(); $('footer').replaceChildren(); });
   document.addEventListener('keydown', e => { if (e.key === 'Escape') minimize(); });
