@@ -16,9 +16,9 @@ export function createZefi(){
  for(const side of [-1,1]){
   const socket=j(head,side*.267,.015,.403,'eye-'+side);socket.rotation.y=side*.33;blob(socket,0,0,0,.187,.213,.077,dark);
   const eye=j(socket,0,0,.027,'blink-'+side);blob(eye,0,0,0,.166,.192,.066,cream);blob(eye,-side*.009,-.005,.05,.135,.164,.04,iris);blob(eye,-side*.009,.012,.082,.086,.123,.018,black);blob(eye,-.042,.079,.104,.033,.037,.009,white);blob(eye,.049,-.057,.099,.012,.014,.006,white);
-  const brow=blob(socket,0,.198,-.025,.195,.043,.08,cream);brow.rotation.z=-side*.11;
+  const brow=blob(socket,0,.185,-.035,.18,.022,.06,cream);brow.rotation.z=-side*.11;
  }
- const muzzle=j(head,0,-.23,.49,'muzzle');blob(muzzle,-.105,-.005,.012,.15,.095,.105,cream);blob(muzzle,.105,-.005,.012,.15,.095,.105,cream);
+ const muzzle=j(head,0,-.23,.64,'muzzle');blob(muzzle,-.105,-.005,.012,.15,.095,.105,cream);blob(muzzle,.105,-.005,.012,.15,.095,.105,cream);
  const noseShape=new THREE.Shape();noseShape.moveTo(-.078,.029);noseShape.quadraticCurveTo(0,.065,.078,.029);noseShape.quadraticCurveTo(.075,.005,0,-.052);noseShape.quadraticCurveTo(-.075,.005,-.078,.029);
  const nose=mesh(muzzle,new THREE.ExtrudeGeometry(noseShape,{depth:.028,bevelEnabled:true,bevelSize:.012,bevelThickness:.012,bevelSegments:3,steps:1}),pink);nose.position.set(0,.023,.114);
  const mouth=new THREE.CatmullRomCurve3([new THREE.Vector3(-.13,-.064,.087),new THREE.Vector3(-.06,-.105,.112),new THREE.Vector3(0,-.115,.122),new THREE.Vector3(.06,-.105,.112),new THREE.Vector3(.13,-.064,.087)]);mesh(muzzle,new THREE.TubeGeometry(mouth,28,.009,6,false),dark);
@@ -32,7 +32,7 @@ export function createZefi(){
   const elbow=new THREE.Bone();elbow.position.x=.6;elbow.name='wing-elbow-'+side;shoulder.add(elbow);
   const wrist=new THREE.Bone();wrist.position.x=.59;wrist.name='wing-wrist-'+side;elbow.add(wrist);
   const pos=[],idx=[],weights=[],bones=[],nx=30,ny=12;
-  for(let x=0;x<=nx;x++)for(let y=0;y<=ny;y++){const u=x/nx,v=y/ny,px=u*1.55,depth=.18+.48*Math.sin(u*Math.PI*.83);pos.push(px,.1-v*depth,.06+Math.sin(v*Math.PI)*.105);const b=px<.6?0:1,blend=THREE.MathUtils.smoothstep(px,b===0?.32:.92,b===0?.86:1.42);bones.push(blend===1?0:b,blend===0?0:b+1,0,0);weights.push(1-blend,blend,0,0);}
+  for(let x=0;x<=nx;x++)for(let y=0;y<=ny;y++){const u=x/nx,v=y/ny,px=u*1.55,depth=.18+.48*Math.sin(u*Math.PI*.83);pos.push(px,.1-v*depth,.06+Math.sin(v*Math.PI)*.105);const b=px<.6?0:1,blend=THREE.MathUtils.smoothstep(px,b===0?0:.6,b===0?.6:1.19);bones.push(blend===1?0:b,blend===0?0:b+1,0,0);weights.push(1-blend,blend,0,0);}
   for(let x=0;x<nx;x++)for(let y=0;y<ny;y++){const a=x*(ny+1)+y,b=a+ny+1;idx.push(a,b,a+1,b,b+1,a+1);}
   const geo=new THREE.BufferGeometry();geo.setAttribute('position',new THREE.Float32BufferAttribute(pos,3));geo.setIndex(idx);geo.setAttribute('skinIndex',new THREE.Uint16BufferAttribute(bones,4));geo.setAttribute('skinWeight',new THREE.Float32BufferAttribute(weights,4));geo.computeVertexNormals();
   const surfaceMat=mat('#d2c0e0');surfaceMat.side=THREE.DoubleSide;const surface=new THREE.SkinnedMesh(geo,surfaceMat);surface.name='continuous-wing-'+side;surface.castShadow=true;holder.add(surface);root.updateMatrixWorld(true);surface.bind(new THREE.Skeleton([shoulder,elbow,wrist]));
@@ -58,11 +58,11 @@ export function createZefi(){
  const tail=j(torso,0,-.19,-.36,'tail');tail.rotation.y=.4;blob(tail,0,-.02,-.25,.21,.18,.37,coat);
  for(let i=0;i<7;i++){const f=feather(tail,0,-.04,-.29,.88-Math.abs(i-3)*.025,.16,Math.PI+(i-3)*.17,i%3);f.rotation.y=-.65;f.rotation.x=-.15;}
  function pose(t,flight=1,frequency=1.15,phaseOverride=null){
-  const phase=phaseOverride??t*frequency,wing=wingPose(phase),breath=Math.sin(t*1.8)*.006;
-  torso.scale.set(1+breath,1+breath,1+breath);root.position.y=flight*(.38+wing.bodyLift);root.rotation.x=flight*(.10+Math.sin(phase*Math.PI*2-.5)*.018);root.rotation.z=Math.sin(t*.7)*.012*flight;
+  const phase=phaseOverride??t*frequency,wing=wingPose(phase),breath=mix(Math.sin(t*1.8),Math.sin(phase*Math.PI*2),flight)*.006;
+  torso.scale.set(1+breath,1+breath,1+breath);root.position.y=flight*(.38+wing.bodyLift);root.rotation.x=flight*(.10+Math.sin(phase*Math.PI*2-.5)*.018);root.rotation.z=Math.sin(phase*Math.PI*2)*.006*flight;
   for(const w of wings){w.shoulder.rotation.z=mix(-.28,wing.shoulder,flight);w.shoulder.rotation.y=mix(.98,-.06,flight);w.elbow.rotation.z=mix(-.7,wing.elbow,flight);w.elbow.rotation.y=mix(.25,.06,flight);w.wrist.rotation.z=mix(-.25,wing.wrist,flight);for(let i=0;i<w.primaries.length;i++)w.primaries[i].rotation.z=(.15-i*.16)*mix(.65,wing.fan,flight)+Math.sin(phase*Math.PI*2-.45-i*.035)*.025*flight;}
-  head.rotation.y=Math.sin(t*.55)*.035;head.rotation.x=-flight*.06;head.rotation.z=Math.sin(t*.72)*.016;const blink=blinkAt(t);head.traverse(n=>{if(n.name.startsWith('blink-'))n.scale.y=blink;});ears.forEach((e,i)=>e.rotation.x=flight*Math.sin(phase*Math.PI*2-.9+i*.09)*.035);
-  legs.forEach(({leg,back})=>leg.rotation.x=flight*(back?.65:.40)+flight*Math.sin(phase*Math.PI*2-1)*.025);tail.rotation.x=flight*(.15+Math.sin(phase*Math.PI*2-1.2)*.055);tail.rotation.z=Math.sin(t*.7)*.025;
+  head.rotation.y=mix(Math.sin(t*.55)*.035,Math.sin(phase*Math.PI*2)*.012,flight);head.rotation.x=-flight*.06;head.rotation.z=mix(Math.sin(t*.72)*.016,Math.sin(phase*Math.PI*2-.3)*.008,flight);const blink=blinkAt(t);head.traverse(n=>{if(n.name.startsWith('blink-'))n.scale.y=blink;});ears.forEach((e,i)=>e.rotation.x=flight*Math.sin(phase*Math.PI*2-.9+i*.09)*.035);
+  legs.forEach(({leg,back})=>leg.rotation.x=flight*(back?.65:.40)+flight*Math.sin(phase*Math.PI*2-1)*.025);tail.rotation.x=flight*(.15+Math.sin(phase*Math.PI*2-1.2)*.055);tail.rotation.z=mix(Math.sin(t*.7),Math.sin(phase*Math.PI*2),flight)*.025;
   return wing;
  }
  pose(0,0);return{root,torso,pose,wings,head,tail,legs,ears};

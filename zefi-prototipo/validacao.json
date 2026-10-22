@@ -1,18 +1,26 @@
 {
-  "gltfValidator": {
-    "errors": 0,
-    "warnings": 0
-  },
-  "checks": [
-    "Ciclo das asas fechado",
-    "100 poses com valores finitos",
-    "Transição de decolagem limitada",
-    "GLB abre no GLTFLoader",
-    "Articulação exportada muda de pose"
+  "version": 2,
+  "results": [
+    {
+      "file": "zefi-voo-prototipo.glb",
+      "bytes": 4355800,
+      "errors": 0,
+      "warnings": 0
+    },
+    {
+      "file": "zefi-pousado.glb",
+      "bytes": 4297792,
+      "errors": 0,
+      "warnings": 0
+    }
   ],
-  "clip": {
-    "name": "Zefi_Voo_Asas",
-    "tracks": 25,
-    "durationSeconds": 0.7142857313156128
-  }
+  "checks": [
+    "GLTFLoader loads actual GLB",
+    "Exported shoulder changes pose",
+    "Deformed wing points match before and after export at four phases",
+    "Animation track endpoints match",
+    "Finite deformed vertices",
+    "Closed wing cycle",
+    "Bounded takeoff transition"
+  ]
 }

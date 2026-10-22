@@ -1,15 +1,14 @@
-# Zefi — primeiro protótipo 3D
+Zefi — forma e movimento, versão 02
 
-Abra index.html para avaliar o personagem. A pasta funciona sem servidor e sem instalar dependências. Use Voar, Pousar e Alternar; arraste para girar a câmera, use Ver de frente, Pausar e o controle de ritmo. Mostrar articulações destaca ombros, cotovelos e pontas das asas.
+Abra index.html. A prévia começa pousada para avaliar a aparência; clique Voar para iniciar o voo, Pousar para recolher as asas e Alternar para repetir a transição. Arraste para girar. Há pausa, câmera frontal, ritmo das asas e marcadores das articulações.
 
-Esta é uma maquete 3D original para aprovação da forma e do movimento, construída em código com base no conceito visual de Zefi. O acabamento é simplificado: ainda não é uma reprodução fiel dos pelos, detalhes e texturas da imagem de referência. Nenhum dos outros personagens ou o mascote dos favoritos foi alterado.
+Nesta revisão, cabeça e corpo usam superfícies contínuas com transições suaves, o focinho fica projetado para fora do rosto, as orelhas são mais curtas e as patas têm volumes unidos. Os antigos espinhos de pelo foram removidos. O visual é uma interpretação 3D estilizada; ainda não reproduz o pelo realista da imagem de referência.
 
-O voo combina descida das asas em 38% do ciclo e recuperação em 62%, flexão nas pontas, abertura das penas, resposta suave do corpo, patas recolhidas, movimento das orelhas e cauda e piscadas periódicas. O ritmo pode ser alterado sem reiniciar a fase da batida. As transições de voo e pouso usam interpolação temporal.
+As asas têm superfícies deformáveis por esqueleto, com pesos entre ombro, cotovelo e punho, cobertas por penas volumétricas sobrepostas. A descida leva 38% do ciclo; a recuperação leva 62%, com recolhimento das pontas. Corpo, cabeça, patas, orelhas e cauda acompanham o voo. O ciclo exportado fecha todas as 37 pistas sem salto entre os extremos.
 
-zefi-voo-prototipo.glb contém a geometria e um ciclo de voo de 0,714 s a 1,4 batidas/s, com 25 pistas de animação. Os elementos são articulados por grupos hierárquicos; não há malha de pele deformável nem simulação aerodinâmica. Os tufos foram unidos em geometria comum para ampliar a compatibilidade dos visualizadores. O visualizador local usa Three.js com WebGL2.
+zefi-pousado.glb: modelo em repouso, sem animação.
+zefi-voo-prototipo.glb: modelo com o ciclo Zefi_Voo_Organico (0,870 segundos, 1,15 batidas/s). As piscadas e a transição de pouso são controladas pela prévia local, não por esse ciclo GLB.
 
-Validação automatizada: ciclo fechado nas asas, 100 poses com valores finitos, transição limitada entre pousado e voo, leitura do GLB pelo GLTFLoader real e alteração de pose da articulação exportada. O modelo foi aberto em um visualizador 3D público; o acesso direto da ferramenta a arquivos locais é bloqueado. Após corrigir a geometria dos tufos, o validador glTF confirmou zero erros e zero avisos.
+Verificação: leitura pelo GLTFLoader, articulação exportada em movimento, comparação de pontos deformados antes/depois da exportação em quatro fases, ciclo fechado, poses finitas e transição limitada. Ambos os GLBs passaram pelo validador glTF com zero erros e zero avisos. A versão publicada foi inspecionada em visualizador HTTPS; o acesso direto da ferramenta à página local é bloqueado.
 
-Para reconstruir: npm install e npm run build. Para exportar novamente: npm run export. Three.js e esbuild-wasm estão fixados no package.json. O build não usa imagens como personagem; referencia.png aparece somente no cartão de comparação.
-
-A biblioteca Three.js usa licença MIT, incluída em THREE-LICENSE.txt. O modelo procedural e as animações deste protótipo foram criados para este projeto; a imagem de referência foi gerada anteriormente para os conceitos originais.
+Reconstrução: npm install; npm run build. Exportação: npm run export. O pacote inclui as fontes. Three.js é MIT (THREE-LICENSE.txt). O personagem dos favoritos e os outros avatares não foram modificados.
