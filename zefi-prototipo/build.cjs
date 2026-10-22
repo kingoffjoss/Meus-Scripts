@@ -1,0 +1,4 @@
+const path=require('path'),{createRequire}=require('module');
+const deps=process.env.KANTO_DEPENDENCY_ROOT?createRequire(path.resolve(process.env.KANTO_DEPENDENCY_ROOT,'package.json')):require,esbuild=deps('esbuild-wasm'),three=path.dirname(deps.resolve('three'));
+const base={bundle:true,minify:true,legalComments:'eof',alias:{'three/addons':path.resolve(three,'../examples/jsm'),three:path.resolve(three,'three.module.js')}};
+(async()=>{await esbuild.build({...base,entryPoints:[path.join(__dirname,'src/main.js')],outfile:path.join(__dirname,'zefi.js'),format:'iife',target:['chrome110']});if(process.argv.includes('--export'))await esbuild.build({...base,entryPoints:[path.join(__dirname,'src/export-node.js')],outfile:path.join(__dirname,'export-node.cjs'),platform:'node',format:'cjs'});})().catch(e=>{console.error(e);process.exitCode=1;});
