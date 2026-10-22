@@ -1,51 +1,35 @@
-# Kanto Companion — protótipo
+# Kanto Companion — mascote 3D articulado
 
-Companheiro Pokémon para Chrome, sem dependências de instalação. Abra `index.html` para usar o painel. Visual com aparência 3D realista, feito com imagem e movimentos CSS; não contém modelos 3D articulados.
+O mascote flutua sobre a página, com fundo transparente, sem painel aberto. Clique para conversar, use o teclado (Enter/Espaço) ou arraste para mover. A geometria WebGL é desenhada a cada quadro: cabeça, braços, pernas e cauda se movem, os olhos piscam e a chama varia. Carinho, conclusão de tarefa e lembrete acionam uma reação. O modelo procedural tem formas simples: o acabamento realista do conceito ainda não está implementado.
 
-## Usar
+## Ativar sem extensão
 
-1. Abra `index.html` no Chrome e escolha um Pokémon.
-2. Digite “me lembra de beber água a cada 30 minutos”, “tenho reunião às 21:40” ou uma tarefa. Horários já passados são marcados para o dia seguinte, no fuso do navegador.
-3. Ative notificações se desejar e mantenha **uma única aba do painel aberta**. Abas suspensas, computador dormindo e navegador fechado impedem pontualidade. Ao voltar, lembretes vencidos são recuperados uma vez, sem uma avalanche de intervalos perdidos.
-4. Conclua tarefas para ganhar 25 XP. Cada 100 XP aumenta o nível. Carinho e comida são interações, sem XP infinito por clique.
+Copie o conteúdo de favorito.txt para o campo URL de um favorito. O arquivo console.js contém a versão legível do mesmo código. Não é preciso hospedar o painel ou instalar dependências: o modelo é gerado pelo próprio código, sem carregar imagem, sprites, modelos ou bibliotecas externas.
 
-## Usar agora, sem hospedar o painel
+Se já usava a URL curta que carrega console.js do GitHub, ela busca esta versão automaticamente. Clique uma vez para remover o mascote antigo e outra para abrir o novo.
 
-Copie o conteúdo de `favorito.txt` e cole no campo URL de um favorito chamado “Meu Pokémon”. Clique em uma página comum. O mascote permite carinho, tarefas e lembretes temporários pelo botão “Pedir”. O botão “Arquivos” abre este repositório. `console.js` contém a mesma versão em JavaScript legível, para revisão e execução manual no console quando permitido. A arte vem do arquivo público deste repositório.
+O favorito precisa ser reativado depois de navegar ou recarregar. Sites e políticas do Chrome podem impedir scripts, carregamento remoto ou WebGL; o projeto não desativa essas restrições. A URL curta depende de fetch e execução de código permitidos pelo site.
 
-As tarefas, XP e lembretes desse mascote temporário duram apenas até recarregar, navegar ou fechar o mascote. São independentes dos dados persistentes do painel. Não é preciso instalar extensão. A versão inicial do favorito usa Charmander; o painel permite gerar favoritos com os outros personagens.
+## Tarefas e lembretes
 
-## Favorito / bookmarklet a partir do painel
+Clique no personagem e depois em Pedir. Exemplos: “água a cada 30 minutos”, “água de 30 em 30 minutos”, “reunião às 21:40” ou “responder ao cliente”. Horários passados ficam para amanhã, no fuso do navegador. Concluir uma tarefa dá 25 XP.
 
-Hospede esta pasta completa por HTTPS (por exemplo, GitHub Pages). Abra o painel hospedado e arraste “Meu Pokémon” para a barra de favoritos do Chrome. Também é possível copiar o código e colar no campo URL de um favorito. Clique nesse favorito numa página para mostrar o mascote, arraste o balão para movê-lo, e use × para fechar. Clique de novo no favorito para alternar a presença dele.
+No mascote, os dados são temporários: somem ao navegar, recarregar ou fechar. Mantenha a página aberta; suspensão da aba, sono do computador e Chrome fechado impedem alertas pontuais. Avisos abrem o balão por 12 segundos e depois recolhem quando a conversa estiver fechada.
 
-O favorito guarda a escolha de Pokémon no momento da instalação. Reinstale se mudar de personagem. Após navegar ou recarregar é necessário ativar novamente. Sites, páginas internas do Chrome e políticas corporativas podem bloquear execução ou imagens. Esta ferramenta não desativa nem contorna políticas. O mascote não lê o conteúdo da página nem envia tarefas para servidores.
+## Painel opcional
 
-O painel usa localStorage no próprio endereço: dados de uma abertura local não migram automaticamente para o site hospedado. Em páginas de outros sites o mascote oferece companhia, carinho, tarefas e lembretes temporários. Lembretes e tarefas **não sincronizam com o painel**. Os lembretes criados pelo botão “Pedir” aparecem no balão da página enquanto ela permanecer aberta. Notificações do sistema dependem de permissão e contexto compatível.
+Abra index.html no Chrome para escolher Bulbasaur, Charmander ou Squirtle e gerar um favorito com ele. O painel mantém sua própria lista de tarefas, lembretes e XP em localStorage, sem sincronizar com os mascotes das outras páginas. O painel também usa o renderizador 3D. A prancha assets/concept.png fica como referência artística, sem ser utilizada como personagem.
 
-## Estado desta versão
+Ainda não há evolução visual, IA conectada, integração de calendário, execução de tarefas externas ou modelo realista texturizado. O desabafo no painel permanece uma representação cartunesca com boneco genérico.
 
-- Escolha de três personagens; respiração, comemoração e desabafo cartunesco com boneco genérico.
-- Tarefas, exclusão, conclusão única, XP, nível e armazenamento local.
-- Parser local de comandos, intervalos e horários; não é um chatbot com IA.
-- Ainda sem evolução visual, rig 3D, execução externa de tarefas, integração de agenda ou alertas com Chrome fechado.
-- Fonte web opcional do Google Fonts; fontes do sistema funcionam offline.
+## Arquivos e validação
 
-## Publicar no GitHub Pages
+renderer.js contém a geometria, iluminação e animações. console.js e favorito.txt incluem o renderizador para execução independente. Nenhum build ou npm install é necessário.
 
-Pasta sugerida no repositório: `kanto-companion/`. Preserve os outros scripts do repositório. Se Pages publicar a raiz da branch principal, o endereço será `https://kingoffjoss.github.io/Meus-Scripts/kanto-companion/`. Esse endereço só funciona depois que Pages estiver habilitado e a publicação terminar.
+Execute: node --test core.test.cjs console.test.cjs renderer.test.cjs
 
-## Validação
+Os testes cobrem horários, tarefas, interação do favorito, mudanças de pose por quadro e limpeza de recursos. Os testes do renderizador usam uma interface WebGL simulada e não substituem conferência visual nem compilação dos shaders em uma GPU real.
 
-Execute `node --test core.test.cjs console.test.cjs` e `node --check app.js`. Sem build, sem npm install.
+## Direitos
 
-## Arte e direitos
-
-Arte do rascunho aprovada nesta conversa, criada com a ferramenta integrada de geração de imagens. O protótipo exibe regiões da prancha usando CSS; os personagens ainda não são recortes transparentes individuais. Prompt original: comparação dos três iniciais de Kanto em 3D realista e 3D fofo, com exemplos de mascote no navegador e balão “Hora de beber água!”. A prancha original está em `assets/concept.png`.
-
-Projeto de fã sem afiliação oficial. Pokémon e personagens pertencem aos respectivos titulares. Nenhuma licença sobre esses personagens é concedida por este projeto.
-
-
-## Modo flutuante
-
-O favorito mostra somente o mascote pequeno no canto da página, sem painel nem barra de botões. Clique nele (ou use Enter/Espaço quando estiver focado) para abrir a conversa e os controles; clique de novo para recolher. Arraste o próprio mascote para mover. Lembretes abrem o balão por 12 segundos e recolhem automaticamente quando a conversa está fechada. Reative o favorito em cada página após navegar; scripts não atravessam sites automaticamente sem extensão. As restrições dos sites e do Chrome continuam se aplicando.
+Projeto de fã sem afiliação oficial. Pokémon e personagens pertencem aos respectivos titulares. A referência artística foi criada com a ferramenta integrada de geração de imagens; o personagem atual é geometria gerada em código. Nenhuma licença sobre os personagens é concedida por este projeto.

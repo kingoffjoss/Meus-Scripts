@@ -3,3 +3,6 @@
 
 /* Artwork preview from the approved realistic concept. */
 .pet-wrap{width:180px;height:250px;top:110px}.sprite{background-image:url("assets/concept.png");background-size:921.6px 614.4px;background-position:var(--portrait-x,-156px) -64px;mask-image:radial-gradient(ellipse 75% 65% at 50% 52%,black 48%,transparent 78%)}
+
+/* Live 3D replaces the provisional concept image. */
+#pet{background:none;mask-image:none;animation:none;filter:none}.pet-wrap{width:300px;height:270px;top:92px}
