@@ -6,9 +6,9 @@ Esta é uma maquete 3D original para aprovação da forma e do movimento, constr
 
 O voo combina descida das asas em 38% do ciclo e recuperação em 62%, flexão nas pontas, abertura das penas, resposta suave do corpo, patas recolhidas, movimento das orelhas e cauda e piscadas periódicas. O ritmo pode ser alterado sem reiniciar a fase da batida. As transições de voo e pouso usam interpolação temporal.
 
-zefi-voo-prototipo.glb contém a geometria e um ciclo de voo de 0,714 s a 1,4 batidas/s, com 25 pistas de animação. Os elementos são articulados por grupos hierárquicos; não há malha de pele deformável nem simulação aerodinâmica. O arquivo usa EXT_mesh_gpu_instancing para os pequenos tufos de pelo. O visualizador local usa Three.js com WebGL2.
+zefi-voo-prototipo.glb contém a geometria e um ciclo de voo de 0,714 s a 1,4 batidas/s, com 25 pistas de animação. Os elementos são articulados por grupos hierárquicos; não há malha de pele deformável nem simulação aerodinâmica. Os tufos foram unidos em geometria comum para ampliar a compatibilidade dos visualizadores. O visualizador local usa Three.js com WebGL2.
 
-Validação automatizada: ciclo fechado nas asas, 100 poses com valores finitos, transição limitada entre pousado e voo, leitura do GLB pelo GLTFLoader real e alteração de pose da articulação exportada. A conferência visual no navegador ainda está pendente, pois a ferramenta de navegação bloqueia o acesso a arquivos locais.
+Validação automatizada: ciclo fechado nas asas, 100 poses com valores finitos, transição limitada entre pousado e voo, leitura do GLB pelo GLTFLoader real e alteração de pose da articulação exportada. O modelo foi aberto em um visualizador 3D público; o acesso direto da ferramenta a arquivos locais é bloqueado. Após corrigir a geometria dos tufos, o validador glTF confirmou zero erros e zero avisos.
 
 Para reconstruir: npm install e npm run build. Para exportar novamente: npm run export. Three.js e esbuild-wasm estão fixados no package.json. O build não usa imagens como personagem; referencia.png aparece somente no cartão de comparação.
 

@@ -1,4 +1,5 @@
 import * as THREE from 'three';
+import {mergeGeometries} from 'three/addons/utils/BufferGeometryUtils.js';
 import {wingPose,blinkAt,mix} from './motion.js';
 export function createZefi(){
  const root=new THREE.Group();root.name='Zefi';
@@ -39,8 +40,8 @@ export function createZefi(){
  const legs=[];for(const side of [-1,1])for(const back of [true,false]){const leg=joint(torso,side*(back?.34:.27),-.48,back?-.19:.27,'leg');blob(leg,0,-.22,0,back?.18:.135,.32,.15,back?lilac:pearl);const foot=blob(leg,0,-.47,.075,.19,.11,.23,light);for(let i=-1;i<=1;i++)blob(leg,i*.08,-.48,.25,.036,.035,.052,pink);legs.push({leg,back,side});}
  const tail=joint(torso,0,-.26,-.36,'tail');tail.rotation.y=-.3;for(let i=0;i<7;i++){const f=feather(tail,0,0,0,.98,.16,Math.PI+(i-3)*.19,i);f.rotation.x=-.6;}
  // Small tapered tufts give the silhouette a soft edge without external textures.
- let seed=57;const random=()=>{seed=(seed*1664525+1013904223)>>>0;return seed/4294967296;};const tuftGeometry=new THREE.ConeGeometry(.014,.065,4);const tufts=new THREE.InstancedMesh(tuftGeometry,pearl,1300);const dummy=new THREE.Object3D();
- for(let i=0;i<1300;i++){const angle=random()*Math.PI*2,v=random()*2-1,r=Math.sqrt(1-v*v),n=new THREE.Vector3(r*Math.cos(angle),v,r*Math.sin(angle));dummy.position.set(n.x*.53,n.y*.73,n.z*.43);dummy.position.addScaledVector(n,.02);dummy.quaternion.setFromUnitVectors(new THREE.Vector3(0,1,0),n);const s=.55+random()*.7;dummy.scale.setScalar(s);dummy.updateMatrix();tufts.setMatrixAt(i,dummy.matrix);}torso.add(tufts);
+ let seed=57;const random=()=>{seed=(seed*1664525+1013904223)>>>0;return seed/4294967296;};const tuftGeometry=new THREE.ConeGeometry(.014,.065,4);const tuftParts=[];const dummy=new THREE.Object3D();
+ for(let i=0;i<1300;i++){const angle=random()*Math.PI*2,v=random()*2-1,r=Math.sqrt(1-v*v),n=new THREE.Vector3(r*Math.cos(angle),v,r*Math.sin(angle));dummy.position.set(n.x*.53,n.y*.73,n.z*.43);dummy.position.addScaledVector(n,.02);dummy.quaternion.setFromUnitVectors(new THREE.Vector3(0,1,0),n);const s=.55+random()*.7;dummy.scale.setScalar(s);dummy.updateMatrix();tuftParts.push(tuftGeometry.clone().applyMatrix4(dummy.matrix));}const tuftMesh=new THREE.Mesh(mergeGeometries(tuftParts,false),pearl);torso.add(tuftMesh);for(const part of tuftParts)part.dispose();
  function pose(t,flight=1,frequency=1.2,phaseOverride=null){const phase=phaseOverride??t*frequency,wing=wingPose(phase,flight),breath=Math.sin(t*2.1)*.009;torso.scale.set(1+breath,1+breath,1+breath);root.position.y=flight*(.34+wing.bodyLift)+breath*.4;root.rotation.x=flight*.1;root.rotation.z=flight*Math.sin(t*.75)*.025;
    for(const w of wings){w.shoulder.rotation.z=mix(-.1,wing.shoulder,flight);w.shoulder.rotation.y=mix(1.1,.05,flight);w.elbow.rotation.z=wing.elbow;w.wrist.rotation.z=wing.wrist;for(let i=0;i<w.primaries.length;i++)w.primaries[i].rotation.z=(-.1-i*.14)*mix(.65,wing.fan,flight);}
    head.rotation.y=Math.sin(t*.65)*.055;head.rotation.z=Math.sin(t*.85)*.025;const blink=blinkAt(t);head.traverse(n=>{if(n.name.startsWith('blink-'))n.scale.y=blink;});ears.forEach((e,i)=>e.rotation.x=Math.sin(phase*2*Math.PI-.7+i*.08)*.025*flight);

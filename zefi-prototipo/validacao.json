@@ -1,0 +1,18 @@
+{
+  "gltfValidator": {
+    "errors": 0,
+    "warnings": 0
+  },
+  "checks": [
+    "Ciclo das asas fechado",
+    "100 poses com valores finitos",
+    "Transição de decolagem limitada",
+    "GLB abre no GLTFLoader",
+    "Articulação exportada muda de pose"
+  ],
+  "clip": {
+    "name": "Zefi_Voo_Asas",
+    "tracks": 25,
+    "durationSeconds": 0.7142857313156128
+  }
+}
