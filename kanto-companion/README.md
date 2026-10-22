@@ -45,3 +45,7 @@ Arte do rascunho aprovada nesta conversa, criada com a ferramenta integrada de g
 
 Projeto de fã sem afiliação oficial. Pokémon e personagens pertencem aos respectivos titulares. Nenhuma licença sobre esses personagens é concedida por este projeto.
 
+
+## Modo flutuante
+
+O favorito mostra somente o mascote pequeno no canto da página, sem painel nem barra de botões. Clique nele (ou use Enter/Espaço quando estiver focado) para abrir a conversa e os controles; clique de novo para recolher. Arraste o próprio mascote para mover. Lembretes abrem o balão por 12 segundos e recolhem automaticamente quando a conversa está fechada. Reative o favorito em cada página após navegar; scripts não atravessam sites automaticamente sem extensão. As restrições dos sites e do Chrome continuam se aplicando.
