@@ -1,0 +1,11 @@
+Squidle, Alpaca and Dragon by Quaternius.
+Distributed under CC0 1.0 Universal, as stated on the author's Poly Pizza model pages at download time.
+https://creativecommons.org/publicdomain/zero/1.0/
+
+Squidle: https://poly.pizza/m/54QyRcsogk
+Alpaca: https://poly.pizza/m/bCVFD48i2l
+Dragon: https://poly.pizza/m/3rUm1cN3yp
+
+Exact download URLs, SHA-256 checksums, dates and clip names are recorded in PROVENANCE.json.
+Models are embedded in console.js so they do not need a second network request at runtime.
+Three.js (MIT) license is included in THREE-LICENSE.txt.

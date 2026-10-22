@@ -1,0 +1,86 @@
+{
+  "downloadedAt": "2026-10-22T22:40:44.485Z",
+  "models": [
+    {
+      "name": "Squidle",
+      "element": "agua",
+      "source": "https://poly.pizza/m/54QyRcsogk",
+      "url": "https://static.poly.pizza/cbe8419d-59d4-4ee8-92f1-8bccb25af378.glb",
+      "license": "CC0 1.0",
+      "author": "Quaternius",
+      "bytes": 308816,
+      "sha256": "a7c3492fbac79102c550f27306d0b07f5ab8b472f2ace9a78756a293c22d02c2",
+      "animations": [
+        "CharacterArmature|Death",
+        "CharacterArmature|Fast_Flying",
+        "CharacterArmature|Flying_Idle",
+        "CharacterArmature|Headbutt",
+        "CharacterArmature|HitReact",
+        "CharacterArmature|No",
+        "CharacterArmature|Punch",
+        "CharacterArmature|Yes"
+      ],
+      "uniqueAnimationCount": 8
+    },
+    {
+      "name": "Alpaca",
+      "element": "terra",
+      "source": "https://poly.pizza/m/bCVFD48i2l",
+      "url": "https://static.poly.pizza/444228bb-745d-49b2-89ef-cc12805deaa8.glb",
+      "license": "CC0 1.0",
+      "author": "Quaternius",
+      "bytes": 1053804,
+      "sha256": "de56fcb168469a65275a5bc10f449015b23ec849c4cda0827c6fc7278ed235b9",
+      "animations": [
+        "Attack_Headbutt",
+        "Attack_Kick",
+        "Death",
+        "Eating",
+        "Gallop",
+        "Gallop_Jump",
+        "Idle_HitReact_Left",
+        "Idle_HitReact_Right",
+        "Jump_toIdle",
+        "Walk",
+        "Idle_Headlow",
+        "Idle_2",
+        "Idle",
+        "AnimalArmature|Attack_Headbutt",
+        "AnimalArmature|Attack_Kick",
+        "AnimalArmature|Death",
+        "AnimalArmature|Eating",
+        "AnimalArmature|Gallop",
+        "AnimalArmature|Gallop_Jump",
+        "AnimalArmature|Idle",
+        "AnimalArmature|Idle_2",
+        "AnimalArmature|Idle_Headlow",
+        "AnimalArmature|Idle_HitReact_Left",
+        "AnimalArmature|Idle_HitReact_Right",
+        "AnimalArmature|Jump_toIdle",
+        "AnimalArmature|Walk"
+      ],
+      "uniqueAnimationCount": 13
+    },
+    {
+      "name": "Dragon",
+      "element": "ar",
+      "source": "https://poly.pizza/m/3rUm1cN3yp",
+      "url": "https://static.poly.pizza/ae5b8510-1fa5-4d53-b943-a4f3b88fb629.glb",
+      "license": "CC0 1.0",
+      "author": "Quaternius",
+      "bytes": 251540,
+      "sha256": "d8a12f3f819e86518f5a44984db611ffaaa800895da33928d66519e629615705",
+      "animations": [
+        "CharacterArmature|Death",
+        "CharacterArmature|Fast_Flying",
+        "CharacterArmature|Flying_Idle",
+        "CharacterArmature|Headbutt",
+        "CharacterArmature|HitReact",
+        "CharacterArmature|No",
+        "CharacterArmature|Punch",
+        "CharacterArmature|Yes"
+      ],
+      "uniqueAnimationCount": 8
+    }
+  ]
+}

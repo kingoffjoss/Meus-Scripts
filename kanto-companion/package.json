@@ -1,0 +1,1 @@
+{"name":"kanto-companion","private":true,"version":"0.4.0","scripts":{"build":"node build.cjs","test":"node --test core.test.cjs animals.test.cjs widget.test.cjs"},"dependencies":{"three":"0.186.1"},"devDependencies":{"esbuild-wasm":"0.28.2"}}
