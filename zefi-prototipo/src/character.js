@@ -23,7 +23,7 @@ export function createZefi(){
  const nose=mesh(muzzle,new THREE.ExtrudeGeometry(noseShape,{depth:.028,bevelEnabled:true,bevelSize:.012,bevelThickness:.012,bevelSegments:3,steps:1}),pink);nose.position.set(0,.023,.114);
  const mouth=new THREE.CatmullRomCurve3([new THREE.Vector3(-.13,-.064,.087),new THREE.Vector3(-.06,-.105,.112),new THREE.Vector3(0,-.115,.122),new THREE.Vector3(.06,-.105,.112),new THREE.Vector3(.13,-.064,.087)]);mesh(muzzle,new THREE.TubeGeometry(mouth,28,.009,6,false),dark);
  const featherMats=['#bcabd6','#c7b6df','#d7c8e9','#e4d7eb','#ac96c8'].map(c=>mat(c,.67));
- function featherGeo(length,width){const pos=[],ind=[],rows=22,rings=10;for(let a=0;a<=rows;a++){const u=a/rows,span=width*Math.pow(Math.sin(Math.PI*u),.58);for(let b=0;b<rings;b++){const t=b/rings*Math.PI*2;pos.push(u*length,Math.cos(t)*span,.035*u*u+Math.sin(t)*span*.17+.04*Math.sin(u*Math.PI));}}for(let a=0;a<rows;a++)for(let b=0;b<rings;b++){const c=a*rings+b,d=a*rings+(b+1)%rings;ind.push(c,d,c+rings,d,d+rings,c+rings);}const g=new THREE.BufferGeometry();g.setAttribute('position',new THREE.Float32BufferAttribute(pos,3));g.setIndex(ind);g.computeVertexNormals();return g;}
+ function featherGeo(length,width){const pos=[],ind=[],rows=22,rings=10;for(let a=0;a<=rows;a++){const u=a/rows,span=width*Math.pow(Math.sin(Math.PI*u),.58);for(let b=0;b<rings;b++){const t=b/rings*Math.PI*2;pos.push(u*length,Math.cos(t)*span,.035*u*u+Math.sin(t)*span*.08+.04*Math.sin(u*Math.PI));}}for(let a=0;a<rows;a++)for(let b=0;b<rings;b++){const c=a*rings+b,d=a*rings+(b+1)%rings;ind.push(c,d,c+rings,d,d+rings,c+rings);}const g=new THREE.BufferGeometry();g.setAttribute('position',new THREE.Float32BufferAttribute(pos,3));g.setIndex(ind);g.computeVertexNormals();return g;}
  function feather(p,x,y,z,length,width,angle,i){const g=j(p,x,y,z,'feather');g.rotation.z=angle;mesh(g,featherGeo(length,width),featherMats[i%featherMats.length]);return g;}
  const wings=[];
  for(const side of [-1,1]){
@@ -37,10 +37,10 @@ export function createZefi(){
   const geo=new THREE.BufferGeometry();geo.setAttribute('position',new THREE.Float32BufferAttribute(pos,3));geo.setIndex(idx);geo.setAttribute('skinIndex',new THREE.Uint16BufferAttribute(bones,4));geo.setAttribute('skinWeight',new THREE.Float32BufferAttribute(weights,4));geo.computeVertexNormals();
   const surfaceMat=mat('#d2c0e0');surfaceMat.side=THREE.DoubleSide;const surface=new THREE.SkinnedMesh(geo,surfaceMat);surface.name='continuous-wing-'+side;surface.castShadow=true;holder.add(surface);root.updateMatrixWorld(true);surface.bind(new THREE.Skeleton([shoulder,elbow,wrist]));
   for(let i=0;i<7;i++)feather(shoulder,.06+i*.085,-.015,.13,.42+i*.025,.105,-1.12+i*.065,3+i%2);
-  for(let i=0;i<8;i++)feather(elbow,-.1+i*.085,-.035,.13,.64+i*.018,.12,-1.26+i*.065,i%3);
-  const primaries=[];for(let i=0;i<10;i++){const f=feather(wrist,-.13+i*.036,-.04-i*.018,.12+i*.002,.88+(1-i/9)*.2,.145,.15-i*.16,i%3);f.name='wing-'+side+'-primary-'+i;primaries.push(f);}
-  for(let i=0;i<7;i++)feather(wrist,-.05+i*.035,.01,.2,.47,.09,.04-i*.2,3+i%2);
-  for(let row=0;row<2;row++)for(let i=0;i<6;i++)feather(shoulder,.02+i*.12,-row*.09,.23+row*.014,.29,.09,-.9+i*.08,3);
+  for(let i=0;i<8;i++)feather(elbow,-.1+i*.085,-.035,.13+i*.009,.64+i*.018,.12,-1.26+i*.065,i%3);
+  const primaries=[];for(let i=0;i<10;i++){const f=feather(wrist,-.13+i*.036,-.04-i*.018,.12+i*.022,.88+(1-i/9)*.2,.145,.15-i*.16,i%3);f.name='wing-'+side+'-primary-'+i;primaries.push(f);}
+  for(let i=0;i<7;i++)feather(wrist,-.05+i*.035,.01,.37+i*.015,.47,.09,.04-i*.2,3+i%2);
+  for(let row=0;row<2;row++)for(let i=0;i<6;i++)feather(shoulder,.02+i*.12,-row*.09,.23+row*.035+i*.009,.29,.09,-.9+i*.08,3);
   wings.push({shoulder,elbow,wrist,primaries,holder,surface,side});
  }
  const ears=[];
@@ -52,7 +52,6 @@ export function createZefi(){
   for(let i=0;i<4;i++)feather(ear,-.14+i*.067,.38+i*.045,.12,.39-i*.035,.075,1.8-side*.15+i*.06,i%2+2);ears.push(ear);
  }
  for(const side of [-1,1])for(let i=0;i<3;i++){const lock=blob(head,side*(.43+i*.025),-.14-i*.07,.21,.16-i*.015,.07,.11,cream);lock.rotation.z=side*(.35+i*.13);}
- for(let i=0;i<5;i++){const lock=blob(torso,(i-2)*.09,.37-Math.abs(i-2)*.045,.335,.105,.22,.08,cream);lock.rotation.z=(i-2)*-.16;}
  const legs=[];
  for(const side of [-1,1])for(const back of [true,false]){const leg=j(torso,side*(back?.34:.285),-.37,back?-.20:.25,'leg-'+side+'-'+back);mesh(leg,organic([[0,-.07,0,back?.21:.14,.27,.17],[0,-.31,.035,.115,.21,.115],[0,-.46,.11,.15,.105,.205]],[[-.29,-.6,-.25],[.29,.24,.36]],28),back?coat:cream);for(let i=-1;i<=1;i++)blob(leg,i*.073,-.48,.265,.035,.046,.06,cream);legs.push({leg,back,side});}
  const tail=j(torso,0,-.19,-.36,'tail');tail.rotation.y=.4;blob(tail,0,-.02,-.25,.21,.18,.37,coat);
