@@ -30,7 +30,7 @@ export function createZefi(){
    const primaries=[];for(let i=0;i<9;i++){const f=feather(wrist,i*.014,-i*.025,.035-i*.004,1.02-i*.025,.115,-.1-i*.14,i);f.name='wing-'+side+'-primary-'+i;primaries.push(f);}
    for(let i=0;i<7;i++)feather(elbow,.04+i*.075,-.025,.07,.65,.095,-.76-i*.1,i+1);
    for(let row=0;row<2;row++)for(let i=0;i<7;i++)feather(shoulder,.02+i*.09,-row*.095,.14+row*.025,.42,.075,-.9-row*.12,i+row);
-   wings.push({shoulder,elbow,wrist,primaries});
+   wings.push({shoulder,elbow,wrist,primaries,side});
  }
  const ears=[];for(const side of [-1,1]){const ear=joint(head,side*.43,.43,-.03,'ear-'+side);ear.rotation.z=side*-.24;
    const shape=new THREE.Shape();shape.moveTo(-.16,0);shape.bezierCurveTo(-.28,.3,-.1,.62,.02,.93);shape.bezierCurveTo(.07,.55,.3,.2,.16,0);shape.quadraticCurveTo(0,-.08,-.16,0);
@@ -43,7 +43,7 @@ export function createZefi(){
  let seed=57;const random=()=>{seed=(seed*1664525+1013904223)>>>0;return seed/4294967296;};const tuftGeometry=new THREE.ConeGeometry(.014,.065,4);const tuftParts=[];const dummy=new THREE.Object3D();
  for(let i=0;i<1300;i++){const angle=random()*Math.PI*2,v=random()*2-1,r=Math.sqrt(1-v*v),n=new THREE.Vector3(r*Math.cos(angle),v,r*Math.sin(angle));dummy.position.set(n.x*.53,n.y*.73,n.z*.43);dummy.position.addScaledVector(n,.02);dummy.quaternion.setFromUnitVectors(new THREE.Vector3(0,1,0),n);const s=.55+random()*.7;dummy.scale.setScalar(s);dummy.updateMatrix();tuftParts.push(tuftGeometry.clone().applyMatrix4(dummy.matrix));}const tuftMesh=new THREE.Mesh(mergeGeometries(tuftParts,false),pearl);torso.add(tuftMesh);for(const part of tuftParts)part.dispose();
  function pose(t,flight=1,frequency=1.2,phaseOverride=null){const phase=phaseOverride??t*frequency,wing=wingPose(phase,flight),breath=Math.sin(t*2.1)*.009;torso.scale.set(1+breath,1+breath,1+breath);root.position.y=flight*(.34+wing.bodyLift)+breath*.4;root.rotation.x=flight*.1;root.rotation.z=flight*Math.sin(t*.75)*.025;
-   for(const w of wings){w.shoulder.rotation.z=mix(-.1,wing.shoulder,flight);w.shoulder.rotation.y=mix(1.1,.05,flight);w.elbow.rotation.z=wing.elbow;w.wrist.rotation.z=wing.wrist;for(let i=0;i<w.primaries.length;i++)w.primaries[i].rotation.z=(-.1-i*.14)*mix(.65,wing.fan,flight);}
+   for(const w of wings){w.shoulder.rotation.z=w.side*mix(-.1,wing.shoulder,flight);w.shoulder.rotation.y=w.side*mix(1.1,.05,flight);w.elbow.rotation.z=wing.elbow;w.wrist.rotation.z=wing.wrist;for(let i=0;i<w.primaries.length;i++)w.primaries[i].rotation.z=(-.1-i*.14)*mix(.65,wing.fan,flight);}
    head.rotation.y=Math.sin(t*.65)*.055;head.rotation.z=Math.sin(t*.85)*.025;const blink=blinkAt(t);head.traverse(n=>{if(n.name.startsWith('blink-'))n.scale.y=blink;});ears.forEach((e,i)=>e.rotation.x=Math.sin(phase*2*Math.PI-.7+i*.08)*.025*flight);
    legs.forEach(({leg,back,side})=>{leg.rotation.x=flight*(back?.5:.3)+Math.sin(t*1.5+side)*.015;});tail.rotation.x=Math.sin(phase*2*Math.PI-1)*.04*flight;tail.rotation.z=Math.sin(t*.9)*.04;
    return wing;
