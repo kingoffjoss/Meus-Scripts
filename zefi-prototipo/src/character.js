@@ -1,52 +1,69 @@
 import * as THREE from 'three';
-import {mergeGeometries} from 'three/addons/utils/BufferGeometryUtils.js';
 import {wingPose,blinkAt,mix} from './motion.js';
+import {organic} from './organic.js';
 export function createZefi(){
  const root=new THREE.Group();root.name='Zefi';
- const mat=(color,roughness=.8)=>new THREE.MeshPhysicalMaterial({color,roughness,metalness:0,clearcoat:.08,clearcoatRoughness:.7});
- const pearl=mat('#eee7f1'),lilac=mat('#b9a2d5'),light=mat('#dfd1ef'),pink=mat('#d3a4bd'),dark=mat('#211c30'),teal=mat('#39a6ae',.2),black=mat('#080d18',.12),white=mat('#ffffff',.18);
- const sphere=new THREE.SphereGeometry(1,40,28);
- function blob(parent,x,y,z,sx,sy,sz,material){const mesh=new THREE.Mesh(sphere,material);mesh.position.set(x,y,z);mesh.scale.set(sx,sy,sz);mesh.castShadow=true;mesh.receiveShadow=true;parent.add(mesh);return mesh;}
- function joint(parent,x,y,z,name){const g=new THREE.Group();g.name=name;g.position.set(x,y,z);parent.add(g);return g;}
- const torso=joint(root,0,1.05,0,'body');blob(torso,0,0,0,.53,.73,.43,lilac);blob(torso,0,-.01,.32,.39,.57,.19,pearl);
- const head=joint(torso,0,.83,.07,'head');blob(head,0,0,0,.7,.63,.55,light);blob(head,0,-.13,.28,.59,.4,.38,pearl);
+ const mat=(color,roughness=.75)=>new THREE.MeshPhysicalMaterial({color,roughness,metalness:0,clearcoat:.05});
+ const cream=mat('#f6efe6'),coat=mat('#c4b0d7'),pink=mat('#bc8193'),inner=mat('#be9aac'),dark=mat('#34202d'),black=mat('#080f1a',.08),white=mat('#ffffff',.12),iris=mat('#3da3a9',.22);
+ const sphere=new THREE.SphereGeometry(1,36,24),j=(p,x,y,z,name)=>{const g=new THREE.Group();g.position.set(x,y,z);g.name=name;p.add(g);return g;};
+ function mesh(p,g,m){const o=new THREE.Mesh(g,m);o.castShadow=true;o.receiveShadow=true;p.add(o);return o;}
+ function blob(p,x,y,z,sx,sy,sz,m){const o=mesh(p,sphere,m);o.position.set(x,y,z);o.scale.set(sx,sy,sz);return o;}
+ const colorCream=new THREE.Color('#f4ece4'),colorCoat=new THREE.Color('#bdabd0');
+ const torso=j(root,0,1.02,0,'body');
+ mesh(torso,organic([[0,0,0,.48,.62,.42],[0,.35,.06,.38,.43,.35],[0,-.29,-.12,.49,.4,.43]],[[-.6,-.78,-.62],[.6,.85,.57]],42,p=>colorCoat.clone().lerp(colorCream,THREE.MathUtils.smoothstep(p.z,.12,.33)*Math.max(0,1-Math.abs(p.x)/.48))),new THREE.MeshPhysicalMaterial({vertexColors:true,roughness:.84}));
+ const head=j(torso,0,.77,.13,'head');
+ mesh(head,organic([[0,.02,0,.57,.51,.46],[0,-.17,.19,.51,.32,.39],[-.32,-.13,.2,.29,.24,.28],[.32,-.13,.2,.29,.24,.28],[0,-.27,.43,.27,.14,.23]],[[-.72,-.55,-.54],[.72,.61,.74]],48,p=>colorCoat.clone().lerp(colorCream,Math.max(THREE.MathUtils.smoothstep(-p.y,-.02,.22),THREE.MathUtils.smoothstep(p.z,.05,.32)*(.65+.35*THREE.MathUtils.smoothstep(Math.abs(p.x),.06,.22))))),new THREE.MeshPhysicalMaterial({vertexColors:true,roughness:.79}));
  for(const side of [-1,1]){
-   const socket=joint(head,side*.32,.03,.465,'eye-'+side);socket.rotation.y=side*.27;blob(socket,0,0,0,.235,.28,.105,lilac);
-   const eye=joint(socket,0,0,.04,'blink-'+side);blob(eye,0,0,0,.205,.245,.08,white);blob(eye,-side*.018,-.005,.068,.145,.187,.04,teal);blob(eye,-side*.018,-.005,.1,.086,.143,.025,black);blob(eye,-.047,.078,.12,.035,.045,.012,white);blob(eye,.035,-.075,.118,.016,.021,.012,white);socket.userData.eye=eye;
-   const brow=blob(socket,0,.255,-.015,.2,.035,.055,light);brow.rotation.z=-side*.13;
+  const socket=j(head,side*.267,.015,.403,'eye-'+side);socket.rotation.y=side*.33;blob(socket,0,0,0,.187,.213,.077,dark);
+  const eye=j(socket,0,0,.027,'blink-'+side);blob(eye,0,0,0,.166,.192,.066,cream);blob(eye,-side*.009,-.005,.05,.135,.164,.04,iris);blob(eye,-side*.009,.012,.082,.086,.123,.018,black);blob(eye,-.042,.079,.104,.033,.037,.009,white);blob(eye,.049,-.057,.099,.012,.014,.006,white);
+  const brow=blob(socket,0,.198,-.025,.195,.043,.08,cream);brow.rotation.z=-side*.11;
  }
- const muzzle=joint(head,0,-.24,.47,'muzzle');blob(muzzle,-.14,0,.035,.2,.13,.14,pearl);blob(muzzle,.14,0,.035,.2,.13,.14,pearl);const nose=blob(muzzle,0,.075,.16,.085,.056,.055,pink);nose.rotation.z=Math.PI;
- blob(muzzle,0,-.085,.08,.15,.065,.055,dark);blob(muzzle,0,-.104,.126,.085,.025,.018,pink);
- function featherGeometry(length,width,bend=0){const positions=[],normals=[],uvs=[],indices=[],segments=20;
-   for(let i=0;i<=segments;i++){const u=i/segments,span=width*Math.pow(Math.sin(Math.PI*u),.65),z=.045*Math.sin(u*Math.PI)+bend*u*u;for(const v of [-1,0,1]){positions.push(u*length,v*span,z+(v===0?.025:0));normals.push(0,0,1);uvs.push(u,(v+1)/2);}}
-   for(let i=0;i<segments;i++)for(let j=0;j<2;j++){const a=i*3+j,b=a+3;indices.push(a,b,a+1,b,b+1,a+1);}const geo=new THREE.BufferGeometry();geo.setAttribute('position',new THREE.Float32BufferAttribute(positions,3));geo.setAttribute('normal',new THREE.Float32BufferAttribute(normals,3));geo.setAttribute('uv',new THREE.Float32BufferAttribute(uvs,2));geo.setIndex(indices);geo.computeVertexNormals();return geo;
- }
- const featherMaterials=['#c4b1df','#dbceed','#ede4f5','#b8a0d4'].map(c=>{const m=mat(c,.6);m.side=THREE.DoubleSide;return m;});
- function feather(parent,x,y,z,length,width,angle,index,bend=.02){const g=joint(parent,x,y,z,'feather');g.rotation.z=angle;const mesh=new THREE.Mesh(featherGeometry(length,width,bend),featherMaterials[index%4]);mesh.castShadow=true;mesh.receiveShadow=true;g.add(mesh);const curve=new THREE.QuadraticBezierCurve3(new THREE.Vector3(0,0,.032),new THREE.Vector3(length*.5,0,.065),new THREE.Vector3(length,0,bend+.026));const rachis=new THREE.Mesh(new THREE.TubeGeometry(curve,16,.006,4,false),light);g.add(rachis);return g;}
+ const muzzle=j(head,0,-.23,.49,'muzzle');blob(muzzle,-.105,-.005,.012,.15,.095,.105,cream);blob(muzzle,.105,-.005,.012,.15,.095,.105,cream);
+ const noseShape=new THREE.Shape();noseShape.moveTo(-.078,.029);noseShape.quadraticCurveTo(0,.065,.078,.029);noseShape.quadraticCurveTo(.075,.005,0,-.052);noseShape.quadraticCurveTo(-.075,.005,-.078,.029);
+ const nose=mesh(muzzle,new THREE.ExtrudeGeometry(noseShape,{depth:.028,bevelEnabled:true,bevelSize:.012,bevelThickness:.012,bevelSegments:3,steps:1}),pink);nose.position.set(0,.023,.114);
+ const mouth=new THREE.CatmullRomCurve3([new THREE.Vector3(-.13,-.064,.087),new THREE.Vector3(-.06,-.105,.112),new THREE.Vector3(0,-.115,.122),new THREE.Vector3(.06,-.105,.112),new THREE.Vector3(.13,-.064,.087)]);mesh(muzzle,new THREE.TubeGeometry(mouth,28,.009,6,false),dark);
+ const featherMats=['#bcabd6','#c7b6df','#d7c8e9','#e4d7eb','#ac96c8'].map(c=>mat(c,.67));
+ function featherGeo(length,width){const pos=[],ind=[],rows=22,rings=10;for(let a=0;a<=rows;a++){const u=a/rows,span=width*Math.pow(Math.sin(Math.PI*u),.58);for(let b=0;b<rings;b++){const t=b/rings*Math.PI*2;pos.push(u*length,Math.cos(t)*span,.035*u*u+Math.sin(t)*span*.17+.04*Math.sin(u*Math.PI));}}for(let a=0;a<rows;a++)for(let b=0;b<rings;b++){const c=a*rings+b,d=a*rings+(b+1)%rings;ind.push(c,d,c+rings,d,d+rings,c+rings);}const g=new THREE.BufferGeometry();g.setAttribute('position',new THREE.Float32BufferAttribute(pos,3));g.setIndex(ind);g.computeVertexNormals();return g;}
+ function feather(p,x,y,z,length,width,angle,i){const g=j(p,x,y,z,'feather');g.rotation.z=angle;mesh(g,featherGeo(length,width),featherMats[i%featherMats.length]);return g;}
  const wings=[];
  for(const side of [-1,1]){
-   const shoulder=joint(torso,side*.43,.38,-.23,'wing-shoulder-'+side);shoulder.scale.x=side;
-   blob(shoulder,.27,0,0,.37,.14,.14,pearl);const elbow=joint(shoulder,.6,0,0,'wing-elbow-'+side);blob(elbow,.3,0,0,.38,.105,.1,light);const wrist=joint(elbow,.64,0,0,'wing-wrist-'+side);
-   const primaries=[];for(let i=0;i<9;i++){const f=feather(wrist,i*.014,-i*.025,.035-i*.004,1.02-i*.025,.115,-.1-i*.14,i);f.name='wing-'+side+'-primary-'+i;primaries.push(f);}
-   for(let i=0;i<7;i++)feather(elbow,.04+i*.075,-.025,.07,.65,.095,-.76-i*.1,i+1);
-   for(let row=0;row<2;row++)for(let i=0;i<7;i++)feather(shoulder,.02+i*.09,-row*.095,.14+row*.025,.42,.075,-.9-row*.12,i+row);
-   wings.push({shoulder,elbow,wrist,primaries,side});
+  const holder=j(torso,side*.32,.35,-.19,'wing-root-'+side);holder.scale.x=side;
+  const shoulder=new THREE.Bone();shoulder.name='wing-shoulder-'+side;holder.add(shoulder);
+  const elbow=new THREE.Bone();elbow.position.x=.6;elbow.name='wing-elbow-'+side;shoulder.add(elbow);
+  const wrist=new THREE.Bone();wrist.position.x=.59;wrist.name='wing-wrist-'+side;elbow.add(wrist);
+  const pos=[],idx=[],weights=[],bones=[],nx=30,ny=12;
+  for(let x=0;x<=nx;x++)for(let y=0;y<=ny;y++){const u=x/nx,v=y/ny,px=u*1.55,depth=.18+.48*Math.sin(u*Math.PI*.83);pos.push(px,.1-v*depth,.06+Math.sin(v*Math.PI)*.105);const b=px<.6?0:1,blend=THREE.MathUtils.smoothstep(px,b===0?.32:.92,b===0?.86:1.42);bones.push(blend===1?0:b,blend===0?0:b+1,0,0);weights.push(1-blend,blend,0,0);}
+  for(let x=0;x<nx;x++)for(let y=0;y<ny;y++){const a=x*(ny+1)+y,b=a+ny+1;idx.push(a,b,a+1,b,b+1,a+1);}
+  const geo=new THREE.BufferGeometry();geo.setAttribute('position',new THREE.Float32BufferAttribute(pos,3));geo.setIndex(idx);geo.setAttribute('skinIndex',new THREE.Uint16BufferAttribute(bones,4));geo.setAttribute('skinWeight',new THREE.Float32BufferAttribute(weights,4));geo.computeVertexNormals();
+  const surfaceMat=mat('#d2c0e0');surfaceMat.side=THREE.DoubleSide;const surface=new THREE.SkinnedMesh(geo,surfaceMat);surface.name='continuous-wing-'+side;surface.castShadow=true;holder.add(surface);root.updateMatrixWorld(true);surface.bind(new THREE.Skeleton([shoulder,elbow,wrist]));
+  for(let i=0;i<7;i++)feather(shoulder,.06+i*.085,-.015,.13,.42+i*.025,.105,-1.12+i*.065,3+i%2);
+  for(let i=0;i<8;i++)feather(elbow,-.1+i*.085,-.035,.13,.64+i*.018,.12,-1.26+i*.065,i%3);
+  const primaries=[];for(let i=0;i<10;i++){const f=feather(wrist,-.13+i*.036,-.04-i*.018,.12+i*.002,.88+(1-i/9)*.2,.145,.15-i*.16,i%3);f.name='wing-'+side+'-primary-'+i;primaries.push(f);}
+  for(let i=0;i<7;i++)feather(wrist,-.05+i*.035,.01,.2,.47,.09,.04-i*.2,3+i%2);
+  for(let row=0;row<2;row++)for(let i=0;i<6;i++)feather(shoulder,.02+i*.12,-row*.09,.23+row*.014,.29,.09,-.9+i*.08,3);
+  wings.push({shoulder,elbow,wrist,primaries,holder,surface,side});
  }
- const ears=[];for(const side of [-1,1]){const ear=joint(head,side*.43,.43,-.03,'ear-'+side);ear.rotation.z=side*-.24;
-   const shape=new THREE.Shape();shape.moveTo(-.16,0);shape.bezierCurveTo(-.28,.3,-.1,.62,.02,.93);shape.bezierCurveTo(.07,.55,.3,.2,.16,0);shape.quadraticCurveTo(0,-.08,-.16,0);
-   const geo=new THREE.ExtrudeGeometry(shape,{depth:.1,bevelEnabled:true,bevelSegments:3,steps:1,bevelSize:.055,bevelThickness:.06});const mesh=new THREE.Mesh(geo,light);mesh.castShadow=true;ear.add(mesh);blob(ear,0,.32,.15,.095,.28,.035,pink);
-   for(let i=0;i<3;i++)feather(ear,-.09+i*.055,.56+i*.04,.17,.45-i*.04,.065,Math.PI*.5-side*.18,i);ears.push(ear);
+ const ears=[];
+ for(const side of [-1,1]){
+  const ear=j(head,side*.36,.36,-.035,'ear-'+side);ear.rotation.z=-side*.3;
+  const shape=new THREE.Shape();shape.moveTo(-.19,-.045);shape.bezierCurveTo(-.26,.19,-.12,.53,.015,.7);shape.bezierCurveTo(.13,.45,.26,.15,.18,-.04);shape.quadraticCurveTo(0,-.13,-.19,-.045);
+  mesh(ear,new THREE.ExtrudeGeometry(shape,{depth:.055,bevelEnabled:true,bevelSegments:5,bevelSize:.045,bevelThickness:.045,steps:1}),coat);
+  const innerMesh=mesh(ear,new THREE.ShapeGeometry(shape,24),inner);innerMesh.scale.set(.62,.77,1);innerMesh.position.set(0,.025,.107);
+  for(let i=0;i<4;i++)feather(ear,-.14+i*.067,.38+i*.045,.12,.39-i*.035,.075,1.8-side*.15+i*.06,i%2+2);ears.push(ear);
  }
- const legs=[];for(const side of [-1,1])for(const back of [true,false]){const leg=joint(torso,side*(back?.34:.27),-.48,back?-.19:.27,'leg');blob(leg,0,-.22,0,back?.18:.135,.32,.15,back?lilac:pearl);const foot=blob(leg,0,-.47,.075,.19,.11,.23,light);for(let i=-1;i<=1;i++)blob(leg,i*.08,-.48,.25,.036,.035,.052,pink);legs.push({leg,back,side});}
- const tail=joint(torso,0,-.26,-.36,'tail');tail.rotation.y=-.3;for(let i=0;i<7;i++){const f=feather(tail,0,0,0,.98,.16,Math.PI+(i-3)*.19,i);f.rotation.x=-.6;}
- // Small tapered tufts give the silhouette a soft edge without external textures.
- let seed=57;const random=()=>{seed=(seed*1664525+1013904223)>>>0;return seed/4294967296;};const tuftGeometry=new THREE.ConeGeometry(.014,.065,4);const tuftParts=[];const dummy=new THREE.Object3D();
- for(let i=0;i<1300;i++){const angle=random()*Math.PI*2,v=random()*2-1,r=Math.sqrt(1-v*v),n=new THREE.Vector3(r*Math.cos(angle),v,r*Math.sin(angle));dummy.position.set(n.x*.53,n.y*.73,n.z*.43);dummy.position.addScaledVector(n,.02);dummy.quaternion.setFromUnitVectors(new THREE.Vector3(0,1,0),n);const s=.55+random()*.7;dummy.scale.setScalar(s);dummy.updateMatrix();tuftParts.push(tuftGeometry.clone().applyMatrix4(dummy.matrix));}const tuftMesh=new THREE.Mesh(mergeGeometries(tuftParts,false),pearl);torso.add(tuftMesh);for(const part of tuftParts)part.dispose();
- function pose(t,flight=1,frequency=1.2,phaseOverride=null){const phase=phaseOverride??t*frequency,wing=wingPose(phase,flight),breath=Math.sin(t*2.1)*.009;torso.scale.set(1+breath,1+breath,1+breath);root.position.y=flight*(.34+wing.bodyLift)+breath*.4;root.rotation.x=flight*.1;root.rotation.z=flight*Math.sin(t*.75)*.025;
-   for(const w of wings){w.shoulder.rotation.z=w.side*mix(-.1,wing.shoulder,flight);w.shoulder.rotation.y=w.side*mix(1.1,.05,flight);w.elbow.rotation.z=wing.elbow;w.wrist.rotation.z=wing.wrist;for(let i=0;i<w.primaries.length;i++)w.primaries[i].rotation.z=(-.1-i*.14)*mix(.65,wing.fan,flight);}
-   head.rotation.y=Math.sin(t*.65)*.055;head.rotation.z=Math.sin(t*.85)*.025;const blink=blinkAt(t);head.traverse(n=>{if(n.name.startsWith('blink-'))n.scale.y=blink;});ears.forEach((e,i)=>e.rotation.x=Math.sin(phase*2*Math.PI-.7+i*.08)*.025*flight);
-   legs.forEach(({leg,back,side})=>{leg.rotation.x=flight*(back?.5:.3)+Math.sin(t*1.5+side)*.015;});tail.rotation.x=Math.sin(phase*2*Math.PI-1)*.04*flight;tail.rotation.z=Math.sin(t*.9)*.04;
-   return wing;
+ for(const side of [-1,1])for(let i=0;i<3;i++){const lock=blob(head,side*(.43+i*.025),-.14-i*.07,.21,.16-i*.015,.07,.11,cream);lock.rotation.z=side*(.35+i*.13);}
+ for(let i=0;i<5;i++){const lock=blob(torso,(i-2)*.09,.37-Math.abs(i-2)*.045,.335,.105,.22,.08,cream);lock.rotation.z=(i-2)*-.16;}
+ const legs=[];
+ for(const side of [-1,1])for(const back of [true,false]){const leg=j(torso,side*(back?.34:.285),-.37,back?-.20:.25,'leg-'+side+'-'+back);mesh(leg,organic([[0,-.07,0,back?.21:.14,.27,.17],[0,-.31,.035,.115,.21,.115],[0,-.46,.11,.15,.105,.205]],[[-.29,-.6,-.25],[.29,.24,.36]],28),back?coat:cream);for(let i=-1;i<=1;i++)blob(leg,i*.073,-.48,.265,.035,.046,.06,cream);legs.push({leg,back,side});}
+ const tail=j(torso,0,-.19,-.36,'tail');tail.rotation.y=.4;blob(tail,0,-.02,-.25,.21,.18,.37,coat);
+ for(let i=0;i<7;i++){const f=feather(tail,0,-.04,-.29,.88-Math.abs(i-3)*.025,.16,Math.PI+(i-3)*.17,i%3);f.rotation.y=-.65;f.rotation.x=-.15;}
+ function pose(t,flight=1,frequency=1.15,phaseOverride=null){
+  const phase=phaseOverride??t*frequency,wing=wingPose(phase),breath=Math.sin(t*1.8)*.006;
+  torso.scale.set(1+breath,1+breath,1+breath);root.position.y=flight*(.38+wing.bodyLift);root.rotation.x=flight*(.10+Math.sin(phase*Math.PI*2-.5)*.018);root.rotation.z=Math.sin(t*.7)*.012*flight;
+  for(const w of wings){w.shoulder.rotation.z=mix(-.28,wing.shoulder,flight);w.shoulder.rotation.y=mix(.98,-.06,flight);w.elbow.rotation.z=mix(-.7,wing.elbow,flight);w.elbow.rotation.y=mix(.25,.06,flight);w.wrist.rotation.z=mix(-.25,wing.wrist,flight);for(let i=0;i<w.primaries.length;i++)w.primaries[i].rotation.z=(.15-i*.16)*mix(.65,wing.fan,flight)+Math.sin(phase*Math.PI*2-.45-i*.035)*.025*flight;}
+  head.rotation.y=Math.sin(t*.55)*.035;head.rotation.x=-flight*.06;head.rotation.z=Math.sin(t*.72)*.016;const blink=blinkAt(t);head.traverse(n=>{if(n.name.startsWith('blink-'))n.scale.y=blink;});ears.forEach((e,i)=>e.rotation.x=flight*Math.sin(phase*Math.PI*2-.9+i*.09)*.035);
+  legs.forEach(({leg,back})=>leg.rotation.x=flight*(back?.65:.40)+flight*Math.sin(phase*Math.PI*2-1)*.025);tail.rotation.x=flight*(.15+Math.sin(phase*Math.PI*2-1.2)*.055);tail.rotation.z=Math.sin(t*.7)*.025;
+  return wing;
  }
- pose(0,0);return{root,torso,pose,wings,head,tail,legs};
+ pose(0,0);return{root,torso,pose,wings,head,tail,legs,ears};
 }
