@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Revan — Minidashboard de equipamentos
 // @namespace    local.revan.minidashboard
-// @version      4.21.4
+// @version      4.21.5
 // @updateURL    https://raw.githubusercontent.com/kingoffjoss/Meus-Scripts/main/Revan/outputs/revan-minidashboard.user.js
 // @downloadURL  https://raw.githubusercontent.com/kingoffjoss/Meus-Scripts/main/Revan/outputs/revan-minidashboard.user.js
 // @description  Campos próprios e ações integradas aos controles originais do Revan.
@@ -24,7 +24,7 @@
   });
   const root = document.createElement('section');
   root.id = 'rv-mini';
-  root.dataset.version = '4.21.4';
+  root.dataset.version = '4.21.5';
   root.innerHTML = `<button class="launch" aria-expanded="false"><span class="launch-icon">◈</span> Equipamentos <span class="launch-dot"></span></button><div class="panel" hidden><header><strong><span class="brand-icon">◈</span> Revan <small>REDE & CONEXÃO</small></strong><span class="version-badge">v${root.dataset.version}</span><button class="close" aria-label="Minimizar" title="Minimizar para botão">−</button></header><div class="context"></div><select class="equipment" aria-label="Equipamento"></select><nav></nav><p class="status" role="status"></p><div class="body"></div><footer></footer></div>`;
   const refreshButton=document.createElement('button');refreshButton.className='refresh-panel';refreshButton.type='button';refreshButton.textContent='↻';refreshButton.setAttribute('aria-label','Atualizar painel');refreshButton.title='Atualizar painel e recuperar os controles';
   root.querySelector('header').insertBefore(refreshButton,root.querySelector('.close'));
@@ -806,21 +806,27 @@
   }
   function readyProtocolTab(tag){const names=AJA_TABS.trim().split('\n').map(line=>line.split('\t')[0].trim());return names.find(name=>normalized(name)===normalized(tag))||names.find(name=>normalized(name).includes(normalized(tag).replace(/\s+(?:ftth|fwa)$/,'')))||'Não identificada automaticamente. Analise o relato.';}
   function readyProtocols(tag,status){
-    const issue=(tag||'Problema relatado').replace(/\s+-\s+(?:FTTH|FWA)$/i,'').trim(),resolved=status==='Resolvido',waiting=status==='Aguardando retorno';
-    const endings=resolved?[
-      ['Após os procedimentos realizados, o serviço foi normalizado e o cliente confirmou o funcionamento.','Atendimento concluído após a confirmação da normalização pelo cliente.'],
-      ['Realizei as verificações necessárias e a ocorrência deixou de se apresentar durante a validação.','Cliente orientado e atendimento finalizado com o serviço funcionando.'],
-      ['Depois dos ajustes e testes efetuados, o funcionamento foi restabelecido.','Ocorrência resolvida e validada com o cliente.']
-    ]:waiting?[
-      ['Realizei as orientações cabíveis e solicitei nova validação do serviço.','Atendimento permanece aguardando o retorno do cliente para confirmação.'],
-      ['Foram repassadas as instruções necessárias para teste.','Aguardando o cliente informar o resultado antes de concluir o atendimento.'],
-      ['A análise inicial foi registrada e solicitei que o cliente refizesse a verificação.','Caso mantido em acompanhamento, sem confirmação de normalização até o momento.']
-    ]:[
-      ['Após as verificações realizadas, a ocorrência permaneceu ativa.','Atendimento não resolvido; será necessário dar continuidade à tratativa.'],
-      ['Realizei as orientações possíveis durante o contato, mas não houve normalização confirmada.','Problema permanece e o atendimento segue pendente de nova ação.'],
-      ['A falha continuou sendo apresentada ao final dos testes informados.','Ocorrência não resolvida neste contato e registrada para continuidade.']
+    if(!tag)return [''];
+    const issue=tag.replace(/\s+-\s+(?:FTTH|FWA)$/i,'').trim(),key=normalized(issue);
+    const profiles=[
+      [/hiberna|desconex.*chat|chat.*desconex|abandono/, 'O contato pelo chat foi interrompido ou ficou sem interação.', 'Registrei a situação do contato e a disponibilidade do cliente para continuidade.'],
+      [/senha|pppoe|login/, 'O cliente solicitou suporte referente às credenciais de acesso.', 'Registrei a solicitação de acesso. [Informar se houve orientação, geração ou alteração de senha, sem incluir a senha no protocolo.]'],
+      [/pon.*pisc|los|sem sinal|fibra.*romp|cabo.*romp/, 'O cliente relatou ausência de conexão associada ao sinal ou à conexão física.', 'Registrei a condição do equipamento e da conexão. [Informar LEDs, sinal consultado e verificações efetivamente realizadas.]'],
+      [/sinal irregular|sinal baixo|potencia/, 'O atendimento trata de irregularidade no sinal da conexão.', 'Registrei a análise do sinal. [Informar medições obtidas e verificações realizadas.]'],
+      [/lentida|velocidade|contratado|banda/, 'O cliente relatou desempenho da conexão abaixo do esperado.', 'Registrei a análise de desempenho. [Informar velocidade medida, conexão por cabo ou Wi-Fi e testes realizados.]'],
+      [/intermit|instabil|queda|pacotes|latencia/, 'O cliente relatou instabilidade, interrupções ou alteração na qualidade da conexão.', 'Registrei a análise da estabilidade. [Informar frequência das falhas e resultados dos testes realizados.]'],
+      [/wi-?fi|wifi|rede interna|roteador|alcance/, 'O atendimento trata do funcionamento ou da configuração da rede local/Wi-Fi.', 'Registrei a análise da rede local. [Informar equipamentos envolvidos, alcance e configurações efetivamente verificadas ou alteradas.]'],
+      [/cabo|conector|remanej|comodo/, 'O atendimento trata da instalação, posição ou condição do cabeamento/equipamento.', 'Registrei a solicitação referente à instalação. [Informar condição observada e necessidade de intervenção técnica.]'],
+      [/telefone|telefonia|liga[cç]|mudo/, 'O cliente relatou dificuldade no uso do serviço de telefonia.', 'Registrei a análise da telefonia. [Informar se afeta chamadas recebidas, realizadas ou ambas e os testes executados.]'],
+      [/tv|receptor|hdmi|controle/, 'O cliente relatou dificuldade no serviço ou equipamento de TV.', 'Registrei a análise do serviço de TV. [Informar tela, sinal, conexões e testes realizados.]'],
+      [/fatura|cobran|pagamento|financeir/, 'O atendimento trata de uma solicitação financeira ou de cobrança.', 'Registrei a solicitação financeira. [Informar competência, situação consultada e orientação fornecida.]'],
+      [/agend|retorno/, 'O atendimento trata da programação ou do retorno de um atendimento.', 'Registrei a solicitação de agendamento/retorno. [Informar data e período somente se confirmados no sistema.]']
     ];
-    return endings.map(([procedure,conclusion])=>`1. Introdução\nRealizei atendimento referente a ${issue}.\n\n2. Relato\nO cliente informou uma ocorrência classificada como ${issue}.\n\n3. Procedimentos\n${procedure}\n\n4. Conclusão\n${conclusion}`);
+    const profile=profiles.find(([pattern])=>pattern.test(key));
+    const report=profile?.[1]||('O atendimento foi classificado com a etiqueta '+issue+'.');
+    const procedure=profile?.[2]||('Registrei a demanda referente a '+issue+'. [Descrever as informações recebidas, orientações e ações efetivamente realizadas.]');
+    const conclusion=status==='Resolvido'?'Situação resolvida neste atendimento. [Registrar a validação que confirmou a resolução.]':status==='Aguardando retorno'?'Aguardando retorno do cliente para continuidade e validação. Não há confirmação de resolução até o momento.':'Situação não resolvida neste atendimento. [Informar a pendência e o próximo encaminhamento necessário.]';
+    return ['1. Introdução\nRealizei atendimento referente a '+issue+'.\n\n2. Relato\n'+report+'\n\n3. Procedimentos\n'+procedure+'\n\n4. Conclusão\n'+conclusion];
   }
   function sanitizeAjaInput(value){let count=0;const redact=()=>{count++;return '[DADO PESSOAL REMOVIDO]';};let clean=value.replace(/(^|\n)\s*(?:cpf|cnpj|telefone|celular|whatsapp|e-?mail|data de nascimento|nascimento|endereço|endereco|cep)\s*[:=-]\s*[^\n]*/gi,(m,p)=>p+redact());clean=clean.replace(/\b\d{3}\.?\d{3}\.?\d{3}-?\d{2}\b/g,redact).replace(/\b\d{2}\.?\d{3}\.?\d{3}\/?\d{4}-?\d{2}\b/g,redact).replace(/\b[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}\b/gi,redact).replace(/(?:\+?55\s*)?(?:\(?\d{2}\)?\s*)?9?\d{4}[- .]?\d{4}\b/g,redact);return {text:clean,count};}
   function auditAjaReport(report,source){if(/^(?:olá|ola|oi|bom dia|boa tarde|boa noite)(?:\s|[,.!?:;]|$)/im.test(report))throw new Error('A IA incluiu saudação. Gere novamente para manter o protocolo técnico.');if(/\b(?:o atendente|a atendente|o agente|a agente)\b/i.test(report))throw new Error('A IA escreveu em terceira pessoa. Gere novamente.');const completion=/\b(?:resolvid[oa]|normalizad[oa]|conclu[ií]d[oa]|finalizad[oa]|problema solucionado|atendimento encerrado)\b/i;if(completion.test(report)&&!completion.test(source))throw new Error('A IA afirmou conclusão sem confirmação no relato. Nada foi anexado.');}
@@ -945,8 +951,13 @@
     }
     }else if(ajaScreen==='Protocolos prontos'){
       const catalog=()=>[...ajaTagCatalog()].sort((a,b)=>a.localeCompare(b,'pt-BR')),tagField=make('label','field','Pesquisar etiqueta'),tagInput=make('input'),tagResults=make('div','aja-combo-list');tagInput.type='search';tagInput.placeholder='Digite parte do nome da etiqueta…';tagInput.value=readyTagQuery||readyTag;tagInput.setAttribute('aria-label','Pesquisar etiqueta do protocolo pronto');const paintTags=()=>{const tokens=normalized(tagInput.value).split(' ').filter(Boolean),matches=catalog().filter(name=>tokens.length&&tokens.every(token=>normalized(name).includes(token))).slice(0,100);tagResults.replaceChildren(...matches.map(name=>{const button=ajaButton(name,()=>{readyTag=name;readyTagQuery=name;readyVariant=0;readyDraft='';renderAssistant();});button.className='aja-combo-option'+(name===readyTag?' current':'');return button;}));if(tokens.length&&!matches.length)tagResults.append(make('div','aja-combo-empty',readySearching?'Buscando etiquetas no Revan…':readySearchError||'Nenhuma etiqueta encontrada'));tagResults.hidden=!tokens.length;};tagInput.addEventListener('input',()=>{readyTagQuery=tagInput.value;if(readyTag!==tagInput.value){readyTag='';readyDraft='';}paintTags();clearTimeout(readySearchTimer);const query=tagInput.value.trim(),epoch=++readySearchEpoch;if(query.length>=2)readySearchTimer=setTimeout(async()=>{readySearching=true;readySearchError='';paintTags();try{await syncReadyTagOptions(query);if(epoch!==readySearchEpoch)return;}catch(error){if(epoch!==readySearchEpoch)return;readySearchError='Não foi possível consultar o Revan: '+error.message;}finally{if(epoch===readySearchEpoch){readySearching=false;renderAssistant();}}},550);});tagInput.addEventListener('focus',paintTags);tagField.append(tagInput,tagResults);body.append(tagField);paintTags();if(readySearching)body.append(make('small','','Buscando também no catálogo nativo do Revan…'));if(readyTag)body.append(make('div','field',`Etiqueta selecionada: ${readyTag}`));
-      const statusField=make('label','field','Situação final'),statusSelect=make('select');for(const name of ['Não resolvido','Resolvido','Aguardando retorno']){const option=make('option','',name);option.value=name;statusSelect.append(option);}statusSelect.value=readyStatus;statusSelect.addEventListener('change',()=>{readyStatus=statusSelect.value;readyVariant=0;readyDraft='';renderAssistant();});statusField.append(statusSelect);body.append(statusField);
-      const variants=readyProtocols(readyTag,readyStatus);if(!readyDraft)readyDraft=variants[readyVariant]||'';const variantActions=make('div','actions');variants.forEach((_,index)=>{const button=ajaButton('Modelo '+(index+1),()=>{readyVariant=index;readyDraft=variants[index];renderAssistant();});if(index===readyVariant)button.classList.add('active');variantActions.append(button);});body.append(variantActions);field('Protocolo pronto',readyDraft,value=>{readyDraft=value;},'textarea');const readyActions=make('div','actions');readyActions.append(ajaButton('Usar no relatório',()=>{ajaInput=`Protocolo pronto: ${readyTag} · ${readyStatus}`;ajaResult=readyDraft;ajaLabel=readyTag;ajaTab=readyProtocolTab(readyTag);ajaClassificationReason=`Modelo pronto selecionado manualmente: ${readyStatus}.`;ajaPreview={route:location.hash,input:ajaInput,external:tagDraft.external,destination:tagDraft.destination,problem:tagDraft.problem,service:tagDraft.service};ajaScreen='Relatório';ajaMessage='Protocolo pronto carregado. Revise antes de aprovar e anexar.';renderAssistant();},true,!readyTag||!readyDraft.trim()),ajaButton('Copiar',async()=>{await navigator.clipboard.writeText(readyDraft);ajaMessage='Protocolo pronto copiado.';renderAssistant();},false,!readyDraft.trim()));body.append(readyActions,make('small','','Escolha a situação correta. Revise o texto para que ele represente exatamente o que ocorreu no atendimento.'));
+      const statusActions=make('div','actions');statusActions.setAttribute('aria-label','Situação do protocolo pronto');
+      for(const status of ['Resolvido','Não resolvido','Aguardando retorno']){
+        const button=ajaButton(status,()=>{readyStatus=status;readyDraft=readyProtocols(readyTag,status)[0];renderAssistant();},false,!readyTag);
+        button.setAttribute('aria-pressed',String(readyStatus===status));if(readyStatus===status)button.classList.add('active');statusActions.append(button);
+      }
+      body.append(statusActions);if(!readyDraft)readyDraft=readyProtocols(readyTag,readyStatus)[0];
+      field('Protocolo pronto',readyDraft,value=>{readyDraft=value;},'textarea');const readyActions=make('div','actions');readyActions.append(ajaButton('Usar no relatório',()=>{ajaInput=`Protocolo pronto: ${readyTag} · ${readyStatus}`;ajaResult=readyDraft;ajaLabel=readyTag;ajaTab=readyProtocolTab(readyTag);ajaClassificationReason=`Modelo pronto selecionado manualmente: ${readyStatus}.`;ajaPreview={route:location.hash,input:ajaInput,external:tagDraft.external,destination:tagDraft.destination,problem:tagDraft.problem,service:tagDraft.service};ajaScreen='Relatório';ajaMessage='Protocolo pronto carregado. Revise antes de aprovar e anexar.';renderAssistant();},true,!readyTag||!readyDraft.trim()),ajaButton('Copiar',async()=>{await navigator.clipboard.writeText(readyDraft);ajaMessage='Protocolo pronto copiado.';renderAssistant();},false,!readyDraft.trim()));body.append(readyActions,make('small','','Escolha a situação correta. Revise o texto para que ele represente exatamente o que ocorreu no atendimento.'));
     }else if(ajaScreen==='Histórico'){
       body.append(make('small','','Até 10 relatórios nesta sessão. O histórico não é enviado ao GitHub.'));for(const item of ajaHistory){const box=make('div','field');box.append(make('strong','',item.date),make('small','',item.tab),ajaButton('Abrir relatório',()=>{ajaResult=item.report;ajaTab=item.tab;ajaLabel=item.label||'';ajaPreview=null;ajaMessage='Relatório do histórico aberto para consulta. Gere uma nova prévia antes de anexar.';ajaScreen='Relatório';renderAssistant();}));body.append(box);}if(!ajaHistory.length)body.append(make('small','','Nenhum relatório gerado nesta sessão.'));
     }else{
