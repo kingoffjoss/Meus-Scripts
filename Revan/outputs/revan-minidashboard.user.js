@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Revan — Minidashboard de equipamentos
 // @namespace    local.revan.minidashboard
-// @version      4.21.3
+// @version      4.21.4
 // @updateURL    https://raw.githubusercontent.com/kingoffjoss/Meus-Scripts/main/Revan/outputs/revan-minidashboard.user.js
 // @downloadURL  https://raw.githubusercontent.com/kingoffjoss/Meus-Scripts/main/Revan/outputs/revan-minidashboard.user.js
 // @description  Campos próprios e ações integradas aos controles originais do Revan.
@@ -24,7 +24,7 @@
   });
   const root = document.createElement('section');
   root.id = 'rv-mini';
-  root.dataset.version = '4.21.3';
+  root.dataset.version = '4.21.4';
   root.innerHTML = `<button class="launch" aria-expanded="false"><span class="launch-icon">◈</span> Equipamentos <span class="launch-dot"></span></button><div class="panel" hidden><header><strong><span class="brand-icon">◈</span> Revan <small>REDE & CONEXÃO</small></strong><span class="version-badge">v${root.dataset.version}</span><button class="close" aria-label="Minimizar" title="Minimizar para botão">−</button></header><div class="context"></div><select class="equipment" aria-label="Equipamento"></select><nav></nav><p class="status" role="status"></p><div class="body"></div><footer></footer></div>`;
   const refreshButton=document.createElement('button');refreshButton.className='refresh-panel';refreshButton.type='button';refreshButton.textContent='↻';refreshButton.setAttribute('aria-label','Atualizar painel');refreshButton.title='Atualizar painel e recuperar os controles';
   root.querySelector('header').insertBefore(refreshButton,root.querySelector('.close'));
@@ -1079,30 +1079,59 @@
   function scheduleReview(dialog){return dialog?.querySelector('[data-testid="component-revision-step"],app-revision-confirmation-step')||all(dialog||document,'section,main,div').find(e=>/revise e confirme os dados com o cliente/i.test(text(e)));}
   function scheduleConfirmationInput(dialog){return dialog?.querySelector('[data-testid="confirm-schedule-checkbox"] input')||all(dialog||document,'input[type="checkbox"]').find(input=>/cliente está ciente e confirma o agendamento/i.test(text(input.closest('label')||input.parentElement?.parentElement)));}
   function readScheduleReview(dialog){
-    const review=scheduleReview(dialog);
-    if(!review)return null;
-    const marked=all(review,'[data-testid="data-to-confirm"]').map(text);const values=marked.length?marked:all(review,'span,p,small,div').map(text).filter(v=>v.length<100);
-    const day=values.find(v=>/^\d{1,2}\s+de\s+\S+\s+de\s+\d{4}$/i.test(v));
-    const windowText=values.find(v=>/\d{1,2}:\d{2}.*\d{1,2}:\d{2}/.test(v));
-    const hours=windowText?.match(/\d{1,2}:\d{2}/g);
-    if(!day||hours?.length!==2)return null;
-    return {day,start:hours[0],end:hours[1]};
+    const review=scheduleReview(dialog);if(!review)return null;
+    const content=all(review,'[data-testid="data-to-confirm"]').map(text).join(' ')||all(review,'span,p,small,strong,div').filter(e=>!e.querySelector('span,p,small,strong,div')&&!e.closest('[data-rv-schedule-copy]')).map(text).join(' ')||(review.innerText||text(review));
+    const cleanContent=content.replace(/\u00a0/g,' ').replace(/\s+/g,' ');
+    const day=cleanContent.match(/\b\d{1,2}\s+de\s+[a-zç]+\s+de\s+\d{4}\b/i)?.[0]||cleanContent.match(/\b\d{1,2}\/\d{1,2}\/\d{4}\b/)?.[0];
+    const window=cleanContent.match(/(\d{1,2}:\d{2})\s*(?:às?|a|e|até|[-–—])\s*(\d{1,2}:\d{2})/i);
+    if(!day||!window)return null;
+    return {day,start:window[1],end:window[2]};
   }
   function formatScheduleMessage(data,confirmed=false){
     const begin=Number(data.start.split(':')[0]),end=Number(data.end.split(':')[0]);
     const period=end<=12?'no período da manhã':begin>=12?'no período da tarde':'no período informado';
     return `Olá! Seu atendimento técnico ${confirmed?'foi agendado':'está previsto'} para o dia ${data.day}, ${period}, das ${data.start} às ${data.end}.\n\nO horário de atendimento da empresa é das 08:00 às 18:00.`;
   }
-  document.addEventListener('change',event=>{
+  let scheduleInteraction=null;
+  function prepareSchedulePreview(dialog){
+    if(!root.isConnected||!dialog?.isConnected||!scheduleReview(dialog))return;
+    const input=scheduleConfirmationInput(dialog);if(!input?.checked)return;
+    const data=readScheduleReview(dialog);if(!data)return;
+    const message=formatScheduleMessage(data);
+    if(scheduleMessage?.route===location.hash&&scheduleMessage.message===message&&dialog.querySelector('[data-rv-schedule-copy]'))return;
+    scheduleMessage={route:location.hash,message,confirmed:false};
+    let feedback=dialog.querySelector('[data-rv-schedule-copy]');
+    if(!feedback){
+      feedback=make('div');feedback.setAttribute('data-rv-schedule-copy','');feedback.style.cssText='display:grid;gap:8px;padding:10px;color:#163e73;background:#eef7ff;border:1px solid #8bb7df;border-radius:8px';
+      const area=make('textarea');area.readOnly=true;area.rows=5;area.setAttribute('aria-label','Prévia da mensagem de agendamento');area.style.cssText='width:100%;color:#163e73;background:white';
+      const status=make('small');status.setAttribute('data-rv-schedule-status','');
+      const copy=make('button','','Copiar mensagem');copy.type='button';copy.onclick=()=>copySchedulePreview();
+      feedback.append(area,status,copy);scheduleReview(dialog).append(feedback);
+    }
+    feedback.querySelector('textarea').value=message;
+    function copySchedulePreview(){
+      const status=feedback.querySelector('[data-rv-schedule-status]');status.textContent='Copiando mensagem…';
+      try{Promise.resolve(navigator.clipboard.writeText(message)).then(()=>{if(!root.isConnected)return;status.textContent='Mensagem copiada! Use Ctrl+V. A confirmação final do agendamento continua manual.';},()=>{status.textContent='Selecione e copie o texto acima ou clique em Copiar mensagem.';});}
+      catch{status.textContent='Selecione e copie o texto acima.';}
+    }
+    feedback.querySelector('button').onclick=()=>copySchedulePreview();
+    copySchedulePreview();$('.launch').title='Mensagem de agendamento disponível.';
+  }
+  function schedulePreviewInteraction(event){
     if(!root.isConnected)return;
-    const input=event.target;const dialog=input.closest?.('.ant-modal-content');if(input!==scheduleConfirmationInput(dialog)||!input.checked)return;const data=readScheduleReview(dialog);if(!data)return;
-    const message=formatScheduleMessage(data);scheduleMessage={route:location.hash,message,confirmed:false};
-    let feedback=dialog.querySelector('[data-rv-schedule-copy]');if(!feedback){feedback=make('small');feedback.setAttribute('data-rv-schedule-copy','');feedback.style.cssText='display:block;padding:8px;color:#163e73';scheduleReview(dialog).append(feedback);}
-    feedback.textContent='Copiando mensagem…';
-    try{
-      Promise.resolve(navigator.clipboard.writeText(message)).then(()=>{if(!root.isConnected)return;feedback.textContent='Mensagem copiada! Use Ctrl+V. A confirmação final do agendamento continua manual.';$('.launch').title='Mensagem de agendamento copiada. Use Ctrl+V.';},()=>{feedback.textContent='A cópia automática foi bloqueada. A mensagem ficou disponível na aba Etiquetar para copiar manualmente.';});
-    }catch(error){feedback.textContent='A cópia automática está indisponível. Copie a mensagem pela aba Etiquetar.';}
-  },true);
+    const target=event.target,dialog=target.closest?.('.ant-modal-content');
+    if(!dialog||!scheduleReview(dialog)||target.closest?.('[data-rv-schedule-copy]'))return;
+    scheduleInteraction={dialog,route:location.hash};
+    // Angular can update the checked property and review after the click listener.
+    setTimeout(()=>prepareSchedulePreview(dialog),0);
+    setTimeout(()=>prepareSchedulePreview(dialog),150);
+  }
+  for(const kind of ['change','input','click'])document.addEventListener(kind,schedulePreviewInteraction,true);
+  new MutationObserver(()=>{
+    const pending=scheduleInteraction;
+    if(pending?.route===location.hash&&pending.dialog.isConnected)prepareSchedulePreview(pending.dialog);
+    else scheduleInteraction=null;
+  }).observe(document.body,{childList:true,subtree:true,characterData:true});
   function finishScheduleMessage(){
     const pending=pendingSchedule;if(!pending)return;
     if(!root.isConnected||pending.route!==location.hash){clearInterval(scheduleMonitor);scheduleMonitor=null;pendingSchedule=null;return;}
