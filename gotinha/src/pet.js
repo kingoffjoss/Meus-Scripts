@@ -49,7 +49,7 @@ export function createPet(){
   else if(s==='eat'){const gate=THREE.MathUtils.smoothstep(.5-.5*Math.cos(age*Math.PI/2),.35,.75),a=Math.sin(age*Math.PI*8)*gate;sx+=a*.018;sy-=a*.022;tilt=Math.sin(age*Math.PI/2)*.012;if(age>8&&!forced)state='idle';}
   else if(s==='walk'){const step=age*Math.PI*4;travel=Math.asin(.94*Math.sin(age*Math.PI/2))/Math.asin(.94)*.75;lift=(1-Math.cos(step*2))*.012;sx+=Math.cos(step*2)*.012;sy-=Math.cos(step*2)*.016;tilt=Math.sin(step)*.027;}
   root.position.set(travel,lift,0);root.rotation.z=tilt;body.scale.set(sx,sy,sz);body.rotation.y=s==='walk'?Math.cos(age*Math.PI/2)*.12:animations.some(([id])=>id===s)?0:Math.sin(t*.65)*.025;
-  const blinkPhase=age%6,blink=blinkPhase>5.35&&blinkPhase<5.67?Math.max(.045,Math.abs(blinkPhase-5.51)/.16):1;
+  const cycle=Math.floor(t/7.7),blinkPhase=t%7.7,blinkAt=3.2+Math.sin(cycle*2.13)*1.35,d=blinkPhase-blinkAt,close=d>=0&&d<.11?1-d/.11:d>=.11&&d<.28?(d-.11)/.17:1,double=cycle%3===1&&d>.46&&d<.66?Math.abs(d-.56)/.1:1,blink=Math.max(.045,Math.min(close,double));
   eyes.forEach(e=>{e.scale.y=s==='sleep'?.065:blink;e.rotation.z=s==='happy'?Math.sin(age*5)*.04:0;});
   mouth.scale.set(1,s==='happy'?1.22:1,1);smile.scale.setScalar(s==='eat'||s==='sleep'?.0001:1);
   const bite=(age%4)/4,reach=.5-.5*Math.cos(bite*Math.PI*2),chew=THREE.MathUtils.smoothstep(reach,.35,.75);
