@@ -16,6 +16,6 @@ O mascote anda em todas as direções da área visível da aba. Você pode arras
 
 pingo-23-animacoes.glb contém as 23 pistas de animação nomeadas (clips), compartilhando a mesma geometria. Reproduza um clip por vez. O catálogo animacoes.json lista todos os clips. Há também arquivos individuais para andando, dormindo e comendo, além do modelo principal pingo.glb.
 
-Os cinco GLBs passaram pelo validador glTF com zero erros e zero avisos. O pacote foi carregado pelo GLTFLoader, as 23 animações foram exercitadas com matrizes finitas e ciclos que fecham. As três principais foram conferidas no visualizador HTTPS. Os controles locais e o favorito não puderam ser exercitados pelo navegador da ferramenta, que bloqueia o acesso a arquivos locais.
+Os cinco GLBs passaram pelo validador glTF com zero erros e zero avisos. O pacote foi carregado pelo GLTFLoader, as 23 animações foram exercitadas com matrizes finitas e ciclos que fecham. As três principais foram conferidas no visualizador HTTPS. A página publicada em GitHub Pages foi usada para testar a ativação, o mini painel, as trocas de animação e os cliques na página. O favorito continua sujeito às políticas da página de destino.
 
 Para reconstruir: npm install; npm run build. Para gerar o pacote e os três estados: npm run animations. Para gerar a apresentação principal: npm run export. Os arquivos .cjs gerados são auxiliares de construção.
