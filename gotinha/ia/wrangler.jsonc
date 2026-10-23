@@ -3,5 +3,10 @@
   "main": "worker.mjs",
   "compatibility_date": "2026-10-22",
   "workers_dev": true,
-  "observability": { "enabled": false }
+  "observability": {
+    "enabled": false
+  },
+  "vars": {
+    "GEMINI_MODEL": "gemini-3.8-flash"
+  }
 }

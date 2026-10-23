@@ -1,4 +1,4 @@
-PINGO + GEMINI — servidor preparado, ainda não ativado
+PINGO + GEMINI — servidor publicado; falta cadastrar os segredos
 
 O painel e este código ficam no repositório Meus-Scripts. GitHub Pages
 hospeda a interface estática; a chave do Gemini fica somente no Worker.
@@ -14,7 +14,7 @@ ATIVAR COM CLOUDFLARE WORKERS
    GEMINI_MODEL = ID de um modelo disponível na sua conta Gemini.
    Verifique se o modelo tem faixa gratuita antes de habilitar faturamento.
 4. No mini painel do Pingo, abra Conversar > Conectar IA.
-   URL: https://pingo-ia.SEUSUBDOMINIO.workers.dev/chat
+   URL: https://pingo-ia.josiasqueirozx.workers.dev/chat
    Senha de acesso: PINGO_ACCESS_TOKEN (não use GEMINI_API_KEY).
 5. Faça uma pergunta. A configuração e a conversa só duram nesta aba;
    recarregar a página ou remover o Pingo limpa as duas.
@@ -47,3 +47,9 @@ Fontes oficiais:
 https://ai.google.dev/gemini-api/docs/generate-content/api-key
 https://ai.google.dev/api/generate-content
 https://developers.cloudflare.com/workers/platform/limits/
+
+ESTADO EM 22/10/2026
+Worker publicado e GEMINI_MODEL configurado como gemini-3.8-flash.
+Faltam GEMINI_API_KEY (nova chave) e PINGO_ACCESS_TOKEN (senha exclusiva).
+Resposta 503 antes de cadastrar os segredos é esperada.
+Teste real de resposta Gemini ainda não realizado.
