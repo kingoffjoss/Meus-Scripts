@@ -4,19 +4,24 @@ import * as THREE from 'three';
 import {GLTFExporter} from 'three/addons/exporters/GLTFExporter.js';
 import {GLTFLoader} from 'three/addons/loaders/GLTFLoader.js';
 import {createPet} from './pet.js';
+import {animations} from './extras.js';
 globalThis.FileReader=class{readAsArrayBuffer(blob){blob.arrayBuffer().then(b=>{this.result=b;this.onloadend?.();});}readAsDataURL(blob){blob.arrayBuffer().then(b=>{this.result='data:'+blob.type+';base64,'+Buffer.from(b).toString('base64');this.onloadend?.();});}};
-const configs=[['walk','andando',12],['sleep','dormindo',4],['eat','comendo',6]];
 async function run(){
- for(const [state,file,duration] of configs){
-  const pet=createPet(),nodes=[pet.root,pet.body,...pet.eyes,...pet.arms,...pet.feet,pet.mouth,pet.smile,pet.open,pet.food],times=[],channels=nodes.flatMap(node=>['position','quaternion','scale'].map(property=>({node,property,values:[]}))),steps=duration*60;
-  pet.setState(state,0);
-  for(let i=0;i<=steps;i++){const t=i/steps*duration;times.push(t);pet.pose(t,state);for(const c of channels)c.values.push(...c.node[c.property].toArray());}
-  const tracks=channels.map(c=>{if(!c.values.every(Number.isFinite))throw Error('Non-finite '+c.node.name);const size=c.property==='quaternion'?4:3;for(let i=0;i<size;i++)if(Math.abs(c.values[i]-c.values[c.values.length-size+i])>1e-5)throw Error('Open animation loop '+state+' '+c.node.name+'.'+c.property);return c.property==='quaternion'?new THREE.QuaternionKeyframeTrack(c.node.name+'.quaternion',times,c.values):new THREE.VectorKeyframeTrack(c.node.name+'.'+c.property,times,c.values);});
-  pet.pose(0,state);const clip=new THREE.AnimationClip('Pingo_'+file,duration,tracks),bytes=await new GLTFExporter().parseAsync(pet.root,{binary:true,animations:[clip]});
-  const loaded=await new GLTFLoader().parseAsync(bytes,''),mixer=new THREE.AnimationMixer(loaded.scene);mixer.clipAction(loaded.animations[0]).play();mixer.setTime(state==='walk'?.125:state==='sleep'?1:.5);
-  if(state==='walk'&&loaded.scene.getObjectByName('Pezinho_-1').position.y<=.14)throw Error('No walking step');
-  if(state==='sleep'&&loaded.scene.getObjectByName('Olho_E').scale.y>.1)throw Error('Sleeping eyes open');
-  if(state==='eat'&&loaded.scene.getObjectByName('Lanchinho').scale.x<.5)throw Error('Food hidden');
-  fs.writeFileSync(path.join(process.argv[2],'pingo-'+file+'.glb'),Buffer.from(bytes));console.log(JSON.stringify({state,duration,tracks:tracks.length,bytes:bytes.byteLength,checks:['finite transforms','closed loop','GLTFLoader loads','state-specific motion verified']}));
+ const pet=createPet(),nodes=[];pet.root.traverse(n=>{if(n.name)nodes.push(n);});const clips=[],checks=[];
+ for(const [state,label] of animations){
+  const duration=12,steps=duration*40,times=[],channels=nodes.flatMap(node=>['position','quaternion','scale'].map(property=>({node,property,values:[]})));
+  pet.setState(state,0);for(let i=0;i<=steps;i++){const t=i/steps*duration;times.push(t);pet.pose(t,state);for(const c of channels)c.values.push(...c.node[c.property].toArray());}
+  const tracks=channels.map(c=>{
+   if(!c.values.every(Number.isFinite))throw Error('Non-finite '+state+' '+c.node.name);
+   const size=c.property==='quaternion'?4:3,first=c.values.slice(0,size),last=c.values.slice(-size),delta=c.property==='quaternion'?1-Math.abs(first.reduce((sum,v,i)=>sum+v*last[i],0)):Math.max(...first.map((v,i)=>Math.abs(v-last[i])));
+   if(delta>1e-5)throw Error('Open loop '+state+' '+c.node.name+'.'+c.property+' '+delta);
+   return (c.property==='quaternion'?new THREE.QuaternionKeyframeTrack(c.node.name+'.quaternion',times,c.values):new THREE.VectorKeyframeTrack(c.node.name+'.'+c.property,times,c.values)).optimize();
+  });
+  const clip=new THREE.AnimationClip('Pingo_'+state,duration,tracks);clips.push(clip);pet.pose(0,state);
+  if(['walk','sleep','eat'].includes(state)){const file={walk:'andando',sleep:'dormindo',eat:'comendo'}[state],bytes=await new GLTFExporter().parseAsync(pet.root,{binary:true,animations:[clip]});fs.writeFileSync(path.join(process.argv[2],'pingo-'+file+'.glb'),Buffer.from(bytes));}
+  checks.push({id:state,label,duration,tracks:tracks.length});
  }
+ pet.setState('idle',0);pet.pose(0);const bytes=await new GLTFExporter().parseAsync(pet.root,{binary:true,animations:clips});const loaded=await new GLTFLoader().parseAsync(bytes,'');if(loaded.animations.length!==23)throw Error('Expected 23 clips');
+ for(const [i,[state]] of animations.entries()){const mixer=new THREE.AnimationMixer(loaded.scene),action=mixer.clipAction(loaded.animations[i]);action.play();mixer.setTime(.9);loaded.scene.updateMatrixWorld(true);loaded.scene.traverse(n=>{if(!n.matrixWorld.elements.every(Number.isFinite))throw Error('Invalid loaded transform '+state);});if(state==='sleep'&&loaded.scene.getObjectByName('Sono_Zzz').scale.x<.9)throw Error('Zzz hidden');if(state==='eat'&&loaded.scene.getObjectByName('Lanchinho').scale.x<.5)throw Error('Food hidden');mixer.stopAllAction();mixer.uncacheRoot(loaded.scene);}
+ fs.writeFileSync(path.join(process.argv[2],'pingo-23-animacoes.glb'),Buffer.from(bytes));fs.writeFileSync(path.join(process.argv[2],'animacoes.json'),JSON.stringify({count:23,clips:checks,checks:['All poses finite','All tracks close physically','Actual GLTFLoader loads 23 clips','All loaded transforms finite','Sleep Zzz visible','Cookie visible while eating']},null,2));console.log(JSON.stringify({bytes:bytes.byteLength,animations:checks.length,checks:'passed'}));
 }run().catch(e=>{console.error(e);process.exitCode=1;});

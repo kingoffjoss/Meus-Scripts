@@ -1,3 +1,4 @@
+import {animations} from './extras.js';
 import * as THREE from 'three';
 import {OrbitControls} from 'three/addons/controls/OrbitControls.js';
 import {createPet} from './pet.js';
@@ -9,7 +10,8 @@ try{
  const floor=new THREE.Mesh(new THREE.PlaneGeometry(200,200),new THREE.MeshStandardMaterial({color:'#f3eee5',roughness:1}));floor.rotation.x=-Math.PI/2;floor.receiveShadow=true;scene.add(floor);scene.background=new THREE.Color('#f3eee5');scene.fog=new THREE.Fog('#f3eee5',10,25);
  const pet=createPet();scene.add(pet.root);let t=0,last=0,paused=matchMedia('(prefers-reduced-motion: reduce)').matches,nextAction=7,sleeping=false,food=0;
  const labels={walk:'Um passinho para lá, outro para cá.',idle:'Só curtindo sua companhia.',jump:'Olha o meu pulinho!',happy:'Gostei de você!',eat:'Nhac, nhac… obrigado!',sleep:'Zzz… só mais cinco minutinhos.'};
- function act(state){sleeping=state==='sleep';pet.setState(state,t);status.textContent=labels[state];document.querySelectorAll('[data-state]').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.state===state)));nextAction=t+9+Math.random()*5;if(state==='eat'){food++;document.querySelector('#count').textContent=food;}}
+ function act(state){sleeping=state==='sleep';document.querySelector('#animation').value=state;pet.setState(state,t);status.textContent=labels[state];document.querySelectorAll('[data-state]').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.state===state)));nextAction=t+9+Math.random()*5;if(state==='eat'){food++;document.querySelector('#count').textContent=food;}}
+ const picker=document.querySelector('#animation');for(const [id,label] of animations){const o=document.createElement('option');o.value=id;o.textContent=label;picker.append(o);labels[id]=label;}picker.onchange=()=>act(picker.value);
  document.querySelectorAll('[data-state]').forEach(b=>b.onclick=()=>act(b.dataset.state));document.querySelector('#pause').onclick=e=>{paused=!paused;e.target.textContent=paused?'Continuar':'Pausar';};document.querySelector('#pause').textContent=paused?'Continuar':'Pausar';
  document.querySelector('#front').onclick=()=>{camera.position.set(0,1.9,6.1);controls.target.set(0,1,0);};
  let down=null;canvas.addEventListener('pointerdown',e=>down=[e.clientX,e.clientY]);canvas.addEventListener('pointerup',e=>{if(down&&Math.hypot(e.clientX-down[0],e.clientY-down[1])<6){const rect=canvas.getBoundingClientRect(),mouse=new THREE.Vector2((e.clientX-rect.left)/rect.width*2-1,-(e.clientY-rect.top)/rect.height*2+1),ray=new THREE.Raycaster();ray.setFromCamera(mouse,camera);if(ray.intersectObject(pet.root,true).length)act('happy');}down=null;});

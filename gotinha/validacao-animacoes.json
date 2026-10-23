@@ -1,32 +1,43 @@
 {
+  "animationCount": 23,
   "results": [
     {
+      "file": "pingo.glb",
+      "bytes": 482580,
+      "errors": 0,
+      "warnings": 0
+    },
+    {
       "file": "pingo-andando.glb",
-      "bytes": 2238700,
+      "bytes": 626788,
       "errors": 0,
       "warnings": 0
     },
     {
       "file": "pingo-dormindo.glb",
-      "bytes": 1939164,
+      "bytes": 637480,
       "errors": 0,
       "warnings": 0
     },
     {
       "file": "pingo-comendo.glb",
-      "bytes": 2014128,
+      "bytes": 645528,
+      "errors": 0,
+      "warnings": 0
+    },
+    {
+      "file": "pingo-23-animacoes.glb",
+      "bytes": 3080216,
       "errors": 0,
       "warnings": 0
     }
   ],
-  "tracksPerState": 36,
   "checks": [
-    "Finite transforms",
-    "Closed animation loops",
-    "GLTFLoader loads",
-    "Walking foot lifts",
-    "Sleeping eyes close",
-    "Eating cookie visible",
-    "Both arm groups exported"
+    "All poses finite",
+    "All tracks close physically",
+    "Actual GLTFLoader loads 23 clips",
+    "All loaded transforms finite",
+    "Sleep Zzz visible",
+    "Cookie visible while eating"
   ]
 }

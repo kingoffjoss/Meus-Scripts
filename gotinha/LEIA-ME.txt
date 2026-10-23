@@ -1,11 +1,11 @@
-Pingo — primeiro protótipo
+PINGO — nosso mascote de gelatina
 
-Abra index.html no Chrome. A página funciona com os arquivos locais, sem instalação: pingo.js já inclui o código necessário. WebGL2 precisa estar disponível no navegador.
+Comece por passeio.html para ativar o Pingo flutuando pela tela e configurar seus movimentos no mini painel. Abra index.html para experimentar as 23 animações em uma prévia 3D maior.
 
-O personagem é uma gotinha de gelatina verde-água, com duas patinhas, olhos escuros, bochechas e sorriso. Respira, pisca e salta com compressão antes da subida e amortecimento ao pousar. Os botões ativam carinho, comida, sono e repouso; clicar diretamente no personagem faz carinho. Arraste para girar a câmera. Movimentos espontâneos podem ser desligados. Pausar congela o tempo da animação. A preferência de movimento reduzido inicia a prévia pausada.
+O arquivo favorito.txt pode ser usado como URL de um favorito no Chrome. A página passeio.html também oferece um botão Pingo para arrastar à barra de favoritos. A ativação depende de a página permitir scripts desse tipo. O mascote permanece na página em que foi ativado.
 
-Esta versão é para aprovar a aparência e a personalidade. Não substitui o mascote atual, não implementa as tarefas e lembretes e não salva os lanchinhos depois de fechar a página.
+O visual aprovado foi preservado, com bracinhos de gelatina. A versão inclui caminhada refinada, sono com Zzz, comida e 20 novas reações. Detalhes em ANIMACOES.txt.
 
-pingo.glb exporta um ciclo de seis segundos com respiração, piscada e salto. Os estados interativos de comida, sono e carinho estão na página local. O GLB foi aberto em visualizador HTTPS e validado com zero erros e zero avisos. O acesso da ferramenta à página local é bloqueado, por isso não foi verificada nela a interação dos botões pelo navegador.
+Esta entrega trata do personagem, das animações e do passeio flutuante. A integração com tarefas, XP e lembretes do sistema anterior ainda não foi feita. Nada é transmitido pelo mascote depois do carregamento do código. As configurações deste protótipo não persistem ao recarregar a página.
 
-Fontes em src/. Reconstruir: npm install e npm run build. Exportar: npm run export. Three.js (MIT) tem a licença incluída. Modelo e movimentos originais criados para este projeto.
+Three.js: MIT, licença em THREE-LICENSE.txt. Fontes em src/. Requisitos: navegador com WebGL2. A preferência de movimento reduzido inicia a animação pausada. O pacote já contém os scripts compilados e pode ser aberto localmente sem instalar dependências.

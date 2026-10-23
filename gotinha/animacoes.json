@@ -1,0 +1,151 @@
+{
+  "count": 23,
+  "clips": [
+    {
+      "id": "walk",
+      "label": "Andar pela tela",
+      "duration": 12,
+      "tracks": 126
+    },
+    {
+      "id": "sleep",
+      "label": "Dormir com Zzz",
+      "duration": 12,
+      "tracks": 126
+    },
+    {
+      "id": "eat",
+      "label": "Comer biscoito",
+      "duration": 12,
+      "tracks": 126
+    },
+    {
+      "id": "wave",
+      "label": "Dar tchau",
+      "duration": 12,
+      "tracks": 126
+    },
+    {
+      "id": "dance",
+      "label": "Dançar",
+      "duration": 12,
+      "tracks": 126
+    },
+    {
+      "id": "spin",
+      "label": "Dar uma voltinha",
+      "duration": 12,
+      "tracks": 126
+    },
+    {
+      "id": "hop",
+      "label": "Pular de alegria",
+      "duration": 12,
+      "tracks": 126
+    },
+    {
+      "id": "stretch",
+      "label": "Espreguiçar",
+      "duration": 12,
+      "tracks": 126
+    },
+    {
+      "id": "yawn",
+      "label": "Bocejar",
+      "duration": 12,
+      "tracks": 126
+    },
+    {
+      "id": "sad",
+      "label": "Ficar tristinho",
+      "duration": 12,
+      "tracks": 126
+    },
+    {
+      "id": "angry",
+      "label": "Ficar emburrado",
+      "duration": 12,
+      "tracks": 126
+    },
+    {
+      "id": "surprise",
+      "label": "Levar um susto",
+      "duration": 12,
+      "tracks": 126
+    },
+    {
+      "id": "laugh",
+      "label": "Dar risada",
+      "duration": 12,
+      "tracks": 126
+    },
+    {
+      "id": "think",
+      "label": "Pensar",
+      "duration": 12,
+      "tracks": 126
+    },
+    {
+      "id": "curious",
+      "label": "Olhar curioso",
+      "duration": 12,
+      "tracks": 126
+    },
+    {
+      "id": "celebrate",
+      "label": "Comemorar",
+      "duration": 12,
+      "tracks": 126
+    },
+    {
+      "id": "focus",
+      "label": "Se concentrar",
+      "duration": 12,
+      "tracks": 126
+    },
+    {
+      "id": "drink",
+      "label": "Tomar água",
+      "duration": 12,
+      "tracks": 126
+    },
+    {
+      "id": "ball",
+      "label": "Brincar com bola",
+      "duration": 12,
+      "tracks": 126
+    },
+    {
+      "id": "shy",
+      "label": "Ficar tímido",
+      "duration": 12,
+      "tracks": 126
+    },
+    {
+      "id": "alert",
+      "label": "Chamar atenção",
+      "duration": 12,
+      "tracks": 126
+    },
+    {
+      "id": "tired",
+      "label": "Ficar cansado",
+      "duration": 12,
+      "tracks": 126
+    },
+    {
+      "id": "proud",
+      "label": "Sentir orgulho",
+      "duration": 12,
+      "tracks": 126
+    }
+  ],
+  "checks": [
+    "All poses finite",
+    "All tracks close physically",
+    "Actual GLTFLoader loads 23 clips",
+    "All loaded transforms finite",
+    "Sleep Zzz visible",
+    "Cookie visible while eating"
+  ]
+}
