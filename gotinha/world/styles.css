@@ -2,4 +2,4 @@
 
 @media(max-height:780px) and (min-width:851px){.app-shell{padding:18px 32px 10px}.app-header{padding-bottom:13px}.welcome-row{margin:15px 0 12px}h1{font-size:23px}.needs-strip{margin-bottom:16px}.pet-card-top{padding-top:17px}.pet-stage{height:290px}.stage-bottom{padding-bottom:8px}.quick-actions{padding:10px 17px}.control-card{min-height:459px}#control-panel{max-height:430px}.app-footer{margin-top:13px}}
 @media(max-width:620px){.welcome-row{display:none}.needs-strip{margin-top:14px}.pet-stage{height:245px}.stage-bottom{display:none}.quick-actions{padding:8px 14px}.pet-card{position:relative;top:auto;z-index:auto}.control-card{position:relative;z-index:2}.app-footer{position:relative;z-index:4;background:#f5f5ec}.room-nav button{min-height:58px}}
-.pet-name{overflow-wrap:anywhere;min-width:0}
+#pet-name{overflow-wrap:anywhere;min-width:0}
