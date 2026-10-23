@@ -23,6 +23,7 @@ export function createPet(){
  smile.name='Sorriso_Curva';
  const open=oval(mouth,'Bocejo',0,-.012,.008,.054,.07,.018,ink);open.scale.set(.0001,.0001,.0001);
  const arms=[-1,1].map(side=>{const arm=new THREE.Group();arm.name='Bracinho_'+side;arm.position.set(side*.67,.75,.10);body.add(arm);oval(arm,'Maozinha_'+side,side*.12,-.11,.10,.185,.285,.18,gel);return arm;});
+ const armLinks=[-1,1].map(side=>oval(body,'Ligacao_Braco_'+side,side*.70,.76,.12,.075,.15,.075,gel));
  const feet=[-1,1].map(side=>oval(root,'Pezinho_'+side,side*.405,.14,.21,.24,.15,.32,gel));
  const bubbles=[];const bubbleMat=new THREE.MeshPhysicalMaterial({color:'#d9fff5',roughness:.08,metalness:0,transparent:true,opacity:.27,clearcoat:1,depthWrite:false});for(let i=0;i<24;i++){const h=.16+((i*.381966)%1)*.68,y=.17+1.94*h,r=.96*(1-.53*h**2.5)*Math.sqrt(1-(h*2-1)**2),a=i*2.39996,rad=.35+.45*((i*.618)%1),x=Math.cos(a)*r*rad,z=Math.sin(a)*r*.88*rad;const size=.012+(i%5)*.006;const m=oval(body,'Bolhinha_'+i,x,y,z,size,size,size,bubbleMat);bubbles.push(m);}
  const food=new THREE.Group();food.name='Lanchinho';root.add(food);
@@ -30,6 +31,9 @@ export function createPet(){
  for(const [i,x,y] of [[0,-.065,.06],[1,.055,.075],[2,.045,-.065],[3,-.07,-.06]])oval(food,'Chocolate_'+i,x,y,.044,.022,.025,.01,new THREE.MeshStandardMaterial({color:'#5d3830',roughness:.7}));
  food.scale.setScalar(.0001);
  const extras=addExtras(root),newProps=addNewProps(root);
+ // Protect the palm against the actual cross section of the remodelled body.
+ const sections=[];for(let row=0;row<=64;row++){let minX=Infinity,maxX=-Infinity,maxZ=0,y=0;for(let col=0;col<=96;col++){const i=row*97+col;minX=Math.min(minX,p.getX(i));maxX=Math.max(maxX,p.getX(i));maxZ=Math.max(maxZ,Math.abs(p.getZ(i)));y+=p.getY(i);}sections.push({y:y/97,cx:(minX+maxX)/2,rx:(maxX-minX)/2,rz:maxZ});}sections.sort((a,b)=>a.y-b.y);const palmPoint=new THREE.Vector3();
+ function protectHands(){for(let sideIndex=0;sideIndex<arms.length;sideIndex++){const arm=arms[sideIndex];const palm=arm.children[0];palmPoint.copy(palm.position).multiply(arm.scale).applyQuaternion(arm.quaternion).add(arm.position);const py=palmPoint.y;if(py<sections[1].y||py>sections.at(-2).y)continue;let k=1;while(k<sections.length-1&&sections[k].y<py)k++;const a=sections[k-1],b=sections[k],u=THREE.MathUtils.clamp((py-a.y)/Math.max(.00001,b.y-a.y),0,1),cx=THREE.MathUtils.lerp(a.cx,b.cx,u),pad=.22*Math.max(arm.scale.x,arm.scale.z),rx=THREE.MathUtils.lerp(a.rx,b.rx,u)+pad,rz=THREE.MathUtils.lerp(a.rz,b.rz,u)+pad,dx=palmPoint.x-cx,dz=palmPoint.z,n=Math.hypot(dx/rx,dz/rz);if(n<1){const factor=1/Math.max(.001,n);arm.position.x+=dx*(factor-1);arm.position.z+=dz*(factor-1);}palmPoint.copy(palm.position).multiply(arm.scale).applyQuaternion(arm.quaternion).add(arm.position);const shoulder=new THREE.Vector3((sideIndex?1:-1)*.70,.76,.12),delta=palmPoint.clone().sub(shoulder),link=armLinks[sideIndex];link.position.copy(shoulder).add(palmPoint).multiplyScalar(.5);link.scale.set(.075,Math.max(.03,delta.length()/2),.075);link.quaternion.setFromUnitVectors(new THREE.Vector3(0,1,0),delta.normalize());}}
  const rest=[];root.traverse(n=>rest.push({n,p:n.position.clone(),q:n.quaternion.clone(),s:n.scale.clone()}));
  let state='idle',started=0;
  function setState(next,t){state=next;started=t;}
@@ -57,8 +61,9 @@ export function createPet(){
   food.scale.setScalar(s==='eat'?.9-reach*.30:.0001);food.position.set(0,.63+.19*reach,1.04-.12*reach);food.rotation.set(-reach*.12,.15,Math.sin(age*Math.PI/2)*.08);
   arms.forEach((arm,i)=>{const side=i===0?-1:1;arm.scale.setScalar(s==='eat'?.6:1);arm.position.set(side*.67,.75,.10);arm.rotation.set(0,0,-side*.18);if(s==='walk'){arm.rotation.x=Math.sin(age*Math.PI*4+i*Math.PI)*.30;arm.rotation.z=-side*.22;}else if(s==='sleep'){arm.position.set(side*.56,.62,.28);arm.rotation.z=-side*.65;arm.rotation.x=-.25;}else if(s==='eat'){arm.position.set(side*.31,.77+.10*reach,.88-.10*reach);arm.rotation.z=-side*1.6;arm.rotation.x=-.1;}else if(s==='happy'){arm.rotation.z=side*(.75+Math.sin(age*7)*.15);}else if(s==='jump'){arm.rotation.z=side*lift*.65;}});
   feet.forEach((f,i)=>{const side=i===0?-1:1,step=age*Math.PI*4+i*Math.PI,direction=Math.tanh(Math.cos(age*Math.PI/2)*4),phase=(age*2+i*.5)%1,swing=phase>.6?(phase-.6)/.4:0,stride=phase<.6?.09-.18*phase/.6:-.09+.18*(.5-.5*Math.cos(swing*Math.PI));f.position.set(side*.405+(s==='walk'?stride*direction:0),.14+(s==='walk'?Math.sin(swing*Math.PI)*.075:0),.21);f.scale.set(.24,s==='sleep'?.105:.15,.32);f.rotation.x=lift>.1?-.18:0;f.rotation.z=s==='walk'?Math.sin(step)*.06:s==='happy'?Math.sin(age*7+i*Math.PI)*.12:0;});
-  poseExtras(pet,s,age);poseNew(pet,s,age);poseMega(pet,s,age);polishPose(pet,s,age);
+  poseExtras(pet,s,age);poseNew(pet,s,age);poseMega(pet,s,age);polishPose(pet,s,age);protectHands();
   return state;
  }
- const pet={root,body,skin,eyes,arms,feet,mouth,smile,open,food,extras,newProps,setState,pose};pose(0);return pet;
+ const pet={root,body,skin,eyes,arms,feet,mouth,smile,open,food,extras,newProps,setState,pose,protectHands};pose(0);return pet;
 }
+
