@@ -1,0 +1,18 @@
+Pingo flutuante para Android — APK de teste 283.0
+
+Arquivo: pingo-android-teste.apk
+SHA-256: 9789d344714c4100d32c57f9ef727580cf5e282a37552d12ebefc5a42a9653b8
+
+1. Instale o APK no seu Android.
+2. Abra Pingo flutuante e toque em Permitir aparecer sobre outros apps.
+3. Conceda a permissão nas configurações do Android e volte ao aplicativo.
+4. Toque em Ativar Pingo flutuante e volte à tela inicial.
+5. Arraste para mover, toque no mascote para abrir cuidados e use Fechar Pingo ou a notificação para parar.
+
+O mascote funciona sem o Chrome aberto. O corpo 3D e o gramado estão dentro do APK, sem internet. A conversa com IA abre separadamente o navegador nesta primeira versão.
+
+Validação: compilação, testes unitários de limites e Android Lint aprovados. Foram confirmados 33 quadros 3D e a janela/serviço no emulador Android 15. O emulador perdeu a conexão e a validação completa de tela inicial, arraste e fechamento não pôde ser concluída. Ainda é necessário testar no seu celular. Não há garantia de compatibilidade com todos os fabricantes ou apps.
+
+É um APK de depuração para teste, fora da Play Store. Futuras compilações com outra chave de depuração podem exigir desinstalar a versão anterior.
+
+Código: https://github.com/kingoffjoss/Meus-Scripts/tree/main/gotinha/android
