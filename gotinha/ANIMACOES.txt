@@ -1,0 +1,14 @@
+Pingo — andar de lado, dormir e comer
+
+Abra index.html e use Andar de lado, Tirar uma soneca e Dar comida. A caminhada repete os passos para os dois lados; o sono continua até acordar; a refeição dura quatro segundos na prévia interativa. Desative Movimentos espontâneos para inspecionar uma animação por mais tempo.
+
+Arquivos 3D independentes:
+- pingo-andando.glb: deslocamento lateral de ida e volta, pés alternados e balanço. Ciclo completo: 12 segundos.
+- pingo-dormindo.glb: corpo acomodado, olhos fechados e respiração de quatro segundos.
+- pingo-comendo.glb: biscoito aproximando da boca, mastigação, bochechas acompanhando o corpo. Ciclo: seis segundos.
+
+Cada arquivo tem uma animação própria e 36 pistas, incluindo olhos, boca, patinhas e biscoito. Os arquivos foram lidos pelo GLTFLoader e passaram pelo validador glTF sem erros ou avisos. As pistas fecham o ciclo e foram verificados os movimentos específicos de cada estado. As animações GLB foram inspecionadas no visualizador público. O teste dos botões da página local pelo navegador da ferramenta continua indisponível.
+
+Foram adicionados dois bracinhos de gelatina: balançam ao caminhar, recolhem durante o sono e seguram o biscoito ao comer. Tarefas, lembretes e a versão flutuante ainda não foram modificados.
+
+Para reconstruir as animações: npm install e npm run animations.

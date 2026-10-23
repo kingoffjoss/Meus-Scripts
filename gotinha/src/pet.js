@@ -14,13 +14,19 @@ export function createPet(){
  }
  const mouth=new THREE.Group();mouth.name='Sorriso';mouth.position.set(0,.866,.758);body.add(mouth);
  const curve=new THREE.QuadraticBezierCurve3(new THREE.Vector3(-.078,.025,0),new THREE.Vector3(0,-.07,.015),new THREE.Vector3(.078,.025,0));const smile=new THREE.Mesh(new THREE.TubeGeometry(curve,28,.014,8,false),ink);mouth.add(smile);
- const open=oval(mouth,'Bocejo',0,-.012,.008,.054,.07,.018,ink);open.visible=false;
+ smile.name='Sorriso_Curva';
+ const open=oval(mouth,'Bocejo',0,-.012,.008,.054,.07,.018,ink);open.scale.set(.0001,.0001,.0001);
+ const arms=[-1,1].map(side=>{const arm=new THREE.Group();arm.name='Bracinho_'+side;arm.position.set(side*.67,.75,.10);body.add(arm);oval(arm,'Maozinha_'+side,side*.12,-.11,.10,.15,.25,.15,gel);return arm;});
  const feet=[-1,1].map(side=>oval(root,'Pezinho_'+side,side*.405,.14,.21,.207,.14,.28,gel));
  const bubbles=[];for(const [i,x,y,z,r] of [[0,-.43,1.34,.45,.037],[1,.46,.62,.61,.023],[2,-.24,.51,.65,.018]]){const m=oval(body,'Bolhinha_'+i,x,y,z,r,r,r,new THREE.MeshPhysicalMaterial({color:'#c4f4e9',roughness:.17,transparent:true,opacity:.48,depthWrite:false}));bubbles.push(m);}
+ const food=new THREE.Group();food.name='Lanchinho';root.add(food);
+ oval(food,'Biscoito',0,0,0,.16,.16,.045,new THREE.MeshStandardMaterial({color:'#dba764',roughness:.8}));
+ for(const [i,x,y] of [[0,-.065,.06],[1,.055,.075],[2,.045,-.065],[3,-.07,-.06]])oval(food,'Chocolate_'+i,x,y,.044,.022,.025,.01,new THREE.MeshStandardMaterial({color:'#5d3830',roughness:.7}));
+ food.scale.setScalar(.0001);
  let state='idle',started=0;
  function setState(next,t){state=next;started=t;}
  function pose(t,forced=null){
-  const age=t-started,s=forced||state;let sx=1,sy=1,sz=1,lift=0,tilt=0;
+  const age=Math.max(0,t-started),s=forced||state;let sx=1,sy=1,sz=1,lift=0,tilt=0,travel=0;
   const breath=Math.sin(t*Math.PI*2/3)*.012;sx+=breath;sy-=breath*.65;
   if(s==='jump'){
    const u=Math.min(age/1.4,1);
@@ -29,14 +35,18 @@ export function createPet(){
    else {const q=(u-.77)/.23,a=Math.sin(q*Math.PI)*Math.exp(-q*1.3);sx+=a*.19;sy-=a*.22;}
    if(age>1.4&&!forced)state='idle';
   } else if(s==='happy') {const a=Math.sin(Math.min(age/2,1)*Math.PI);lift=Math.abs(Math.sin(age*8))*a*.09;tilt=Math.sin(age*7)*a*.075;sx+=a*.025;sy+=a*.035;if(age>2&&!forced)state='idle';}
-  else if(s==='sleep'){sy=.81+Math.sin(t*1.5)*.018;sx=1.10;sz=1.04;tilt=-.035;}
-  else if(s==='eat'){const a=Math.sin(age*14);sx+=a*.025;sy-=a*.018;tilt=Math.sin(age*6)*.018;if(age>2.5&&!forced)state='idle';}
-  root.position.y=lift;root.rotation.z=tilt;body.scale.set(sx,sy,sz);body.rotation.y=Math.sin(t*.65)*.025;
+  else if(s==='sleep'){const a=Math.sin(age*Math.PI/2);sy=.73+a*.018;sx=1.16-a*.008;sz=1.06;tilt=-.035+a*.008;}
+  else if(s==='eat'){const a=Math.sin(age*Math.PI*6);sx+=a*.024;sy-=a*.025;tilt=Math.sin(age*Math.PI*2)*.012;if(age>4&&!forced)state='idle';}
+  else if(s==='walk'){const step=age*Math.PI*4;travel=Math.sin(age*Math.PI/2)*.65;lift=(1-Math.cos(step*2))*.009;sx+=Math.cos(step*2)*.015;sy-=Math.cos(step*2)*.018;tilt=Math.sin(step)*.035;}
+  root.position.set(travel,lift,0);root.rotation.z=tilt;body.scale.set(sx,sy,sz);body.rotation.y=s==='walk'?Math.cos(age*Math.PI/2)*.12:s==='sleep'||s==='eat'?0:Math.sin(t*.65)*.025;
   const blink=((t%5.3)>4.91)?Math.max(.045,Math.abs((t%5.3)-5.07)/.16):1;
   eyes.forEach(e=>{e.scale.y=s==='sleep'?.065:blink;e.rotation.z=s==='happy'?Math.sin(age*5)*.04:0;});
-  mouth.scale.set(1,s==='happy'?1.22:1,1);smile.visible=s!=='eat';open.visible=s==='eat';open.scale.y=.07*(.7+.3*Math.sin(age*14));
-  feet.forEach((f,i)=>{f.position.y=.14;f.rotation.x=lift>0?-.18:0;f.rotation.z=s==='happy'?Math.sin(age*7+i*Math.PI)*.12:0;});
+  mouth.scale.set(1,s==='happy'?1.22:1,1);smile.scale.setScalar(s==='eat'||s==='sleep'?.0001:1);
+  open.scale.set(s==='eat'?.054:s==='sleep'?.025:.0001,s==='eat'?.04+.023*(.5+.5*Math.sin(age*Math.PI*6)):s==='sleep'?.028+.004*Math.sin(age*Math.PI/2):.0001,s==='eat'||s==='sleep'?.018:.0001);
+  const bite=(age%2)/2,reach=.5-.5*Math.cos(bite*Math.PI*2);food.scale.setScalar(s==='eat'?.9-reach*.25:.0001);food.position.set(0,.71+.10*reach,1.02-.10*reach);food.rotation.set(0,.15,Math.sin(age*Math.PI)*.12);
+  arms.forEach((arm,i)=>{const side=i===0?-1:1;arm.position.set(side*.67,.75,.10);arm.rotation.set(0,0,-side*.18);if(s==='walk'){arm.rotation.x=Math.sin(age*Math.PI*4+i*Math.PI)*.30;arm.rotation.z=-side*.22;}else if(s==='sleep'){arm.position.set(side*.56,.62,.28);arm.rotation.z=-side*.65;arm.rotation.x=-.25;}else if(s==='eat'){arm.position.set(side*.25,.83+.10*reach,.88-.10*reach);arm.rotation.z=-side*1.6;arm.rotation.x=-.1;}else if(s==='happy'){arm.rotation.z=side*(.75+Math.sin(age*7)*.15);}else if(s==='jump'){arm.rotation.z=side*lift*.65;}});
+  feet.forEach((f,i)=>{const side=i===0?-1:1,step=age*Math.PI*4+i*Math.PI,direction=Math.cos(age*Math.PI/2)>=0?1:-1;f.position.set(side*.405+(s==='walk'?Math.cos(step)*.075*direction:0),.14+(s==='walk'?Math.max(0,Math.sin(step))*.08:0),.21);f.scale.set(.207,s==='sleep'?.105:.14,.28);f.rotation.x=lift>.1?-.18:0;f.rotation.z=s==='walk'?Math.sin(step)*.10:s==='happy'?Math.sin(age*7+i*Math.PI)*.12:0;});
   return state;
  }
- pose(0);return{root,body,eyes,feet,mouth,setState,pose};
+ pose(0);return{root,body,eyes,arms,feet,mouth,smile,open,food,setState,pose};
 }

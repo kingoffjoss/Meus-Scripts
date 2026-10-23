@@ -1,0 +1,32 @@
+{
+  "results": [
+    {
+      "file": "pingo-andando.glb",
+      "bytes": 2238700,
+      "errors": 0,
+      "warnings": 0
+    },
+    {
+      "file": "pingo-dormindo.glb",
+      "bytes": 1939164,
+      "errors": 0,
+      "warnings": 0
+    },
+    {
+      "file": "pingo-comendo.glb",
+      "bytes": 2013824,
+      "errors": 0,
+      "warnings": 0
+    }
+  ],
+  "tracksPerState": 36,
+  "checks": [
+    "Finite transforms",
+    "Closed animation loops",
+    "GLTFLoader loads",
+    "Walking foot lifts",
+    "Sleeping eyes close",
+    "Eating cookie visible",
+    "Both arm groups exported"
+  ]
+}
