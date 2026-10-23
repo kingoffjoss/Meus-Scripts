@@ -2,6 +2,8 @@ import subprocess, time, xml.etree.ElementTree as ET, re, pathlib
 def adb(*args):
     return subprocess.check_output(['adb', *args], text=True, timeout=60)
 package='com.kingoffjoss.pingo'
+adb('shell','wm','size','540x960')
+adb('shell','wm','density','240')
 adb('install','-r','app/build/outputs/apk/debug/app-debug.apk')
 adb('shell','appops','set',package,'SYSTEM_ALERT_WINDOW','allow')
 adb('logcat','-c')
@@ -33,6 +35,7 @@ assert 'Uncaught' not in logs, logs
 pathlib.Path('smoke-results').mkdir(exist_ok=True)
 with open('smoke-results/pingo-home.png','wb') as out:
     subprocess.run(['adb','exec-out','screencap','-p'],stdout=out,check=True)
+assert pathlib.Path('smoke-results/pingo-home.png').stat().st_size>1000, 'No screenshot produced'
 pathlib.Path('smoke-results/service.txt').write_text(services)
 pathlib.Path('smoke-results/webview-log.txt').write_text(logs)
 assert 'PingoRender' in logs and 'hardware=true' in logs, logs

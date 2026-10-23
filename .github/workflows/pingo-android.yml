@@ -32,12 +32,12 @@ jobs:
       - name: Android overlay smoke test
         uses: reactivecircus/android-emulator-runner@v2
         with:
-          api-level: 35
+          api-level: 34
           target: google_apis
           arch: x86_64
           profile: pixel_2
           disable-animations: true
-          emulator-options: -no-window -gpu swiftshader -feature -Vulkan -memory 3072 -no-snapshot -noaudio -no-boot-anim -camera-back none
+          emulator-options: -no-window -gpu software -memory 2048 -no-snapshot -noaudio -no-boot-anim -camera-back none
           script: cd gotinha/android && python3 smoke.py
       - uses: actions/upload-artifact@v4
         if: always()
@@ -53,6 +53,6 @@ jobs:
         run: |
           cp gotinha/android/app/build/outputs/apk/debug/app-debug.apk pingo-android-teste.apk
           if ! gh release view pingo-android-283.0-test >/dev/null 2>&1; then
-            gh release create pingo-android-283.0-test --target "$GITHUB_SHA" --prerelease --title 'Pingo Android 283.0 · teste' --notes 'Mascote 3D flutuante para Android 8+. Instale o APK, abra Pingo flutuante, conceda a permissão de sobreposição e toque em Ativar. Build de teste com chave de depuração. IA abre no navegador. Não lê outros aplicativos. Validado por testes, lint e emulador Android 15; ainda requer teste em aparelhos reais.'
+            gh release create pingo-android-283.0-test --target "$GITHUB_SHA" --prerelease --title 'Pingo Android 283.0 · teste' --notes 'Mascote 3D flutuante para Android 8+. Instale o APK, abra Pingo flutuante, conceda a permissão de sobreposição e toque em Ativar. Build de teste com chave de depuração. IA abre no navegador. Não lê outros aplicativos. Validado por testes, lint e emulador Android 14; ainda requer teste em aparelhos reais.'
           fi
           gh release upload pingo-android-283.0-test pingo-android-teste.apk --clobber
