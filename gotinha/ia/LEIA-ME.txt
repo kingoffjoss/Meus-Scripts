@@ -1,3 +1,5 @@
+ATUALIZAÇÃO: também aceita OpenAI/GPT. Veja OPENAI.txt.
+
 PINGO + GEMINI — servidor publicado; falta cadastrar os segredos
 
 O painel e este código ficam no repositório Meus-Scripts. GitHub Pages

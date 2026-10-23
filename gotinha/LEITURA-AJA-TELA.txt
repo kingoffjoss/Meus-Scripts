@@ -5,7 +5,7 @@ Em Ler página e conversa, escolha:
 - Tela / página atual: texto visível na área exibida ou selecionado.
 - Conversa aberta no AjaModular: só as mensagens do quadro de atendimento.
 Clique Capturar texto visível, revise a prévia e escolha Dar opinião ou Ajudar.
-O conteúdo autorizado é enviado ao Worker privado e ao Google/Gemini.
+O conteúdo autorizado é enviado ao Worker privado e ao provedor configurado (OpenAI ou Gemini).
 Os comentários aparecem no balão e no histórico local do painel.
 
 A captura não envia nada sozinha. O acompanhamento automático é desligado

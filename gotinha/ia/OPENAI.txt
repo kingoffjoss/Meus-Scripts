@@ -1,0 +1,29 @@
+PINGO COM GPT — código pronto, nova chave ainda necessária
+
+1. Revogue qualquer chave da OpenAI enviada em chat.
+2. Crie outra chave na sua conta da API OpenAI. Não a envie em mensagens.
+3. Cloudflare > pingo-ia > Configurações > Adicionar variável:
+   Nome: OPENAI_API_KEY
+   Tipo: Segredo
+   Valor: a NOVA chave, cadastrada só nessa tela.
+4. Salve e implante. O servidor passa a escolher OpenAI quando esse segredo
+   existe. Os segredos Gemini existentes não são alterados.
+5. No Pingo > Conversar > Conectar IA, use o mesmo PINGO_ACCESS_TOKEN
+   que você já criou. Nunca use a chave de API como senha do Pingo.
+6. Clique Conectar e testar IA e aguarde uma resposta ou erro explícito.
+
+Modelo padrão: gpt-5.4-mini. Pode ser substituído com OPENAI_MODEL.
+API: https://api.openai.com/v1/responses
+store:false; raciocínio none; saída limitada a 400 tokens.
+As respostas não são salvas para recuperação pela Responses API, mas isso
+não equivale a uma garantia de ausência de retenção operacional do provedor.
+A API OpenAI tem cobrança própria; a assinatura ChatGPT não cobre essas
+chamadas. Não há promessa de créditos gratuitos. Defina seus limites na API.
+Pesquisa abre Google em uma nova aba, sem ferramenta de busca paga na API.
+
+Os testes de OpenAI, erros de crédito, autenticação e contexto usaram
+respostas simuladas. Não usamos a chave enviada na conversa.
+
+Documentação oficial OpenAI Docs:
+https://developers.openai.com/api/docs/models/gpt-5.4-mini
+https://developers.openai.com/api/docs/guides/migrate-to-responses
