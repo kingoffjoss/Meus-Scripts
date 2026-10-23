@@ -1,13 +1,15 @@
+import {addNewProps,poseNew} from './new-motions.js';
+import {polishPose} from './polish.js';
 import * as THREE from 'three';
 import {addExtras,poseExtras,animations} from './extras.js';
 export function createPet(){
  const root=new THREE.Group();root.name='Pingo';const body=new THREE.Group();body.name='Gelatina';root.add(body);
- const gel=new THREE.MeshPhysicalMaterial({color:'#72d8cd',roughness:.22,metalness:0,clearcoat:1,clearcoatRoughness:.13,transmission:.12,thickness:1.1,ior:1.34,attenuationColor:'#7de1d4',attenuationDistance:3});
+ const gel=new THREE.MeshPhysicalMaterial({color:'#72d8cd',roughness:.25,metalness:0,clearcoat:.85,clearcoatRoughness:.18,transmission:.18,thickness:1.25,ior:1.36,iridescence:.08,iridescenceIOR:1.32,sheen:.15,sheenRoughness:.45,envMapIntensity:.8,attenuationColor:'#7de1d4',attenuationDistance:3});
  const ink=new THREE.MeshPhysicalMaterial({color:'#132c3b',roughness:.19,clearcoat:1}),shine=new THREE.MeshBasicMaterial({color:'#fffdf4'}),blush=new THREE.MeshStandardMaterial({color:'#f2a5a9',roughness:.62});
  const ovalGeometry=new THREE.SphereGeometry(1,48,32);
  function oval(parent,name,x,y,z,sx,sy,sz,material){const m=new THREE.Mesh(ovalGeometry,material);m.name=name;m.position.set(x,y,z);m.scale.set(sx,sy,sz);m.castShadow=true;parent.add(m);return m;}
  const geometry=new THREE.SphereGeometry(1,96,64),p=geometry.attributes.position;
- for(let i=0;i<p.count;i++){const y=p.getY(i),r=.83*(1-.23*y);p.setXYZ(i,p.getX(i)*r+.12*Math.max(y,0)**2,.17+.86*(y+1),p.getZ(i)*r*.86);}geometry.computeVertexNormals();const skin=new THREE.Mesh(geometry,gel);skin.name='Corpo';skin.castShadow=true;body.add(skin);
+ for(let i=0;i<p.count;i++){const y=p.getY(i),r=.83*(1-.23*y);p.setXYZ(i,p.getX(i)*r+.12*Math.max(y,0)**2,.17+.86*(y+1),p.getZ(i)*r*.86);}geometry.computeVertexNormals();const sway=p.clone(),squish=p.clone();for(let i=0;i<p.count;i++){const h=Math.max(0,(p.getY(i)-.17)/1.72);sway.setX(i,p.getX(i)+.065*Math.sin(h*Math.PI*.8)*h);squish.setY(i,p.getY(i)-.045*Math.sin(h*Math.PI));squish.setX(i,p.getX(i)*(1+.025*Math.sin(h*Math.PI)));}geometry.morphAttributes.position=[sway,squish];const skin=new THREE.Mesh(geometry,gel);skin.name='Corpo';skin.castShadow=true;body.add(skin);
  const eyes=[],cheeks=[];
  for(const side of [-1,1]){
   const eye=new THREE.Group();eye.name='Olho_'+(side<0?'E':'D');eye.position.set(side*.265,1.04,.714);eye.rotation.y=side*.17;body.add(eye);
@@ -25,10 +27,12 @@ export function createPet(){
  oval(food,'Biscoito',0,0,0,.16,.16,.045,new THREE.MeshStandardMaterial({color:'#dba764',roughness:.8}));
  for(const [i,x,y] of [[0,-.065,.06],[1,.055,.075],[2,.045,-.065],[3,-.07,-.06]])oval(food,'Chocolate_'+i,x,y,.044,.022,.025,.01,new THREE.MeshStandardMaterial({color:'#5d3830',roughness:.7}));
  food.scale.setScalar(.0001);
- const extras=addExtras(root);
+ const extras=addExtras(root),newProps=addNewProps(root);
+ const rest=[];root.traverse(n=>rest.push({n,p:n.position.clone(),q:n.quaternion.clone(),s:n.scale.clone()}));
  let state='idle',started=0;
  function setState(next,t){state=next;started=t;}
  function pose(t,forced=null){
+  for(const r of rest){r.n.position.copy(r.p);r.n.quaternion.copy(r.q);r.n.scale.copy(r.s);}
   const age=Math.max(0,t-started),s=forced||state;let sx=1,sy=1,sz=1,lift=0,tilt=0,travel=0;
   root.rotation.set(0,0,0);body.rotation.set(0,0,0);mouth.rotation.set(0,0,0);mouth.position.set(0,.866,.758);eyes.forEach((e,i)=>{e.position.x=(i===0?-1:1)*.265;e.scale.set(1,1,1);});
   const breath=Math.sin(t*Math.PI*2/3)*.012;sx+=breath;sy-=breath*.65;
@@ -51,8 +55,8 @@ export function createPet(){
   food.scale.setScalar(s==='eat'?.9-reach*.30:.0001);food.position.set(0,.63+.19*reach,1.04-.12*reach);food.rotation.set(-reach*.12,.15,Math.sin(age*Math.PI/2)*.08);
   arms.forEach((arm,i)=>{const side=i===0?-1:1;arm.scale.setScalar(s==='eat'?.6:1);arm.position.set(side*.67,.75,.10);arm.rotation.set(0,0,-side*.18);if(s==='walk'){arm.rotation.x=Math.sin(age*Math.PI*4+i*Math.PI)*.30;arm.rotation.z=-side*.22;}else if(s==='sleep'){arm.position.set(side*.56,.62,.28);arm.rotation.z=-side*.65;arm.rotation.x=-.25;}else if(s==='eat'){arm.position.set(side*.31,.77+.10*reach,.88-.10*reach);arm.rotation.z=-side*1.6;arm.rotation.x=-.1;}else if(s==='happy'){arm.rotation.z=side*(.75+Math.sin(age*7)*.15);}else if(s==='jump'){arm.rotation.z=side*lift*.65;}});
   feet.forEach((f,i)=>{const side=i===0?-1:1,step=age*Math.PI*4+i*Math.PI,direction=Math.tanh(Math.cos(age*Math.PI/2)*4),phase=(age*2+i*.5)%1,swing=phase>.6?(phase-.6)/.4:0,stride=phase<.6?.09-.18*phase/.6:-.09+.18*(.5-.5*Math.cos(swing*Math.PI));f.position.set(side*.405+(s==='walk'?stride*direction:0),.14+(s==='walk'?Math.sin(swing*Math.PI)*.075:0),.21);f.scale.set(.207,s==='sleep'?.105:.14,.28);f.rotation.x=lift>.1?-.18:0;f.rotation.z=s==='walk'?Math.sin(step)*.06:s==='happy'?Math.sin(age*7+i*Math.PI)*.12:0;});
-  poseExtras(pet,s,age);
+  poseExtras(pet,s,age);poseNew(pet,s,age);polishPose(pet,s,age);
   return state;
  }
- const pet={root,body,eyes,arms,feet,mouth,smile,open,food,extras,setState,pose};pose(0);return pet;
+ const pet={root,body,skin,eyes,arms,feet,mouth,smile,open,food,extras,newProps,setState,pose};pose(0);return pet;
 }

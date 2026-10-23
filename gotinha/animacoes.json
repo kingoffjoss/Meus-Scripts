@@ -1,149 +1,449 @@
 {
-  "count": 23,
+  "count": 73,
   "clips": [
     {
       "id": "walk",
       "label": "Andar pela tela",
       "duration": 12,
-      "tracks": 126
+      "tracks": 145
     },
     {
       "id": "sleep",
       "label": "Dormir com Zzz",
       "duration": 12,
-      "tracks": 126
+      "tracks": 145
     },
     {
       "id": "eat",
       "label": "Comer biscoito",
       "duration": 12,
-      "tracks": 126
+      "tracks": 145
     },
     {
       "id": "wave",
       "label": "Dar tchau",
       "duration": 12,
-      "tracks": 126
+      "tracks": 145
     },
     {
       "id": "dance",
       "label": "Dançar",
       "duration": 12,
-      "tracks": 126
+      "tracks": 145
     },
     {
       "id": "spin",
       "label": "Dar uma voltinha",
       "duration": 12,
-      "tracks": 126
+      "tracks": 145
     },
     {
       "id": "hop",
       "label": "Pular de alegria",
       "duration": 12,
-      "tracks": 126
+      "tracks": 145
     },
     {
       "id": "stretch",
       "label": "Espreguiçar",
       "duration": 12,
-      "tracks": 126
+      "tracks": 145
     },
     {
       "id": "yawn",
       "label": "Bocejar",
       "duration": 12,
-      "tracks": 126
+      "tracks": 145
     },
     {
       "id": "sad",
       "label": "Ficar tristinho",
       "duration": 12,
-      "tracks": 126
+      "tracks": 145
     },
     {
       "id": "angry",
       "label": "Ficar emburrado",
       "duration": 12,
-      "tracks": 126
+      "tracks": 145
     },
     {
       "id": "surprise",
       "label": "Levar um susto",
       "duration": 12,
-      "tracks": 126
+      "tracks": 145
     },
     {
       "id": "laugh",
       "label": "Dar risada",
       "duration": 12,
-      "tracks": 126
+      "tracks": 145
     },
     {
       "id": "think",
       "label": "Pensar",
       "duration": 12,
-      "tracks": 126
+      "tracks": 145
     },
     {
       "id": "curious",
       "label": "Olhar curioso",
       "duration": 12,
-      "tracks": 126
+      "tracks": 145
     },
     {
       "id": "celebrate",
       "label": "Comemorar",
       "duration": 12,
-      "tracks": 126
+      "tracks": 145
     },
     {
       "id": "focus",
       "label": "Se concentrar",
       "duration": 12,
-      "tracks": 126
+      "tracks": 145
     },
     {
       "id": "drink",
       "label": "Tomar água",
       "duration": 12,
-      "tracks": 126
+      "tracks": 145
     },
     {
       "id": "ball",
       "label": "Brincar com bola",
       "duration": 12,
-      "tracks": 126
+      "tracks": 145
     },
     {
       "id": "shy",
       "label": "Ficar tímido",
       "duration": 12,
-      "tracks": 126
+      "tracks": 145
     },
     {
       "id": "alert",
       "label": "Chamar atenção",
       "duration": 12,
-      "tracks": 126
+      "tracks": 145
     },
     {
       "id": "tired",
       "label": "Ficar cansado",
       "duration": 12,
-      "tracks": 126
+      "tracks": 145
     },
     {
       "id": "proud",
       "label": "Sentir orgulho",
       "duration": 12,
-      "tracks": 126
+      "tracks": 145
+    },
+    {
+      "id": "bow",
+      "label": "Fazer uma reverência",
+      "duration": 12,
+      "tracks": 145
+    },
+    {
+      "id": "highFive",
+      "label": "Bater aqui",
+      "duration": 12,
+      "tracks": 145
+    },
+    {
+      "id": "clap",
+      "label": "Bater palminhas",
+      "duration": 12,
+      "tracks": 145
+    },
+    {
+      "id": "heart",
+      "label": "Mandar um coração",
+      "duration": 12,
+      "tracks": 145
+    },
+    {
+      "id": "hug",
+      "label": "Dar um abraço",
+      "duration": 12,
+      "tracks": 145
+    },
+    {
+      "id": "kiss",
+      "label": "Mandar um beijo",
+      "duration": 12,
+      "tracks": 145
+    },
+    {
+      "id": "winkLeft",
+      "label": "Piscar o olho esquerdo",
+      "duration": 12,
+      "tracks": 145
+    },
+    {
+      "id": "winkRight",
+      "label": "Piscar o olho direito",
+      "duration": 12,
+      "tracks": 145
+    },
+    {
+      "id": "nod",
+      "label": "Concordar",
+      "duration": 12,
+      "tracks": 145
+    },
+    {
+      "id": "shakeHead",
+      "label": "Discordar",
+      "duration": 12,
+      "tracks": 145
+    },
+    {
+      "id": "listen",
+      "label": "Escutar com atenção",
+      "duration": 12,
+      "tracks": 145
+    },
+    {
+      "id": "search",
+      "label": "Procurar alguma coisa",
+      "duration": 12,
+      "tracks": 145
+    },
+    {
+      "id": "peek",
+      "label": "Espiar escondidinho",
+      "duration": 12,
+      "tracks": 145
+    },
+    {
+      "id": "sneak",
+      "label": "Andar na ponta dos pés",
+      "duration": 12,
+      "tracks": 145
+    },
+    {
+      "id": "tiptoe",
+      "label": "Se esticar para alcançar",
+      "duration": 12,
+      "tracks": 145
+    },
+    {
+      "id": "run",
+      "label": "Correr contente",
+      "duration": 12,
+      "tracks": 145
+    },
+    {
+      "id": "march",
+      "label": "Marchar",
+      "duration": 12,
+      "tracks": 145
+    },
+    {
+      "id": "moonwalk",
+      "label": "Fazer moonwalk",
+      "duration": 12,
+      "tracks": 145
+    },
+    {
+      "id": "sideStep",
+      "label": "Dar passinhos cruzados",
+      "duration": 12,
+      "tracks": 145
+    },
+    {
+      "id": "balance",
+      "label": "Se equilibrar",
+      "duration": 12,
+      "tracks": 145
+    },
+    {
+      "id": "stumble",
+      "label": "Tropeçar de leve",
+      "duration": 12,
+      "tracks": 145
+    },
+    {
+      "id": "recover",
+      "label": "Recuperar o equilíbrio",
+      "duration": 12,
+      "tracks": 145
+    },
+    {
+      "id": "roll",
+      "label": "Rolar como gelatina",
+      "duration": 12,
+      "tracks": 145
+    },
+    {
+      "id": "wobble",
+      "label": "Balançar molinho",
+      "duration": 12,
+      "tracks": 145
+    },
+    {
+      "id": "jellyWave",
+      "label": "Fazer uma onda de gelatina",
+      "duration": 12,
+      "tracks": 145
+    },
+    {
+      "id": "squash",
+      "label": "Virar uma panquequinha",
+      "duration": 12,
+      "tracks": 145
+    },
+    {
+      "id": "breatheDeep",
+      "label": "Respirar fundo",
+      "duration": 12,
+      "tracks": 145
+    },
+    {
+      "id": "meditate",
+      "label": "Meditar",
+      "duration": 12,
+      "tracks": 145
+    },
+    {
+      "id": "relax",
+      "label": "Relaxar",
+      "duration": 12,
+      "tracks": 145
+    },
+    {
+      "id": "napCurl",
+      "label": "Se enrolar para cochilar",
+      "duration": 12,
+      "tracks": 145
+    },
+    {
+      "id": "wakeUp",
+      "label": "Acordar devagar",
+      "duration": 12,
+      "tracks": 145
+    },
+    {
+      "id": "dream",
+      "label": "Sonhar acordado",
+      "duration": 12,
+      "tracks": 145
+    },
+    {
+      "id": "sneeze",
+      "label": "Espirrar",
+      "duration": 12,
+      "tracks": 145
+    },
+    {
+      "id": "hiccup",
+      "label": "Ter soluços",
+      "duration": 12,
+      "tracks": 145
+    },
+    {
+      "id": "cough",
+      "label": "Tossir de leve",
+      "duration": 12,
+      "tracks": 145
+    },
+    {
+      "id": "cold",
+      "label": "Sentir frio",
+      "duration": 12,
+      "tracks": 145
+    },
+    {
+      "id": "hot",
+      "label": "Se abanar de calor",
+      "duration": 12,
+      "tracks": 145
+    },
+    {
+      "id": "thirsty",
+      "label": "Pedir água",
+      "duration": 12,
+      "tracks": 145
+    },
+    {
+      "id": "hungry",
+      "label": "Pedir comida",
+      "duration": 12,
+      "tracks": 145
+    },
+    {
+      "id": "lonely",
+      "label": "Pedir companhia",
+      "duration": 12,
+      "tracks": 145
+    },
+    {
+      "id": "grateful",
+      "label": "Agradecer o carinho",
+      "duration": 12,
+      "tracks": 145
+    },
+    {
+      "id": "excited",
+      "label": "Ficar empolgado",
+      "duration": 12,
+      "tracks": 145
+    },
+    {
+      "id": "relieved",
+      "label": "Suspirar aliviado",
+      "duration": 12,
+      "tracks": 145
+    },
+    {
+      "id": "disappointed",
+      "label": "Ficar desapontado",
+      "duration": 12,
+      "tracks": 145
+    },
+    {
+      "id": "determined",
+      "label": "Ganhar coragem",
+      "duration": 12,
+      "tracks": 145
+    },
+    {
+      "id": "read",
+      "label": "Ler um livrinho",
+      "duration": 12,
+      "tracks": 145
+    },
+    {
+      "id": "write",
+      "label": "Desenhar",
+      "duration": 12,
+      "tracks": 145
+    },
+    {
+      "id": "typing",
+      "label": "Digitar",
+      "duration": 12,
+      "tracks": 145
+    },
+    {
+      "id": "stretchArms",
+      "label": "Alongar os bracinhos",
+      "duration": 12,
+      "tracks": 145
+    },
+    {
+      "id": "clean",
+      "label": "Se arrumar",
+      "duration": 12,
+      "tracks": 145
     }
   ],
   "checks": [
     "All poses finite",
     "All tracks close physically",
-    "Actual GLTFLoader loads 23 clips",
+    "Actual GLTFLoader loads 73 clips",
     "All loaded transforms finite",
     "Sleep Zzz visible",
     "Cookie visible while eating"

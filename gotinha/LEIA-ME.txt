@@ -1,11 +1,24 @@
-PINGO — nosso mascote de gelatina
+PINGO — 73 animações, modo vivo e lembretes
 
-Comece por passeio.html para ativar o Pingo flutuando pela tela e configurar seus movimentos no mini painel. Abra index.html para experimentar as 23 animações em uma prévia 3D maior.
+Abra passeio.html e ative o Pingo flutuante. Clique nele para abrir o mini painel. index.html oferece a galeria maior, com os mesmos cuidados e lembretes. O arquivo favorito.txt contém a URL para a barra de favoritos do Chrome.
 
-O arquivo favorito.txt pode ser usado como URL de um favorito no Chrome. A página passeio.html também oferece um botão Pingo para arrastar à barra de favoritos. A ativação depende de a página permitir scripts desse tipo. O mascote permanece na página em que foi ativado.
+O acabamento usa iluminação de ambiente, reflexos suaves, material de gelatina, deformações reais da malha e transições suaves entre poses. O visual continua sendo um personagem estilizado. O pacote tem 73 animações: as 23 anteriores refinadas e mais 50.
 
-O visual aprovado foi preservado, com bracinhos de gelatina. A versão inclui caminhada refinada, sono com Zzz, comida e 20 novas reações. Detalhes em ANIMACOES.txt.
+MODO VIVO
+Ele simula fome, sede, energia, carinho e humor. Essas necessidades mudam com o tempo e com os cuidados. As regras escolhem reações de acordo com o estado e evitam repetir os dois últimos movimentos. Ações manuais têm prioridade por alguns segundos; a soneca manual dura mais antes de retomar a autonomia. Desative Modo vivo para manter a animação escolhida. Os olhos acompanham o ponteiro na galeria. A preferência de movimento reduzido inicia as animações pausadas; selecionar uma ação inicia sua reprodução.
 
-Esta entrega trata do personagem, das animações e do passeio flutuante. A integração com tarefas, XP e lembretes do sistema anterior ainda não foi feita. Nada é transmitido pelo mascote depois do carregamento do código. As configurações deste protótipo não persistem ao recarregar a página.
+SEUS LEMBRETES
+No painel, escreva “tomar água a cada 30 minutos”, “água de 30 em 30 minutos”, “reunião às 21:40” ou “pausa em 15 minutos”. Reuniões são avisadas dez minutos antes; se faltam menos de dez minutos, o aviso é apresentado em seguida. Um horário já passado é agendado para o dia seguinte. O horário usado é o horário local do navegador. O Pingo só menciona compromissos que você cadastrou: não consulta uma agenda automaticamente.
 
-Three.js: MIT, licença em THREE-LICENSE.txt. Fontes em src/. Requisitos: navegador com WebGL2. A preferência de movimento reduzido inicia a animação pausada. O pacote já contém os scripts compilados e pode ser aberto localmente sem instalar dependências.
+O balão mostra o aviso e o painel permite confirmar ou adiar cinco minutos. Há um botão para testar um aviso de água em seguida. “Água para ele” cuida do Pingo; o lembrete de água se dirige a você. Não são a mesma função.
+
+FUNCIONAMENTO E DADOS
+Os avisos dependem de a página com o Pingo continuar aberta. Abas em segundo plano podem atrasar avisos por limitações do navegador. Não há serviço externo de notificações nem garantia de alarme com o navegador fechado. Os cuidados, necessidades e lembretes são salvos no armazenamento local do site. Cada domínio e perfil de navegador tem seus próprios dados. O favorito não acompanha a troca de página ou de aba automaticamente, e páginas restritivas podem bloqueá-lo.
+
+ARQUIVOS
+pingo-73-animacoes.glb contém os 73 clips nomeados, para reproduzir um de cada vez. animacoes.json é o catálogo. O pacote compacto pingo-73-animacoes.zip contém esse modelo e o catálogo. Os modelos individuais andando, dormindo e comendo também estão disponíveis. A versão anterior de 23 clips é mantida como artefato histórico.
+
+VALIDAÇÃO
+365 amostras de poses finitas, retorno ao repouso sem vazamento de estados, transições, lógica de cuidados e persistência, interpretação de horários e intervalos, confirmação, adiamento e prevenção de avisos repetidos. Os cinco GLBs atuais passaram no validador glTF com zero erros e zero avisos. O modelo de 73 clips foi aberto pelo GLTFLoader e todas as animações foram exercitadas. A interface publicada foi usada na verificação visual e funcional.
+
+Reconstrução: npm install; npm run build. Gerar o pacote: npm run animations. Gerar a apresentação principal: npm run export. Fontes em src/. Three.js usa licença MIT, incluída em THREE-LICENSE.txt. Não há integração com tarefas ou XP nesta entrega.
