@@ -1,0 +1,3 @@
+import {createDirectOpenAI} from './direct-openai.js';
+import {createDirectGemini} from './direct-gemini.js';
+export function createDirectProvider(){const providers={openai:createDirectOpenAI(),gemini:createDirectGemini()};let selected='openai';function disconnect(){Object.values(providers).forEach(p=>p.disconnect());}return{connect(key,model,provider='openai'){disconnect();if(!providers[provider])throw Error('Provedor inválido.');selected=provider;providers[selected].connect(key,model);},disconnect,ask:(...args)=>providers[selected].ask(...args),transcribe:(...args)=>providers[selected].transcribe(...args),get active(){return providers[selected].active;}};}
