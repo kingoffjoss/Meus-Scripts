@@ -12,7 +12,15 @@ xml=adb('shell','cat','/sdcard/pingo-window.xml')
 node=next(n for n in ET.fromstring(xml).iter('node') if n.attrib.get('text')=='2. Ativar Pingo flutuante')
 bounds=list(map(int,re.findall(r'\d+',node.attrib['bounds'])))
 adb('shell','input','tap',str((bounds[0]+bounds[2])//2),str((bounds[1]+bounds[3])//2))
-time.sleep(8)
+pathlib.Path('smoke-results').mkdir(exist_ok=True)
+startup=''
+for attempt in range(60):
+    startup=adb('logcat','-d','-s','AndroidRuntime:E','chromium:E','PingoWeb:I','PingoRender:I')
+    if re.search(r'"frames":"[1-9]\d*"',startup.replace('\\','')):
+        break
+    time.sleep(2)
+pathlib.Path('smoke-results/startup.txt').write_text(startup)
+pathlib.Path('smoke-results/full-logcat.txt').write_text(adb('logcat','-d'))
 adb('shell','input','keyevent','KEYCODE_HOME')
 time.sleep(3)
 services=adb('shell','dumpsys','activity','services',package)
