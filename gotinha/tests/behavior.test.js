@@ -28,3 +28,5 @@ const hoverPet=createPet(),camera=new THREE.PerspectiveCamera(35,1,.1,20);camera
 console.log(JSON.stringify({passed:true,checks:['275 animations: 200 new choreographies, unique multi-frame signatures','1375 finite pose samples and morphs','No state leaks in 275 round trips','16 complete color transformations, shared body/hand material','Continuous state blending','Life care, priorities, bounds and persistence','Portuguese interval and meeting parser','Reminder deduplication, snooze, recurrence and acknowledgement','Reminder owner lease, release and expiry']}));
 
 look.moodColors=true;look.mood('Sonolento');assert.equal(look.selected,'lavender');look.mood('Radiante');assert.equal(look.selected,'honey');look.moodColors=false;look.select('jade');look.mood('Sonolento');assert.equal(look.selected,'jade');
+
+import './upgrade281.test.js';

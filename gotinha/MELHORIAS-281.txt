@@ -1,0 +1,21 @@
+PINGO 281.0 — 15 MELHORIAS
+
+1. Voz alternativa: modo “Gravar e transcrever pelo servidor”, até 30 segundos. Clique novamente na flor para concluir. Exige IA conectada e consentimento explícito de envio à OpenAI; pode consumir créditos. Parar fala cancela a gravação. Microfone bloqueado pelo navegador continua impedindo qualquer captura.
+2. Flor azul maior; vermelha durante a escuta.
+3. Boca animada enquanto a voz sintetizada está falando (aproximação visual, não sincronização fonética).
+4. Braços com ombro, cotovelo e antebraço; limite do contorno do corpo aplicado também nas transições.
+5. Pé de apoio ancorado durante a caminhada flutuante; retorno suave no balanço.
+6. Sobrancelhas, olhar curioso e expressão triste em estados correspondentes.
+7. Falas espontâneas evitam repetir as cinco últimas frases; pausas e tom acolhedor.
+8. Ficha de nome/apelido e preferências, salva apenas com ação explícita; pode visualizar e apagar. Isolada por site/origem. Não memoriza conversas de clientes automaticamente.
+9. Pedidos de lembrete digitados ou reconhecidos por voz são interpretados localmente e exigem confirmação do horário. Aceita “meia hora”, “quinze minutos”, “trinta minutos” e “uma hora”.
+10. Aviso usa apenas a última mensagem do grupo do cliente, com autor e identificação por mensagem.
+11. Resumos/sugestões com botão de copiar; nenhum envio automático ao cliente.
+12. Modo foco mantém alertas e reduz movimentos e falas espontâneas. Não modifica o aplicativo de atendimento.
+13. Cores do humor mudam suavemente em três segundos, com explicação no painel e escolha manual disponível.
+14. Jardim com brotos crescendo na primavera, folhas no outono, quatro estações e reação ao clique na grama.
+15. Qualidade automática, leve (30 fps, menor resolução e menos folhas) ou alta. A renderização é suspensa quando a aba fica oculta.
+
+TESTES
+275 animações, 1.375 amostras de poses, restauração de estado, 16 cores, apoio do pé, parsing de lembretes, extração da última mensagem, autenticação, transcrição simulada, cancelamento de gravação e liberação do microfone.
+O servidor Cloudflare foi atualizado e as rotas /chat e /transcribe retornam 401 sem senha. Nenhum teste automatizado enviou áudio real à OpenAI. A conversa de voz completa exige validação com um microfone permitido no navegador do usuário.

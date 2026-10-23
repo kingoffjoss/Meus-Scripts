@@ -18,12 +18,14 @@ export function createPet(){
   oval(eye,'Pupila_'+side,0,0,0,.113,.153,.062,ink);oval(eye,'Brilho_'+side,-.032,.057,.061,.028,.033,.008,shine);oval(eye,'Pontinho_'+side,.029,-.035,.065,.011,.013,.004,shine);oval(eye,'Reflexo_Suave_'+side,.021,-.065,.045,.039,.018,.006,eyeReflection);eyes.push(eye);
   const cheek=new THREE.Mesh(new THREE.PlaneGeometry(.27,.17),blush);cheek.name='Bochecha_'+side;cheek.position.set(side*.435,.86,.704);body.add(cheek);cheek.rotation.y=side*.38;cheeks.push(cheek);
  }
+ const brows=[];const browMaterial=new THREE.MeshBasicMaterial({color:'#1b514e',transparent:true,opacity:.35});for(const side of [-1,1]){const brow=new THREE.Mesh(new THREE.TubeGeometry(new THREE.QuadraticBezierCurve3(new THREE.Vector3(-.085,0,0),new THREE.Vector3(0,.035,0),new THREE.Vector3(.085,0,0)),12,.009,5,false),browMaterial);brow.position.set(side*.265,1.265,.697);body.add(brow);brows.push(brow);}
  const mouth=new THREE.Group();mouth.name='Sorriso';mouth.position.set(0,.866,.758);body.add(mouth);
  const curve=new THREE.QuadraticBezierCurve3(new THREE.Vector3(-.09,.025,0),new THREE.Vector3(0,-.07,.015),new THREE.Vector3(.09,.025,0));const smile=new THREE.Mesh(new THREE.TubeGeometry(curve,28,.018,8,false),ink);mouth.add(smile);
  smile.name='Sorriso_Curva';
  const open=oval(mouth,'Bocejo',0,-.012,.008,.054,.07,.018,ink);open.scale.set(.0001,.0001,.0001);
  const arms=[-1,1].map(side=>{const arm=new THREE.Group();arm.name='Bracinho_'+side;arm.position.set(side*.67,.75,.10);body.add(arm);oval(arm,'Maozinha_'+side,side*.12,-.11,.10,.185,.285,.18,gel);return arm;});
  const armLinks=[-1,1].map(side=>oval(body,'Ligacao_Braco_'+side,side*.70,.76,.12,.075,.15,.075,gel));
+ const forearms=[-1,1].map(side=>oval(body,'Antebraco_'+side,side*.75,.70,.15,.07,.12,.07,gel)),elbows=[-1,1].map(side=>oval(body,'Cotovelo_'+side,side*.74,.71,.15,.082,.082,.082,gel));
  const feet=[-1,1].map(side=>oval(root,'Pezinho_'+side,side*.405,.14,.21,.24,.15,.32,gel));
  const bubbles=[];const bubbleMat=new THREE.MeshPhysicalMaterial({color:'#d9fff5',roughness:.08,metalness:0,transparent:true,opacity:.27,clearcoat:1,depthWrite:false});for(let i=0;i<24;i++){const h=.16+((i*.381966)%1)*.68,y=.17+1.94*h,r=.96*(1-.53*h**2.5)*Math.sqrt(1-(h*2-1)**2),a=i*2.39996,rad=.35+.45*((i*.618)%1),x=Math.cos(a)*r*rad,z=Math.sin(a)*r*.88*rad;const size=.012+(i%5)*.006;const m=oval(body,'Bolhinha_'+i,x,y,z,size,size,size,bubbleMat);bubbles.push(m);}
  const food=new THREE.Group();food.name='Lanchinho';root.add(food);
@@ -33,7 +35,7 @@ export function createPet(){
  const extras=addExtras(root),newProps=addNewProps(root);
  // Protect the palm against the actual cross section of the remodelled body.
  const sections=[];for(let row=0;row<=64;row++){let minX=Infinity,maxX=-Infinity,maxZ=0,y=0;for(let col=0;col<=96;col++){const i=row*97+col;minX=Math.min(minX,p.getX(i));maxX=Math.max(maxX,p.getX(i));maxZ=Math.max(maxZ,Math.abs(p.getZ(i)));y+=p.getY(i);}sections.push({y:y/97,cx:(minX+maxX)/2,rx:(maxX-minX)/2,rz:maxZ});}sections.sort((a,b)=>a.y-b.y);const palmPoint=new THREE.Vector3();
- function protectHands(){for(let sideIndex=0;sideIndex<arms.length;sideIndex++){const arm=arms[sideIndex];const palm=arm.children[0];palmPoint.copy(palm.position).multiply(arm.scale).applyQuaternion(arm.quaternion).add(arm.position);const py=palmPoint.y;if(py<sections[1].y||py>sections.at(-2).y)continue;let k=1;while(k<sections.length-1&&sections[k].y<py)k++;const a=sections[k-1],b=sections[k],u=THREE.MathUtils.clamp((py-a.y)/Math.max(.00001,b.y-a.y),0,1),cx=THREE.MathUtils.lerp(a.cx,b.cx,u),pad=.22*Math.max(arm.scale.x,arm.scale.z),rx=THREE.MathUtils.lerp(a.rx,b.rx,u)+pad,rz=THREE.MathUtils.lerp(a.rz,b.rz,u)+pad,dx=palmPoint.x-cx,dz=palmPoint.z,n=Math.hypot(dx/rx,dz/rz);if(n<1){const factor=1/Math.max(.001,n);arm.position.x+=dx*(factor-1);arm.position.z+=dz*(factor-1);}palmPoint.copy(palm.position).multiply(arm.scale).applyQuaternion(arm.quaternion).add(arm.position);const shoulder=new THREE.Vector3((sideIndex?1:-1)*.70,.76,.12),delta=palmPoint.clone().sub(shoulder),link=armLinks[sideIndex];link.position.copy(shoulder).add(palmPoint).multiplyScalar(.5);link.scale.set(.075,Math.max(.03,delta.length()/2),.075);link.quaternion.setFromUnitVectors(new THREE.Vector3(0,1,0),delta.normalize());}}
+ function protectHands(){for(let sideIndex=0;sideIndex<arms.length;sideIndex++){const arm=arms[sideIndex];const palm=arm.children[0];palmPoint.copy(palm.position).multiply(arm.scale).applyQuaternion(arm.quaternion).add(arm.position);const py=palmPoint.y;const inRange=py>=sections[1].y&&py<=sections.at(-2).y;let k=1;while(k<sections.length-1&&sections[k].y<py)k++;const a=sections[k-1],b=sections[k],u=THREE.MathUtils.clamp((py-a.y)/Math.max(.00001,b.y-a.y),0,1),cx=THREE.MathUtils.lerp(a.cx,b.cx,u),pad=.22*Math.max(arm.scale.x,arm.scale.z),rx=THREE.MathUtils.lerp(a.rx,b.rx,u)+pad,rz=THREE.MathUtils.lerp(a.rz,b.rz,u)+pad,dx=palmPoint.x-cx,dz=palmPoint.z,n=Math.hypot(dx/rx,dz/rz);if(n<1&&inRange){const factor=1/Math.max(.001,n);arm.position.x+=dx*(factor-1);arm.position.z+=dz*(factor-1);}palmPoint.copy(palm.position).multiply(arm.scale).applyQuaternion(arm.quaternion).add(arm.position);const shoulder=new THREE.Vector3((sideIndex?1:-1)*.70,.76,.12),delta=palmPoint.clone().sub(shoulder),link=armLinks[sideIndex];const elbow=shoulder.clone().lerp(palmPoint,.5);elbow.z+=.06;elbow.y-=.025;elbows[sideIndex].position.copy(elbow);const segment=(mesh,a,b,r)=>{const d=b.clone().sub(a);mesh.position.copy(a).add(b).multiplyScalar(.5);mesh.scale.set(r,Math.max(.02,d.length()/2),r);mesh.quaternion.setFromUnitVectors(new THREE.Vector3(0,1,0),d.normalize());};segment(link,shoulder,elbow,.075);segment(forearms[sideIndex],elbow,palmPoint,.07);}}
  const rest=[];root.traverse(n=>rest.push({n,p:n.position.clone(),q:n.quaternion.clone(),s:n.scale.clone()}));
  let state='idle',started=0;
  function setState(next,t){state=next;started=t;}
@@ -64,6 +66,6 @@ export function createPet(){
   poseExtras(pet,s,age);poseNew(pet,s,age);poseMega(pet,s,age);polishPose(pet,s,age);protectHands();
   return state;
  }
- const pet={root,body,skin,eyes,arms,feet,mouth,smile,open,food,extras,newProps,setState,pose,protectHands};pose(0);return pet;
+ const pet={root,body,skin,eyes,brows,arms,feet,mouth,smile,open,food,extras,newProps,setState,pose,protectHands};pose(0);return pet;
 }
 
