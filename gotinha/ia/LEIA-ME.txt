@@ -27,8 +27,9 @@ Alternativa pelo Wrangler instalado na sua máquina:
 Execute dentro desta pasta. Os comandos solicitam os valores privadamente.
 
 PRIVACIDADE E LIMITES
-- Só a pergunta e até 6 mensagens de contexto são enviadas ao Worker/Google.
-  Não lemos o conteúdo da página, seus lembretes ou sua agenda.
+- No chat comum, só a pergunta e até 6 mensagens são enviadas ao Worker/Google.
+- A leitura opcional pode enviar até 4.000 caracteres da página ou da conversa
+  AjaModular, após sua autorização. Não lemos lembretes ou agenda.
 - A chave Google nunca sai do servidor para o navegador.
 - A senha do Pingo fica apenas na memória da instância do mascote.
 - O endpoint exige senha; CORS aberto é necessário para o favorito em
@@ -52,4 +53,5 @@ ESTADO EM 22/10/2026
 Worker publicado e GEMINI_MODEL configurado como gemini-3.8-flash.
 Faltam GEMINI_API_KEY (nova chave) e PINGO_ACCESS_TOKEN (senha exclusiva).
 Resposta 503 antes de cadastrar os segredos é esperada.
-Teste real de resposta Gemini ainda não realizado.
+A configuração de segredos foi concluída pelo usuário.
+Não foi realizado teste autenticado com a senha privada do usuário.
