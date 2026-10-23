@@ -1,9 +1,9 @@
-PINGO — CATÁLOGO DE 73 ANIMAÇÕES
+PINGO — CATÁLOGO DE 75 ANIMAÇÕES
 
 As 23 anteriores:
 Andar, dormir com Zzz, comer biscoito, dar tchau, dançar, girar, pular de alegria, espreguiçar, bocejar, ficar tristinho, emburrar, se surpreender, rir, pensar, olhar curioso, comemorar, se concentrar, tomar água, brincar com bola, ficar tímido, chamar atenção, ficar cansado, sentir orgulho.
 
-As 50 novas:
+As 50 novas solicitadas:
 1. Fazer uma reverência
 2. Bater aqui
 3. Bater palminhas
@@ -56,3 +56,6 @@ As 50 novas:
 50. Se arrumar
 
 Todos os estados receberam movimento secundário de gelatina. A deformação da parte superior fica atrasada em relação ao movimento principal; os braços acompanham com flexibilidade. O player suaviza as mudanças entre animações ao vivo. O pacote GLB contém os ciclos individuais e os morph targets da malha; a lógica de emoções e as transições interativas estão no código da aplicação.
+
+REAÇÕES AO CURSOR E AO ARRASTE
+No modo flutuante, os olhos seguem o cursor; ao passar por uma mão, o bracinho se levanta. Depois de arrastar, ele comenta se gostou do lugar. Arraste rápido por algum tempo para gerar enjoo; inverta a direção três vezes em sequência para acionar um arco-íris cartunesco. Há limites de repetição para essas reações. As duas reações extras, enjoo e arco-íris, elevam o total a 75 estados. As falas espontâneas podem ser desligadas no painel.

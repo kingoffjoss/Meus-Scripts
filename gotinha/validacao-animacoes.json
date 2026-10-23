@@ -1,33 +1,33 @@
 {
-  "animationCount": 73,
+  "animationCount": 75,
   "results": [
     {
       "file": "pingo.glb",
-      "bytes": 704888,
+      "bytes": 812068,
       "errors": 0,
       "warnings": 0
     },
     {
       "file": "pingo-andando.glb",
-      "bytes": 863616,
+      "bytes": 980988,
       "errors": 0,
       "warnings": 0
     },
     {
       "file": "pingo-dormindo.glb",
-      "bytes": 902948,
+      "bytes": 1020320,
       "errors": 0,
       "warnings": 0
     },
     {
       "file": "pingo-comendo.glb",
-      "bytes": 911024,
+      "bytes": 1028396,
       "errors": 0,
       "warnings": 0
     },
     {
-      "file": "pingo-73-animacoes.glb",
-      "bytes": 11392964,
+      "file": "pingo-75-animacoes.glb",
+      "bytes": 12572704,
       "errors": 0,
       "warnings": 0
     }
@@ -35,9 +35,17 @@
   "checks": [
     "All poses finite",
     "All tracks close physically",
-    "Actual GLTFLoader loads 73 clips",
+    "Actual GLTFLoader loads 75 clips",
     "All loaded transforms finite",
     "Sleep Zzz visible",
     "Cookie visible while eating"
+  ],
+  "gestureChecks": [
+    "Slow drag stays calm",
+    "Fast drag causes nausea",
+    "Three reversals cause rainbow",
+    "Shake cooldown prevents repetition",
+    "Placement comments depend on position",
+    "Hand raycast raises the correct arm"
   ]
 }
