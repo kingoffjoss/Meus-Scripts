@@ -15,7 +15,7 @@ export function createPet(){
  const mouth=new THREE.Group();mouth.name='Sorriso';mouth.position.set(0,.866,.758);body.add(mouth);
  const curve=new THREE.QuadraticBezierCurve3(new THREE.Vector3(-.078,.025,0),new THREE.Vector3(0,-.07,.015),new THREE.Vector3(.078,.025,0));const smile=new THREE.Mesh(new THREE.TubeGeometry(curve,28,.014,8,false),ink);mouth.add(smile);
  const open=oval(mouth,'Bocejo',0,-.012,.008,.054,.07,.018,ink);open.visible=false;
- const feet=[-1,1].map(side=>oval(root,'Pezinho_'+side,side*.405,.105,.21,.207,.105,.28,gel));
+ const feet=[-1,1].map(side=>oval(root,'Pezinho_'+side,side*.405,.14,.21,.207,.14,.28,gel));
  const bubbles=[];for(const [i,x,y,z,r] of [[0,-.43,1.34,.45,.037],[1,.46,.62,.61,.023],[2,-.24,.51,.65,.018]]){const m=oval(body,'Bolhinha_'+i,x,y,z,r,r,r,new THREE.MeshPhysicalMaterial({color:'#c4f4e9',roughness:.17,transparent:true,opacity:.48,depthWrite:false}));bubbles.push(m);}
  let state='idle',started=0;
  function setState(next,t){state=next;started=t;}
@@ -35,7 +35,7 @@ export function createPet(){
   const blink=((t%5.3)>4.91)?Math.max(.045,Math.abs((t%5.3)-5.07)/.16):1;
   eyes.forEach(e=>{e.scale.y=s==='sleep'?.065:blink;e.rotation.z=s==='happy'?Math.sin(age*5)*.04:0;});
   mouth.scale.set(1,s==='happy'?1.22:1,1);smile.visible=s!=='eat';open.visible=s==='eat';open.scale.y=.07*(.7+.3*Math.sin(age*14));
-  feet.forEach((f,i)=>{f.position.y=.105;f.rotation.x=lift>0?-.18:0;f.rotation.z=s==='happy'?Math.sin(age*7+i*Math.PI)*.12:0;});
+  feet.forEach((f,i)=>{f.position.y=.14;f.rotation.x=lift>0?-.18:0;f.rotation.z=s==='happy'?Math.sin(age*7+i*Math.PI)*.12:0;});
   return state;
  }
  pose(0);return{root,body,eyes,feet,mouth,setState,pose};
