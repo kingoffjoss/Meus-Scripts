@@ -1,6 +1,7 @@
+import {megaAnimations} from './mega-motions.js';
 import * as THREE from 'three';
 import {newAnimations} from './new-motions.js';
-export const animations=[['walk','Andar pela tela'],['sleep','Dormir com Zzz'],['eat','Comer biscoito'],['wave','Dar tchau'],['dance','Dançar'],['spin','Dar uma voltinha'],['hop','Pular de alegria'],['stretch','Espreguiçar'],['yawn','Bocejar'],['sad','Ficar tristinho'],['angry','Ficar emburrado'],['surprise','Levar um susto'],['laugh','Dar risada'],['think','Pensar'],['curious','Olhar curioso'],['celebrate','Comemorar'],['focus','Se concentrar'],['drink','Tomar água'],['ball','Brincar com bola'],['shy','Ficar tímido'],['alert','Chamar atenção'],['tired','Ficar cansado'],['proud','Sentir orgulho'],...newAnimations];
+export const animations=[['walk','Andar pela tela'],['sleep','Dormir com Zzz'],['eat','Comer biscoito'],['wave','Dar tchau'],['dance','Dançar'],['spin','Dar uma voltinha'],['hop','Pular de alegria'],['stretch','Espreguiçar'],['yawn','Bocejar'],['sad','Ficar tristinho'],['angry','Ficar emburrado'],['surprise','Levar um susto'],['laugh','Dar risada'],['think','Pensar'],['curious','Olhar curioso'],['celebrate','Comemorar'],['focus','Se concentrar'],['drink','Tomar água'],['ball','Brincar com bola'],['shy','Ficar tímido'],['alert','Chamar atenção'],['tired','Ficar cansado'],['proud','Sentir orgulho'],...newAnimations,...megaAnimations.map(a=>[a.id,a.label])];
 export function addExtras(root){
  const material=new THREE.MeshStandardMaterial({color:'#8c83bb',roughness:.55});
  const zzz=new THREE.Group();zzz.name='Sono_Zzz';root.add(zzz);

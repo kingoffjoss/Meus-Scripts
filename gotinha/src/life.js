@@ -14,7 +14,7 @@ export class PingoLife{
   else if(n.fullness<30){pool=['hungry','think','relax'];reason='Acho que cabe um lanchinho por aqui.';}
   else if(n.affection<30){pool=['lonely','wave','hug'];reason='Um carinho seria tão bom.';}
   else if(n.mood<40){pool=['sad','relax','breatheDeep','meditate'];reason='Vou ficar um pouquinho mais quietinho.';}
-  else {pool=['walk','walk','curious','wave','search','stretch','listen','read','clean','wobble','think','ball','dance','proud','peek','jellyWave','nod','dream','relax','greet'];pool=pool.filter(x=>x!=='greet');reason='Só explorando e curtindo sua companhia.';if(n.mood>84)pool.push('celebrate','excited','heart','laugh');}
+  else {pool=['walk','walk','curious','wave','search','stretch','listen','read','clean','wobble','think','ball','dance','proud','peek','jellyWave','nod','dream','relax','greet','plus_groove_1','plus_greeting_3','plus_yoga_1','plus_curiosity_6','plus_music_5','plus_play_1','plus_weather_3','plus_care_2','plus_breathe_2'];pool=pool.filter(x=>x!=='greet');reason='Só explorando e curtindo sua companhia.';if(n.mood>84)pool.push('celebrate','excited','heart','laugh');}
   const fresh=pool.filter(s=>!this.recent.slice(-2).includes(s));const list=fresh.length?fresh:pool;this.state=list[Math.min(list.length-1,Math.floor(this.random()*list.length))];this.recent.push(this.state);this.recent=this.recent.slice(-4);this.next=time+(this.state==='sleep'?32:9+this.random()*8);return{state:this.state,reason,emotion:this.emotion};
  }
  snapshot(now=Date.now()){return{version:1,needs:{...this.needs},savedAt:now};}

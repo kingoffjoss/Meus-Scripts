@@ -1,0 +1,1383 @@
+{
+  "count": 275,
+  "added": 200,
+  "format": "procedural-runtime",
+  "colors": 8,
+  "animations": [
+    {
+      "id": "walk",
+      "label": "Andar pela tela",
+      "category": "Originais"
+    },
+    {
+      "id": "sleep",
+      "label": "Dormir com Zzz",
+      "category": "Originais"
+    },
+    {
+      "id": "eat",
+      "label": "Comer biscoito",
+      "category": "Originais"
+    },
+    {
+      "id": "wave",
+      "label": "Dar tchau",
+      "category": "Originais"
+    },
+    {
+      "id": "dance",
+      "label": "Dançar",
+      "category": "Originais"
+    },
+    {
+      "id": "spin",
+      "label": "Dar uma voltinha",
+      "category": "Originais"
+    },
+    {
+      "id": "hop",
+      "label": "Pular de alegria",
+      "category": "Originais"
+    },
+    {
+      "id": "stretch",
+      "label": "Espreguiçar",
+      "category": "Originais"
+    },
+    {
+      "id": "yawn",
+      "label": "Bocejar",
+      "category": "Originais"
+    },
+    {
+      "id": "sad",
+      "label": "Ficar tristinho",
+      "category": "Originais"
+    },
+    {
+      "id": "angry",
+      "label": "Ficar emburrado",
+      "category": "Originais"
+    },
+    {
+      "id": "surprise",
+      "label": "Levar um susto",
+      "category": "Originais"
+    },
+    {
+      "id": "laugh",
+      "label": "Dar risada",
+      "category": "Originais"
+    },
+    {
+      "id": "think",
+      "label": "Pensar",
+      "category": "Originais"
+    },
+    {
+      "id": "curious",
+      "label": "Olhar curioso",
+      "category": "Originais"
+    },
+    {
+      "id": "celebrate",
+      "label": "Comemorar",
+      "category": "Originais"
+    },
+    {
+      "id": "focus",
+      "label": "Se concentrar",
+      "category": "Originais"
+    },
+    {
+      "id": "drink",
+      "label": "Tomar água",
+      "category": "Originais"
+    },
+    {
+      "id": "ball",
+      "label": "Brincar com bola",
+      "category": "Originais"
+    },
+    {
+      "id": "shy",
+      "label": "Ficar tímido",
+      "category": "Originais"
+    },
+    {
+      "id": "alert",
+      "label": "Chamar atenção",
+      "category": "Originais"
+    },
+    {
+      "id": "tired",
+      "label": "Ficar cansado",
+      "category": "Originais"
+    },
+    {
+      "id": "proud",
+      "label": "Sentir orgulho",
+      "category": "Originais"
+    },
+    {
+      "id": "bow",
+      "label": "Fazer uma reverência",
+      "category": "Originais"
+    },
+    {
+      "id": "highFive",
+      "label": "Bater aqui",
+      "category": "Originais"
+    },
+    {
+      "id": "clap",
+      "label": "Bater palminhas",
+      "category": "Originais"
+    },
+    {
+      "id": "heart",
+      "label": "Mandar um coração",
+      "category": "Originais"
+    },
+    {
+      "id": "hug",
+      "label": "Dar um abraço",
+      "category": "Originais"
+    },
+    {
+      "id": "kiss",
+      "label": "Mandar um beijo",
+      "category": "Originais"
+    },
+    {
+      "id": "winkLeft",
+      "label": "Piscar o olho esquerdo",
+      "category": "Originais"
+    },
+    {
+      "id": "winkRight",
+      "label": "Piscar o olho direito",
+      "category": "Originais"
+    },
+    {
+      "id": "nod",
+      "label": "Concordar",
+      "category": "Originais"
+    },
+    {
+      "id": "shakeHead",
+      "label": "Discordar",
+      "category": "Originais"
+    },
+    {
+      "id": "listen",
+      "label": "Escutar com atenção",
+      "category": "Originais"
+    },
+    {
+      "id": "search",
+      "label": "Procurar alguma coisa",
+      "category": "Originais"
+    },
+    {
+      "id": "peek",
+      "label": "Espiar escondidinho",
+      "category": "Originais"
+    },
+    {
+      "id": "sneak",
+      "label": "Andar na ponta dos pés",
+      "category": "Originais"
+    },
+    {
+      "id": "tiptoe",
+      "label": "Se esticar para alcançar",
+      "category": "Originais"
+    },
+    {
+      "id": "run",
+      "label": "Correr contente",
+      "category": "Originais"
+    },
+    {
+      "id": "march",
+      "label": "Marchar",
+      "category": "Originais"
+    },
+    {
+      "id": "moonwalk",
+      "label": "Fazer moonwalk",
+      "category": "Originais"
+    },
+    {
+      "id": "sideStep",
+      "label": "Dar passinhos cruzados",
+      "category": "Originais"
+    },
+    {
+      "id": "balance",
+      "label": "Se equilibrar",
+      "category": "Originais"
+    },
+    {
+      "id": "stumble",
+      "label": "Tropeçar de leve",
+      "category": "Originais"
+    },
+    {
+      "id": "recover",
+      "label": "Recuperar o equilíbrio",
+      "category": "Originais"
+    },
+    {
+      "id": "roll",
+      "label": "Rolar como gelatina",
+      "category": "Originais"
+    },
+    {
+      "id": "wobble",
+      "label": "Balançar molinho",
+      "category": "Originais"
+    },
+    {
+      "id": "jellyWave",
+      "label": "Fazer uma onda de gelatina",
+      "category": "Originais"
+    },
+    {
+      "id": "squash",
+      "label": "Virar uma panquequinha",
+      "category": "Originais"
+    },
+    {
+      "id": "breatheDeep",
+      "label": "Respirar fundo",
+      "category": "Originais"
+    },
+    {
+      "id": "meditate",
+      "label": "Meditar",
+      "category": "Originais"
+    },
+    {
+      "id": "relax",
+      "label": "Relaxar",
+      "category": "Originais"
+    },
+    {
+      "id": "napCurl",
+      "label": "Se enrolar para cochilar",
+      "category": "Originais"
+    },
+    {
+      "id": "wakeUp",
+      "label": "Acordar devagar",
+      "category": "Originais"
+    },
+    {
+      "id": "dream",
+      "label": "Sonhar acordado",
+      "category": "Originais"
+    },
+    {
+      "id": "sneeze",
+      "label": "Espirrar",
+      "category": "Originais"
+    },
+    {
+      "id": "hiccup",
+      "label": "Ter soluços",
+      "category": "Originais"
+    },
+    {
+      "id": "cough",
+      "label": "Tossir de leve",
+      "category": "Originais"
+    },
+    {
+      "id": "cold",
+      "label": "Sentir frio",
+      "category": "Originais"
+    },
+    {
+      "id": "hot",
+      "label": "Se abanar de calor",
+      "category": "Originais"
+    },
+    {
+      "id": "thirsty",
+      "label": "Pedir água",
+      "category": "Originais"
+    },
+    {
+      "id": "hungry",
+      "label": "Pedir comida",
+      "category": "Originais"
+    },
+    {
+      "id": "lonely",
+      "label": "Pedir companhia",
+      "category": "Originais"
+    },
+    {
+      "id": "grateful",
+      "label": "Agradecer o carinho",
+      "category": "Originais"
+    },
+    {
+      "id": "excited",
+      "label": "Ficar empolgado",
+      "category": "Originais"
+    },
+    {
+      "id": "relieved",
+      "label": "Suspirar aliviado",
+      "category": "Originais"
+    },
+    {
+      "id": "disappointed",
+      "label": "Ficar desapontado",
+      "category": "Originais"
+    },
+    {
+      "id": "determined",
+      "label": "Ganhar coragem",
+      "category": "Originais"
+    },
+    {
+      "id": "read",
+      "label": "Ler um livrinho",
+      "category": "Originais"
+    },
+    {
+      "id": "write",
+      "label": "Desenhar",
+      "category": "Originais"
+    },
+    {
+      "id": "typing",
+      "label": "Digitar",
+      "category": "Originais"
+    },
+    {
+      "id": "stretchArms",
+      "label": "Alongar os bracinhos",
+      "category": "Originais"
+    },
+    {
+      "id": "clean",
+      "label": "Se arrumar",
+      "category": "Originais"
+    },
+    {
+      "id": "nausea",
+      "label": "Ficar enjoado",
+      "category": "Originais"
+    },
+    {
+      "id": "rainbow",
+      "label": "Soltar um arco-íris",
+      "category": "Originais"
+    },
+    {
+      "id": "plus_groove_1",
+      "label": "Samba miudinho",
+      "category": "Dança"
+    },
+    {
+      "id": "plus_groove_2",
+      "label": "Samba com bracinhos",
+      "category": "Dança"
+    },
+    {
+      "id": "plus_groove_3",
+      "label": "Balanço de reggae",
+      "category": "Dança"
+    },
+    {
+      "id": "plus_groove_4",
+      "label": "Passinho de disco",
+      "category": "Dança"
+    },
+    {
+      "id": "plus_groove_5",
+      "label": "Dança robótica",
+      "category": "Dança"
+    },
+    {
+      "id": "plus_groove_6",
+      "label": "Ginga de forró",
+      "category": "Dança"
+    },
+    {
+      "id": "plus_groove_7",
+      "label": "Valsa de gelatina",
+      "category": "Dança"
+    },
+    {
+      "id": "plus_groove_8",
+      "label": "Dança em oito",
+      "category": "Dança"
+    },
+    {
+      "id": "plus_groove_9",
+      "label": "Twist sorridente",
+      "category": "Dança"
+    },
+    {
+      "id": "plus_groove_10",
+      "label": "Final de musical",
+      "category": "Dança"
+    },
+    {
+      "id": "plus_greeting_1",
+      "label": "Oi com as duas mãos",
+      "category": "Cumprimentos"
+    },
+    {
+      "id": "plus_greeting_2",
+      "label": "Aceno delicado",
+      "category": "Cumprimentos"
+    },
+    {
+      "id": "plus_greeting_3",
+      "label": "Olá bem animado",
+      "category": "Cumprimentos"
+    },
+    {
+      "id": "plus_greeting_4",
+      "label": "Saudação de capitão",
+      "category": "Cumprimentos"
+    },
+    {
+      "id": "plus_greeting_5",
+      "label": "Cumprimento real",
+      "category": "Cumprimentos"
+    },
+    {
+      "id": "plus_greeting_6",
+      "label": "Reverência de palco",
+      "category": "Cumprimentos"
+    },
+    {
+      "id": "plus_greeting_7",
+      "label": "Oi escondidinho",
+      "category": "Cumprimentos"
+    },
+    {
+      "id": "plus_greeting_8",
+      "label": "Tchau demorado",
+      "category": "Cumprimentos"
+    },
+    {
+      "id": "plus_greeting_9",
+      "label": "Aceno de reencontro",
+      "category": "Cumprimentos"
+    },
+    {
+      "id": "plus_greeting_10",
+      "label": "Bom dia espreguiçado",
+      "category": "Cumprimentos"
+    },
+    {
+      "id": "plus_sport_1",
+      "label": "Aquecimento de corrida",
+      "category": "Esportes"
+    },
+    {
+      "id": "plus_sport_2",
+      "label": "Polichinelo suave",
+      "category": "Esportes"
+    },
+    {
+      "id": "plus_sport_3",
+      "label": "Agachamento fofo",
+      "category": "Esportes"
+    },
+    {
+      "id": "plus_sport_4",
+      "label": "Boxe de brincadeira",
+      "category": "Esportes"
+    },
+    {
+      "id": "plus_sport_5",
+      "label": "Goleiro atento",
+      "category": "Esportes"
+    },
+    {
+      "id": "plus_sport_6",
+      "label": "Arremesso imaginário",
+      "category": "Esportes"
+    },
+    {
+      "id": "plus_sport_7",
+      "label": "Surfe equilibrado",
+      "category": "Esportes"
+    },
+    {
+      "id": "plus_sport_8",
+      "label": "Remada de canoa",
+      "category": "Esportes"
+    },
+    {
+      "id": "plus_sport_9",
+      "label": "Pedalada no ar",
+      "category": "Esportes"
+    },
+    {
+      "id": "plus_sport_10",
+      "label": "Pulo de corda",
+      "category": "Esportes"
+    },
+    {
+      "id": "plus_yoga_1",
+      "label": "Alongar para o céu",
+      "category": "Alongamentos"
+    },
+    {
+      "id": "plus_yoga_2",
+      "label": "Alongar para a esquerda",
+      "category": "Alongamentos"
+    },
+    {
+      "id": "plus_yoga_3",
+      "label": "Alongar para a direita",
+      "category": "Alongamentos"
+    },
+    {
+      "id": "plus_yoga_4",
+      "label": "Alongamento cruzado",
+      "category": "Alongamentos"
+    },
+    {
+      "id": "plus_yoga_5",
+      "label": "Postura da árvore",
+      "category": "Alongamentos"
+    },
+    {
+      "id": "plus_yoga_6",
+      "label": "Abraçar os joelhos",
+      "category": "Alongamentos"
+    },
+    {
+      "id": "plus_yoga_7",
+      "label": "Alongar a cintura",
+      "category": "Alongamentos"
+    },
+    {
+      "id": "plus_yoga_8",
+      "label": "Alongar antes de dormir",
+      "category": "Alongamentos"
+    },
+    {
+      "id": "plus_yoga_9",
+      "label": "Alongamento em arco",
+      "category": "Alongamentos"
+    },
+    {
+      "id": "plus_yoga_10",
+      "label": "Saudação ao sol",
+      "category": "Alongamentos"
+    },
+    {
+      "id": "plus_balance_1",
+      "label": "Equilibrar no pé esquerdo",
+      "category": "Equilíbrio"
+    },
+    {
+      "id": "plus_balance_2",
+      "label": "Equilibrar no pé direito",
+      "category": "Equilíbrio"
+    },
+    {
+      "id": "plus_balance_3",
+      "label": "Caminhar na corda bamba",
+      "category": "Equilíbrio"
+    },
+    {
+      "id": "plus_balance_4",
+      "label": "Equilibrar de olhos fechados",
+      "category": "Equilíbrio"
+    },
+    {
+      "id": "plus_balance_5",
+      "label": "Prancha de surfista",
+      "category": "Equilíbrio"
+    },
+    {
+      "id": "plus_balance_6",
+      "label": "Pêndulo tranquilo",
+      "category": "Equilíbrio"
+    },
+    {
+      "id": "plus_balance_7",
+      "label": "Equilíbrio de bailarino",
+      "category": "Equilíbrio"
+    },
+    {
+      "id": "plus_balance_8",
+      "label": "Passo no gelo",
+      "category": "Equilíbrio"
+    },
+    {
+      "id": "plus_balance_9",
+      "label": "Balanço de barco",
+      "category": "Equilíbrio"
+    },
+    {
+      "id": "plus_balance_10",
+      "label": "Recuperar sem cair",
+      "category": "Equilíbrio"
+    },
+    {
+      "id": "plus_joy_1",
+      "label": "Receber uma boa notícia",
+      "category": "Alegria"
+    },
+    {
+      "id": "plus_joy_2",
+      "label": "Pulinhos de reencontro",
+      "category": "Alegria"
+    },
+    {
+      "id": "plus_joy_3",
+      "label": "Explosão de alegria",
+      "category": "Alegria"
+    },
+    {
+      "id": "plus_joy_4",
+      "label": "Dancinha da vitória",
+      "category": "Alegria"
+    },
+    {
+      "id": "plus_joy_5",
+      "label": "Festejar um objetivo",
+      "category": "Alegria"
+    },
+    {
+      "id": "plus_joy_6",
+      "label": "Comemorar com palmas",
+      "category": "Alegria"
+    },
+    {
+      "id": "plus_joy_7",
+      "label": "Alegria tímida",
+      "category": "Alegria"
+    },
+    {
+      "id": "plus_joy_8",
+      "label": "Sorriso radiante",
+      "category": "Alegria"
+    },
+    {
+      "id": "plus_joy_9",
+      "label": "Festa dos bracinhos",
+      "category": "Alegria"
+    },
+    {
+      "id": "plus_joy_10",
+      "label": "Agradecer uma surpresa",
+      "category": "Alegria"
+    },
+    {
+      "id": "plus_curiosity_1",
+      "label": "Investigar o chão",
+      "category": "Exploração"
+    },
+    {
+      "id": "plus_curiosity_2",
+      "label": "Olhar para o alto",
+      "category": "Exploração"
+    },
+    {
+      "id": "plus_curiosity_3",
+      "label": "Espiar pela esquerda",
+      "category": "Exploração"
+    },
+    {
+      "id": "plus_curiosity_4",
+      "label": "Espiar pela direita",
+      "category": "Exploração"
+    },
+    {
+      "id": "plus_curiosity_5",
+      "label": "Procurar uma estrelinha",
+      "category": "Exploração"
+    },
+    {
+      "id": "plus_curiosity_6",
+      "label": "Seguir uma borboleta",
+      "category": "Exploração"
+    },
+    {
+      "id": "plus_curiosity_7",
+      "label": "Escutar um barulhinho",
+      "category": "Exploração"
+    },
+    {
+      "id": "plus_curiosity_8",
+      "label": "Cheirar uma flor",
+      "category": "Exploração"
+    },
+    {
+      "id": "plus_curiosity_9",
+      "label": "Olhar atrás de si",
+      "category": "Exploração"
+    },
+    {
+      "id": "plus_curiosity_10",
+      "label": "Explorar devagarinho",
+      "category": "Exploração"
+    },
+    {
+      "id": "plus_sleepy_1",
+      "label": "Acomodar para dormir",
+      "category": "Descanso"
+    },
+    {
+      "id": "plus_sleepy_2",
+      "label": "Cochilo balançando",
+      "category": "Descanso"
+    },
+    {
+      "id": "plus_sleepy_3",
+      "label": "Soninho de tarde",
+      "category": "Descanso"
+    },
+    {
+      "id": "plus_sleepy_4",
+      "label": "Descansar as mãos",
+      "category": "Descanso"
+    },
+    {
+      "id": "plus_sleepy_5",
+      "label": "Soneca feliz",
+      "category": "Descanso"
+    },
+    {
+      "id": "plus_sleepy_6",
+      "label": "Suspirar de sono",
+      "category": "Descanso"
+    },
+    {
+      "id": "plus_sleepy_7",
+      "label": "Dormir abraçadinho",
+      "category": "Descanso"
+    },
+    {
+      "id": "plus_sleepy_8",
+      "label": "Ajeitar um travesseiro",
+      "category": "Descanso"
+    },
+    {
+      "id": "plus_sleepy_9",
+      "label": "Bocejo comprido",
+      "category": "Descanso"
+    },
+    {
+      "id": "plus_sleepy_10",
+      "label": "Preguiça de acordar",
+      "category": "Descanso"
+    },
+    {
+      "id": "plus_wake_1",
+      "label": "Abrir os olhos devagar",
+      "category": "Despertar"
+    },
+    {
+      "id": "plus_wake_2",
+      "label": "Bom dia com pulinho",
+      "category": "Despertar"
+    },
+    {
+      "id": "plus_wake_3",
+      "label": "Acordar espreguiçando",
+      "category": "Despertar"
+    },
+    {
+      "id": "plus_wake_4",
+      "label": "Acordar curioso",
+      "category": "Despertar"
+    },
+    {
+      "id": "plus_wake_5",
+      "label": "Sacudir o soninho",
+      "category": "Despertar"
+    },
+    {
+      "id": "plus_wake_6",
+      "label": "Acordar de um sonho",
+      "category": "Despertar"
+    },
+    {
+      "id": "plus_wake_7",
+      "label": "Preparar para o dia",
+      "category": "Despertar"
+    },
+    {
+      "id": "plus_wake_8",
+      "label": "Acordar bem humorado",
+      "category": "Despertar"
+    },
+    {
+      "id": "plus_wake_9",
+      "label": "Esticar os pezinhos",
+      "category": "Despertar"
+    },
+    {
+      "id": "plus_wake_10",
+      "label": "Saudação da manhã",
+      "category": "Despertar"
+    },
+    {
+      "id": "plus_affection_1",
+      "label": "Abraço apertadinho",
+      "category": "Afeto"
+    },
+    {
+      "id": "plus_affection_2",
+      "label": "Abraço de reencontro",
+      "category": "Afeto"
+    },
+    {
+      "id": "plus_affection_3",
+      "label": "Mandar beijinhos",
+      "category": "Afeto"
+    },
+    {
+      "id": "plus_affection_4",
+      "label": "Coração com as mãos",
+      "category": "Afeto"
+    },
+    {
+      "id": "plus_affection_5",
+      "label": "Carinho no próprio rosto",
+      "category": "Afeto"
+    },
+    {
+      "id": "plus_affection_6",
+      "label": "Agradecer companhia",
+      "category": "Afeto"
+    },
+    {
+      "id": "plus_affection_7",
+      "label": "Abraço de consolo",
+      "category": "Afeto"
+    },
+    {
+      "id": "plus_affection_8",
+      "label": "Oferecer um abraço",
+      "category": "Afeto"
+    },
+    {
+      "id": "plus_affection_9",
+      "label": "Carinho com sorriso",
+      "category": "Afeto"
+    },
+    {
+      "id": "plus_affection_10",
+      "label": "Amizade para sempre",
+      "category": "Afeto"
+    },
+    {
+      "id": "plus_music_1",
+      "label": "Reger uma orquestra",
+      "category": "Música"
+    },
+    {
+      "id": "plus_music_2",
+      "label": "Tocar piano imaginário",
+      "category": "Música"
+    },
+    {
+      "id": "plus_music_3",
+      "label": "Tocar violão imaginário",
+      "category": "Música"
+    },
+    {
+      "id": "plus_music_4",
+      "label": "Bater um tamborzinho",
+      "category": "Música"
+    },
+    {
+      "id": "plus_music_5",
+      "label": "Marcar o ritmo",
+      "category": "Música"
+    },
+    {
+      "id": "plus_music_6",
+      "label": "Cantar baixinho",
+      "category": "Música"
+    },
+    {
+      "id": "plus_music_7",
+      "label": "Cantar no palco",
+      "category": "Música"
+    },
+    {
+      "id": "plus_music_8",
+      "label": "Tocar flauta imaginária",
+      "category": "Música"
+    },
+    {
+      "id": "plus_music_9",
+      "label": "Tocar sininhos",
+      "category": "Música"
+    },
+    {
+      "id": "plus_music_10",
+      "label": "Final de concerto",
+      "category": "Música"
+    },
+    {
+      "id": "plus_work_1",
+      "label": "Rabiscar uma ideia",
+      "category": "Criatividade"
+    },
+    {
+      "id": "plus_work_2",
+      "label": "Pintar uma paisagem",
+      "category": "Criatividade"
+    },
+    {
+      "id": "plus_work_3",
+      "label": "Escrever com cuidado",
+      "category": "Criatividade"
+    },
+    {
+      "id": "plus_work_4",
+      "label": "Ler uma descoberta",
+      "category": "Criatividade"
+    },
+    {
+      "id": "plus_work_5",
+      "label": "Anotar um lembrete",
+      "category": "Criatividade"
+    },
+    {
+      "id": "plus_work_6",
+      "label": "Digitar concentrado",
+      "category": "Criatividade"
+    },
+    {
+      "id": "plus_work_7",
+      "label": "Conferir uma tarefa",
+      "category": "Criatividade"
+    },
+    {
+      "id": "plus_work_8",
+      "label": "Desenhar um coração",
+      "category": "Criatividade"
+    },
+    {
+      "id": "plus_work_9",
+      "label": "Pensar em uma solução",
+      "category": "Criatividade"
+    },
+    {
+      "id": "plus_work_10",
+      "label": "Celebrar uma ideia",
+      "category": "Criatividade"
+    },
+    {
+      "id": "plus_jelly_1",
+      "label": "Ondinha lateral",
+      "category": "Gelatina"
+    },
+    {
+      "id": "plus_jelly_2",
+      "label": "Molinho como pudim",
+      "category": "Gelatina"
+    },
+    {
+      "id": "plus_jelly_3",
+      "label": "Gelatina em espiral",
+      "category": "Gelatina"
+    },
+    {
+      "id": "plus_jelly_4",
+      "label": "Espichar e voltar",
+      "category": "Gelatina"
+    },
+    {
+      "id": "plus_jelly_5",
+      "label": "Pudim dançante",
+      "category": "Gelatina"
+    },
+    {
+      "id": "plus_jelly_6",
+      "label": "Onda de cima para baixo",
+      "category": "Gelatina"
+    },
+    {
+      "id": "plus_jelly_7",
+      "label": "Balanço elástico",
+      "category": "Gelatina"
+    },
+    {
+      "id": "plus_jelly_8",
+      "label": "Quase virar bolinha",
+      "category": "Gelatina"
+    },
+    {
+      "id": "plus_jelly_9",
+      "label": "Gelatina surpresa",
+      "category": "Gelatina"
+    },
+    {
+      "id": "plus_jelly_10",
+      "label": "Acomodar o corpinho",
+      "category": "Gelatina"
+    },
+    {
+      "id": "plus_sneak_1",
+      "label": "Passo silencioso",
+      "category": "Passinhos"
+    },
+    {
+      "id": "plus_sneak_2",
+      "label": "Passo de detetive",
+      "category": "Passinhos"
+    },
+    {
+      "id": "plus_sneak_3",
+      "label": "Marcha de formiguinha",
+      "category": "Passinhos"
+    },
+    {
+      "id": "plus_sneak_4",
+      "label": "Passo deslizante",
+      "category": "Passinhos"
+    },
+    {
+      "id": "plus_sneak_5",
+      "label": "Passinho indeciso",
+      "category": "Passinhos"
+    },
+    {
+      "id": "plus_sneak_6",
+      "label": "Passo de astronauta",
+      "category": "Passinhos"
+    },
+    {
+      "id": "plus_sneak_7",
+      "label": "Passo de desfile",
+      "category": "Passinhos"
+    },
+    {
+      "id": "plus_sneak_8",
+      "label": "Passo em zigue-zague",
+      "category": "Passinhos"
+    },
+    {
+      "id": "plus_sneak_9",
+      "label": "Passo na poça",
+      "category": "Passinhos"
+    },
+    {
+      "id": "plus_sneak_10",
+      "label": "Passo para uma surpresa",
+      "category": "Passinhos"
+    },
+    {
+      "id": "plus_shy_1",
+      "label": "Vergonha de elogio",
+      "category": "Emoções delicadas"
+    },
+    {
+      "id": "plus_shy_2",
+      "label": "Sorriso de cantinho",
+      "category": "Emoções delicadas"
+    },
+    {
+      "id": "plus_shy_3",
+      "label": "Timidez com aceno",
+      "category": "Emoções delicadas"
+    },
+    {
+      "id": "plus_shy_4",
+      "label": "Esconder o rostinho",
+      "category": "Emoções delicadas"
+    },
+    {
+      "id": "plus_shy_5",
+      "label": "Pedir um favor",
+      "category": "Emoções delicadas"
+    },
+    {
+      "id": "plus_shy_6",
+      "label": "Ficar sem graça",
+      "category": "Emoções delicadas"
+    },
+    {
+      "id": "plus_shy_7",
+      "label": "Coragem para dizer oi",
+      "category": "Emoções delicadas"
+    },
+    {
+      "id": "plus_shy_8",
+      "label": "Agradecer baixinho",
+      "category": "Emoções delicadas"
+    },
+    {
+      "id": "plus_shy_9",
+      "label": "Olhar apaixonadinho",
+      "category": "Emoções delicadas"
+    },
+    {
+      "id": "plus_shy_10",
+      "label": "Surpresa delicada",
+      "category": "Emoções delicadas"
+    },
+    {
+      "id": "plus_breathe_1",
+      "label": "Respirar em quatro tempos",
+      "category": "Tranquilidade"
+    },
+    {
+      "id": "plus_breathe_2",
+      "label": "Pausa de serenidade",
+      "category": "Tranquilidade"
+    },
+    {
+      "id": "plus_breathe_3",
+      "label": "Inspirar de olhos fechados",
+      "category": "Tranquilidade"
+    },
+    {
+      "id": "plus_breathe_4",
+      "label": "Soltar o peso do dia",
+      "category": "Tranquilidade"
+    },
+    {
+      "id": "plus_breathe_5",
+      "label": "Respirar com as mãos",
+      "category": "Tranquilidade"
+    },
+    {
+      "id": "plus_breathe_6",
+      "label": "Balanço de meditação",
+      "category": "Tranquilidade"
+    },
+    {
+      "id": "plus_breathe_7",
+      "label": "Pausa no gramado",
+      "category": "Tranquilidade"
+    },
+    {
+      "id": "plus_breathe_8",
+      "label": "Acalmar o coração",
+      "category": "Tranquilidade"
+    },
+    {
+      "id": "plus_breathe_9",
+      "label": "Ouvir a própria respiração",
+      "category": "Tranquilidade"
+    },
+    {
+      "id": "plus_breathe_10",
+      "label": "Relaxar por inteiro",
+      "category": "Tranquilidade"
+    },
+    {
+      "id": "plus_play_1",
+      "label": "Quicar uma bolinha",
+      "category": "Brincadeiras"
+    },
+    {
+      "id": "plus_play_2",
+      "label": "Equilibrar a bolinha",
+      "category": "Brincadeiras"
+    },
+    {
+      "id": "plus_play_3",
+      "label": "Jogar bolinha para cima",
+      "category": "Brincadeiras"
+    },
+    {
+      "id": "plus_play_4",
+      "label": "Passar a bola de lado",
+      "category": "Brincadeiras"
+    },
+    {
+      "id": "plus_play_5",
+      "label": "Esconde-esconde fofo",
+      "category": "Brincadeiras"
+    },
+    {
+      "id": "plus_play_6",
+      "label": "Pega-pega imaginário",
+      "category": "Brincadeiras"
+    },
+    {
+      "id": "plus_play_7",
+      "label": "Pular amarelinha",
+      "category": "Brincadeiras"
+    },
+    {
+      "id": "plus_play_8",
+      "label": "Brincar de estátua",
+      "category": "Brincadeiras"
+    },
+    {
+      "id": "plus_play_9",
+      "label": "Imitar um foguete",
+      "category": "Brincadeiras"
+    },
+    {
+      "id": "plus_play_10",
+      "label": "Fazer uma careta",
+      "category": "Brincadeiras"
+    },
+    {
+      "id": "plus_weather_1",
+      "label": "Sentir uma brisa",
+      "category": "Natureza"
+    },
+    {
+      "id": "plus_weather_2",
+      "label": "Dançar na chuvinha",
+      "category": "Natureza"
+    },
+    {
+      "id": "plus_weather_3",
+      "label": "Olhar as nuvens",
+      "category": "Natureza"
+    },
+    {
+      "id": "plus_weather_4",
+      "label": "Sentir um raio de sol",
+      "category": "Natureza"
+    },
+    {
+      "id": "plus_weather_5",
+      "label": "Desviar de gotinhas",
+      "category": "Natureza"
+    },
+    {
+      "id": "plus_weather_6",
+      "label": "Brincar com o vento",
+      "category": "Natureza"
+    },
+    {
+      "id": "plus_weather_7",
+      "label": "Cheirar o jardim",
+      "category": "Natureza"
+    },
+    {
+      "id": "plus_weather_8",
+      "label": "Olhar um arco-íris",
+      "category": "Natureza"
+    },
+    {
+      "id": "plus_weather_9",
+      "label": "Escutar a chuva",
+      "category": "Natureza"
+    },
+    {
+      "id": "plus_weather_10",
+      "label": "Admirar o pôr do sol",
+      "category": "Natureza"
+    },
+    {
+      "id": "plus_care_1",
+      "label": "Lavar as mãozinhas",
+      "category": "Autocuidado"
+    },
+    {
+      "id": "plus_care_2",
+      "label": "Limpar as bochechas",
+      "category": "Autocuidado"
+    },
+    {
+      "id": "plus_care_3",
+      "label": "Pentear a gotinha",
+      "category": "Autocuidado"
+    },
+    {
+      "id": "plus_care_4",
+      "label": "Ajeitar o sorriso",
+      "category": "Autocuidado"
+    },
+    {
+      "id": "plus_care_5",
+      "label": "Escovar imaginariamente",
+      "category": "Autocuidado"
+    },
+    {
+      "id": "plus_care_6",
+      "label": "Abraçar o próprio corpo",
+      "category": "Autocuidado"
+    },
+    {
+      "id": "plus_care_7",
+      "label": "Conferir os pezinhos",
+      "category": "Autocuidado"
+    },
+    {
+      "id": "plus_care_8",
+      "label": "Secar as mãozinhas",
+      "category": "Autocuidado"
+    },
+    {
+      "id": "plus_care_9",
+      "label": "Sacudir a poeirinha",
+      "category": "Autocuidado"
+    },
+    {
+      "id": "plus_care_10",
+      "label": "Pronto para passear",
+      "category": "Autocuidado"
+    },
+    {
+      "id": "plus_show_1",
+      "label": "Entrada de artista",
+      "category": "Teatrinho"
+    },
+    {
+      "id": "plus_show_2",
+      "label": "Saudação de mágico",
+      "category": "Teatrinho"
+    },
+    {
+      "id": "plus_show_3",
+      "label": "Apresentar uma surpresa",
+      "category": "Teatrinho"
+    },
+    {
+      "id": "plus_show_4",
+      "label": "Contar uma historinha",
+      "category": "Teatrinho"
+    },
+    {
+      "id": "plus_show_5",
+      "label": "Fazer suspense",
+      "category": "Teatrinho"
+    },
+    {
+      "id": "plus_show_6",
+      "label": "Reação de plateia",
+      "category": "Teatrinho"
+    },
+    {
+      "id": "plus_show_7",
+      "label": "Aplausos de pé",
+      "category": "Teatrinho"
+    },
+    {
+      "id": "plus_show_8",
+      "label": "Final com reverência",
+      "category": "Teatrinho"
+    },
+    {
+      "id": "plus_show_9",
+      "label": "Pose de herói",
+      "category": "Teatrinho"
+    },
+    {
+      "id": "plus_show_10",
+      "label": "Até o próximo espetáculo",
+      "category": "Teatrinho"
+    }
+  ]
+}
