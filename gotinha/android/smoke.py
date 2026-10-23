@@ -1,6 +1,6 @@
 import subprocess, time, xml.etree.ElementTree as ET, re, pathlib
 def adb(*args):
-    return subprocess.check_output(['adb', *args], text=True)
+    return subprocess.check_output(['adb', *args], text=True, timeout=60)
 package='com.kingoffjoss.pingo'
 adb('install','-r','app/build/outputs/apk/debug/app-debug.apk')
 adb('shell','appops','set',package,'SYSTEM_ALERT_WINDOW','allow')
