@@ -1,0 +1,49 @@
+PINGO + GEMINI — servidor preparado, ainda não ativado
+
+O painel e este código ficam no repositório Meus-Scripts. GitHub Pages
+hospeda a interface estática; a chave do Gemini fica somente no Worker.
+Nunca salve chaves em arquivos, favoritos ou commits. Revogue qualquer
+chave enviada em chat e crie uma nova no Google AI Studio.
+
+ATIVAR COM CLOUDFLARE WORKERS
+1. Na sua conta Cloudflare, crie um Worker chamado pingo-ia.
+2. Copie worker.mjs para o editor do Worker e publique.
+3. Em Settings > Variables and Secrets, adicione como secrets:
+   GEMINI_API_KEY = uma NOVA chave do Gemini, cadastrada só ali.
+   PINGO_ACCESS_TOKEN = senha aleatória exclusiva de pelo menos 32 caracteres.
+   GEMINI_MODEL = ID de um modelo disponível na sua conta Gemini.
+   Verifique se o modelo tem faixa gratuita antes de habilitar faturamento.
+4. No mini painel do Pingo, abra Conversar > Conectar IA.
+   URL: https://pingo-ia.SEUSUBDOMINIO.workers.dev/chat
+   Senha de acesso: PINGO_ACCESS_TOKEN (não use GEMINI_API_KEY).
+5. Faça uma pergunta. A configuração e a conversa só duram nesta aba;
+   recarregar a página ou remover o Pingo limpa as duas.
+
+Alternativa pelo Wrangler instalado na sua máquina:
+  npx wrangler deploy
+  npx wrangler secret put GEMINI_API_KEY
+  npx wrangler secret put PINGO_ACCESS_TOKEN
+  npx wrangler secret put GEMINI_MODEL
+Execute dentro desta pasta. Os comandos solicitam os valores privadamente.
+
+PRIVACIDADE E LIMITES
+- Só a pergunta e até 6 mensagens de contexto são enviadas ao Worker/Google.
+  Não lemos o conteúdo da página, seus lembretes ou sua agenda.
+- A chave Google nunca sai do servidor para o navegador.
+- A senha do Pingo fica apenas na memória da instância do mascote.
+- O endpoint exige senha; CORS aberto é necessário para o favorito em
+  diferentes sites. Use apenas em páginas confiáveis: a página hospedeira
+  não é uma fronteira de segurança contra scripts maliciosos.
+- Limite simples de 5 pedidos/minuto por instância do Worker. Não é uma
+  cota global: configure quotas/alertas no provedor antes de uso público.
+- Não há pesquisa web nesta versão. Perguntas atuais devem ser recusadas
+  com sinceridade. Nenhuma IA garante 100% de acerto.
+- Não executa ações automaticamente nem cria lembretes a partir do chat.
+- O modo vivo continua local; chat usa IA somente quando você envia mensagem.
+- Workers e Gemini têm suas próprias cotas. Esta integração não assina
+  planos pagos nem garante gratuidade ilimitada.
+
+Fontes oficiais:
+https://ai.google.dev/gemini-api/docs/generate-content/api-key
+https://ai.google.dev/api/generate-content
+https://developers.cloudflare.com/workers/platform/limits/
