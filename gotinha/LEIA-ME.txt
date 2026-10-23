@@ -1,0 +1,11 @@
+Pingo — primeiro protótipo
+
+Abra index.html no Chrome. A página funciona com os arquivos locais, sem instalação: pingo.js já inclui o código necessário. WebGL2 precisa estar disponível no navegador.
+
+O personagem é uma gotinha de gelatina verde-água, com duas patinhas, olhos escuros, bochechas e sorriso. Respira, pisca e salta com compressão antes da subida e amortecimento ao pousar. Os botões ativam carinho, comida, sono e repouso; clicar diretamente no personagem faz carinho. Arraste para girar a câmera. Movimentos espontâneos podem ser desligados. Pausar congela o tempo da animação. A preferência de movimento reduzido inicia a prévia pausada.
+
+Esta versão é para aprovar a aparência e a personalidade. Não substitui o mascote atual, não implementa as tarefas e lembretes e não salva os lanchinhos depois de fechar a página.
+
+pingo.glb exporta um ciclo de seis segundos com respiração, piscada e salto. Os estados interativos de comida, sono e carinho estão na página local. O GLB foi aberto em visualizador HTTPS e validado com zero erros e zero avisos. O acesso da ferramenta à página local é bloqueado, por isso não foi verificada nela a interação dos botões pelo navegador.
+
+Fontes em src/. Reconstruir: npm install e npm run build. Exportar: npm run export. Three.js (MIT) tem a licença incluída. Modelo e movimentos originais criados para este projeto.

@@ -1,0 +1,4 @@
+const path=require('path'),fs=require('fs'),{createRequire}=require('module');
+const fallback=path.resolve(__dirname,'../../work/runtime/package.json'),dep=process.env.KANTO_DEPENDENCY_ROOT?createRequire(path.resolve(process.env.KANTO_DEPENDENCY_ROOT,'package.json')):fs.existsSync(fallback)?createRequire(fallback):require,esbuild=dep('esbuild-wasm'),three=path.dirname(dep.resolve('three'));
+const base={bundle:true,minify:true,legalComments:'eof',alias:{'three/addons':path.resolve(three,'../examples/jsm'),three:path.resolve(three,'three.module.js')}};
+(async()=>{await esbuild.build({...base,entryPoints:[path.join(__dirname,'src/main.js')],outfile:path.join(__dirname,'pingo.js'),format:'iife',target:['chrome110']});if(process.argv.includes('--export'))await esbuild.build({...base,entryPoints:[path.join(__dirname,'src/export.js')],outfile:path.join(__dirname,'export-node.cjs'),platform:'node',format:'cjs'});})().catch(e=>{console.error(e);process.exitCode=1;});
