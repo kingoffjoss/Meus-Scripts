@@ -2,7 +2,7 @@
 <html lang="pt-BR">
 <head>
 <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<meta name="description" content="Coloque vídeos em uma janela flutuante usando um favorito do navegador.">
+<meta name="description" content="Um painel de vídeo dentro de qualquer página, ativado por um favorito JavaScript.">
 <title>Vídeo flutuante</title>
 <style>
 :root{color-scheme:dark;font-family:system-ui,sans-serif;color:#eaf0fc;background:#0b101b}*{box-sizing:border-box}body{margin:0}main{max-width:1040px;margin:auto;padding:55px 24px}nav{font-weight:700;color:#a0b8e5;margin-bottom:58px}.tag{color:#8cf0cc;letter-spacing:.13em;font-size:12px;font-weight:700}h1{font-size:clamp(38px,7vw,68px);letter-spacing:-.05em;line-height:1.06;margin:18px 0}h1 span{color:#8cf0cc}.intro{max-width:620px;font-size:18px;line-height:1.7;color:#aebdd3}.grid{display:grid;grid-template-columns:1.1fr 1fr;gap:22px;margin-top:34px}.card{background:#131d2d;border:1px solid #29374d;border-radius:20px;padding:26px}h2{font-size:20px;margin-top:0}p,li{color:#b8c6da;line-height:1.6}.bookmark,button{display:inline-block;background:#8cf0cc;color:#08251b;font-weight:700;padding:14px 18px;border:0;border-radius:10px;text-decoration:none;cursor:pointer;font-size:14px}button.secondary{background:#283a53;color:#ecf3ff;margin-top:12px}input,textarea{width:100%;background:#0b1321;border:1px solid #435773;border-radius:9px;color:#eff5ff;padding:13px;font:inherit}label{display:block;margin:16px 0 8px;color:#c7d5e9}form button{margin-top:12px}small{display:block;color:#91a3bd;line-height:1.6;margin-top:14px}textarea{height:85px;font:11px monospace;margin-top:12px}#message{min-height:24px;color:#8cf0cc}footer{margin-top:30px;color:#91a3bd;font-size:13px}a{color:#8cf0cc}:focus-visible{outline:3px solid #b9a1ff;outline-offset:4px}@media(max-width:720px){.grid{grid-template-columns:1fr}main{padding:28px 18px}nav{margin-bottom:35px}}
@@ -12,148 +12,187 @@
 <nav>↗ &nbsp; VÍDEO FLUTUANTE</nav>
 <div class="tag">SEU VÍDEO, NO SEU CANTO</div>
 <h1>Continue assistindo.<br><span>Em qualquer canto.</span></h1>
-<p class="intro">Uma janela sobre as outras, que você pode mover e redimensionar. Use um vídeo da aba atual ou cole outro link dentro da janela.</p>
+<p class="intro">Um dashboard flutuante dentro da página em que você está. Enquadre só o vídeo, arraste para qualquer canto e ajuste o tamanho pelas bordas.</p>
 <section class="grid">
 <div class="card"><h2>01 &nbsp; Salve nos favoritos</h2>
 <p>Arraste o botão abaixo para a barra de favoritos do Chrome ou Edge no computador.</p>
 <a class="bookmark" id="bookmark" href="#">↗ Vídeo flutuante</a>
-<small>Mostre a barra com Ctrl + Shift + B. Depois, abra uma aba com vídeo e clique no favorito salvo.</small>
+<small>Mostre a barra com Ctrl + Shift + B. Clique no favorito em qualquer página para ativar o painel dentro dela. Se houver um vídeo, ele será enquadrado automaticamente.</small>
 <button class="secondary" id="copy">Copiar código do favorito</button>
-<button class="secondary" id="test">Abrir janela para colar um link</button>
+<button class="secondary" id="test">Testar dashboard nesta página</button>
 <details><summary>Instalação manual</summary><p>Crie um favorito com o nome “Vídeo flutuante” e cole o código abaixo no campo URL/endereço.</p><textarea id="code" readonly aria-label="Código do favorito"></textarea></details>
 </div>
 <div class="card"><h2>02 &nbsp; Escolha o que assistir</h2>
-<p>Abra um link e clique no favorito na aba do vídeo. Para vídeos já abertos, vá direto até a aba e use o favorito.</p>
+<p>Ative o favorito na página em que quer manter o painel. Use o botão “Link” do painel para colar o endereço de um vídeo de outra aba.</p>
 <form id="open"><label for="url">Link do vídeo ou da página</label><input id="url" type="url" placeholder="https://www.youtube.com/watch?v=…" required><button>Abrir vídeo em outra aba ↗</button></form>
-<small>Dentro da janela flutuante, o campo “Carregar” aceita arquivos de vídeo e players incorporáveis, incluindo YouTube e Vimeo.</small>
+<small>O painel aceita links YouTube, Vimeo e arquivos MP4/WebM. A barra aparece ao passar o mouse; o restante é só o vídeo.</small>
 </div></section>
 <p id="message" role="status" aria-live="polite"></p>
-<section class="card"><h2>Feito para ficar do seu jeito</h2><p>Arraste a barra superior para mover a janela e puxe as bordas para ajustar o tamanho. Mantenha a aba de origem aberta. Fechar a janela devolve o vídeo à página.</p><p>Alguns sites bloqueiam favoritos com código, reprodução externa ou incorporação. Players protegidos e vídeos em quadros de outro domínio podem não funcionar. No navegador sem suporte à janela completa, o favorito tenta usar o Picture-in-Picture padrão.</p></section>
+<section class="card"><h2>Enquadra só o vídeo</h2><p>Passe o mouse sobre o painel para revelar a barra. Arraste por ela para mover e puxe qualquer borda para redimensionar. O painel acompanha a rolagem da página. O botão × fecha o painel e devolve o vídeo original ao lugar.</p><p>O favorito executa o código na aba atual, como pelo console. Ele não consegue capturar automaticamente vídeos de outras abas. Sites com políticas de segurança, DRM ou players isolados podem limitar o funcionamento. Um player incorporado pode reiniciar ao ser movido.</p><details><summary>Executar pelo console do navegador</summary><p>Copie este código e execute no console da página onde quer abrir o painel. O código é o mesmo usado pelo favorito.</p><button class="secondary" id="copy-console">Copiar código para o console</button><textarea id="console-code" readonly aria-label="Código para executar no console"></textarea></details></section>
 <footer>Sem extensão, conta ou rastreamento. O favorito funciona na aba em que você clicar.</footer>
 </main>
-<script>/* Favorito independente: não baixa nem executa scripts externos. */
-async function videoFlutuante() {
-  const videos = [];
-  const visited = new Set();
+<script>/* Execute no console ou salve como favorito JavaScript. Sem scripts externos. */
+function videoFlutuante() {
+  const id = 'vf-dashboard-2026';
+  const existing = document.getElementById(id);
+  if (existing) { existing.shadowRoot?.querySelector('input')?.focus(); return 'O painel já está aberto nesta página.'; }
+  const d = document;
+  const candidates = [], seen = new Set();
   function scan(root) {
-    if (visited.has(root)) return;
-    visited.add(root);
-    root.querySelectorAll('video').forEach(v => videos.push(v));
+    if (seen.has(root)) return;
+    seen.add(root);
+    root.querySelectorAll('video').forEach(el => candidates.push(el));
     root.querySelectorAll('*').forEach(el => { if (el.shadowRoot) scan(el.shadowRoot); });
-    root.querySelectorAll('iframe').forEach(frame => {
-      try { if (frame.contentDocument) scan(frame.contentDocument); } catch (_) {}
+    root.querySelectorAll('iframe').forEach(el => {
+      try { if (el.contentDocument) scan(el.contentDocument); } catch (_) {}
+      if (/^https:\/\/(?:www\.)?(?:youtube(?:-nocookie)?\.com\/embed\/|player\.vimeo\.com\/video\/)/i.test(el.src)) candidates.push(el);
     });
   }
-  scan(document);
-  videos.sort((a, b) => Number(!b.paused) - Number(!a.paused) || b.clientWidth * b.clientHeight - a.clientWidth * a.clientHeight);
-  const original = videos.find(v => v.readyState > 0 && v.videoWidth > 0);
-  if (!window.documentPictureInPicture) {
-    if (!original || !original.requestPictureInPicture) {
-      alert('Não foi encontrado um vídeo compatível. Inicie a reprodução e clique no favorito novamente. Use Chrome ou Edge no computador. Players em quadros de outro site podem exigir abrir o vídeo no site de origem.');
-      return;
-    }
-    try { await original.requestPictureInPicture(); return 'Janela Picture-in-Picture aberta.'; }
-    catch (_) { alert('O navegador ou este site bloqueou a janela flutuante. Tente o controle Picture-in-Picture do próprio player.'); }
-    return;
-  }
-  if (window.documentPictureInPicture.window) {
-    window.documentPictureInPicture.window.focus();
-    return 'A janela flutuante já está aberta.';
-  }
-  let pip;
-  try { pip = await window.documentPictureInPicture.requestWindow({ width: 560, height: 390 }); }
-  catch (_) { alert('Não foi possível abrir a janela. Clique no favorito diretamente na aba do vídeo e permita o recurso no navegador.'); return; }
-  const d = pip.document;
-  d.documentElement.lang = 'pt-BR';
-  d.title = 'Vídeo flutuante';
-  const style = d.createElement('style');
-  style.textContent = '*{box-sizing:border-box}body{margin:0;background:#0c111b;color:#edf2fc;font:13px system-ui;height:100vh;display:flex;flex-direction:column}header{padding:10px 12px;display:flex;align-items:center;gap:8px;border-bottom:1px solid #293345}strong{flex:1}button,a{color:#e9f1ff;background:#253449;border:1px solid #425675;border-radius:7px;padding:7px 10px;cursor:pointer;text-decoration:none;font:inherit}form{display:flex;gap:6px;padding:8px}input{min-width:0;flex:1;border:1px solid #425675;border-radius:7px;background:#151e2d;color:white;padding:9px;font:inherit}main{flex:1;min-height:0;display:flex;align-items:center;justify-content:center;background:#000}main>video,main>iframe{width:100%!important;height:100%!important;position:static!important;object-fit:contain!important;transform:none!important;margin:0!important;max-width:none!important;max-height:none!important;border:0}p{margin:0;padding:9px 12px;color:#b8c5da;line-height:1.4}.empty{text-align:center;padding:25px}';
-  d.head.append(style);
-  const header = d.createElement('header');
-  const title = d.createElement('strong'); title.textContent = '↗ Vídeo flutuante';
-  const source = d.createElement('a'); source.textContent = 'Abrir origem'; source.href = location.href; source.target = '_blank'; source.rel = 'noopener noreferrer';
-  const back = d.createElement('button'); back.textContent = 'Vídeo da aba'; back.type = 'button';
-  header.append(title, back, source);
+  scan(d);
+  candidates.sort((a, b) => Number(b.tagName === 'VIDEO' && !b.paused) - Number(a.tagName === 'VIDEO' && !a.paused) || b.clientWidth * b.clientHeight - a.clientWidth * a.clientHeight);
+  const host = d.createElement('div'); host.id = id;
+  host.style.cssText = 'all:initial!important;position:fixed!important;inset:0!important;width:0!important;height:0!important;z-index:2147483647!important;display:block!important;pointer-events:none!important;';
+  const root = host.attachShadow({ mode: 'open' });
+  const css = d.createElement('style');
+  css.textContent = `
+    *{box-sizing:border-box} .panel{position:fixed;pointer-events:auto;background:#000;color:#edf5ff;font:13px system-ui,sans-serif;border:1px solid #53677d;border-radius:12px;box-shadow:0 15px 60px #0008;overflow:hidden;isolation:isolate}
+    .stage{position:absolute;inset:0;display:grid;place-items:center;background:#000}.stage>video,.stage>iframe{display:block!important;position:static!important;width:100%!important;height:100%!important;max-width:none!important;max-height:none!important;min-width:0!important;min-height:0!important;object-fit:contain!important;transform:none!important;margin:0!important;padding:0!important;border:0!important;border-radius:0!important;opacity:1!important;visibility:visible!important}
+    .empty{max-width:85%;text-align:center;color:#b7c9de;line-height:1.5}.bar{position:absolute;top:0;left:0;right:0;z-index:3;display:flex;gap:5px;align-items:center;padding:7px 9px;background:linear-gradient(#0c1523ed,#0c152399);opacity:0;transition:opacity .15s;touch-action:none;cursor:move;user-select:none}
+    .panel:hover .bar,.panel:focus-within .bar,.panel.editing .bar{opacity:1}.title{flex:1;font-size:12px;font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+    button{font:inherit;background:#26364be8;color:#fff;border:1px solid #7186a1;border-radius:6px;padding:4px 8px;cursor:pointer}button:focus-visible,input:focus-visible{outline:2px solid #8cf0cc;outline-offset:2px}
+    .editor{position:absolute;z-index:4;top:44px;left:10px;right:10px;max-height:calc(100% - 54px);overflow:auto;background:#101c2cf5;border:1px solid #506682;border-radius:8px;padding:12px}.editor[hidden]{display:none}form{display:flex;gap:6px;flex-wrap:wrap}input{min-width:100px;flex:1;font:inherit;background:#07101c;color:#fff;border:1px solid #7186a1;border-radius:6px;padding:8px}p{font-size:12px;color:#b7c9de;line-height:1.5;margin:10px 0 0}.sources{display:flex;gap:6px;flex-wrap:wrap;margin-top:9px}
+    .handle{position:absolute;z-index:6;touch-action:none}.n,.s{height:7px;left:9px;right:9px;cursor:ns-resize}.n{top:0}.s{bottom:0}.e,.w{width:7px;top:9px;bottom:9px;cursor:ew-resize}.e{right:0}.w{left:0}.ne,.nw,.se,.sw{width:13px;height:13px}.ne{right:0;top:0;cursor:nesw-resize}.nw{left:0;top:0;cursor:nwse-resize}.se{right:0;bottom:0;cursor:nwse-resize;background:linear-gradient(135deg,transparent 55%,#8cf0cc 56%,#8cf0cc 65%,transparent 66%)}.sw{left:0;bottom:0;cursor:nesw-resize}
+    @media(hover:none){.bar{opacity:1}}`;
+  root.append(css);
+  const panel = d.createElement('section'); panel.className = 'panel'; panel.setAttribute('aria-label', 'Painel de vídeo flutuante');
+  const stage = d.createElement('div'); stage.className = 'stage';
+  const bar = d.createElement('div'); bar.className = 'bar'; bar.title = 'Arraste para mover';
+  const title = d.createElement('span'); title.className = 'title'; title.textContent = '⠿ Vídeo flutuante';
+  function button(text, label, action) { const b = d.createElement('button'); b.type = 'button'; b.textContent = text; b.title = label; b.setAttribute('aria-label', label); b.onclick = action; return b; }
+  const editor = d.createElement('div'); editor.className = 'editor';
+  const input = d.createElement('input'); input.type = 'url'; input.required = true; input.placeholder = 'Cole o link de um vídeo'; input.setAttribute('aria-label', 'Link do vídeo');
   const form = d.createElement('form');
-  const input = d.createElement('input'); input.type = 'url'; input.placeholder = 'Cole um link de vídeo ou página'; input.required = true; input.setAttribute('aria-label', 'Link do vídeo');
   const load = d.createElement('button'); load.textContent = 'Carregar'; load.type = 'submit';
   form.append(input, load);
-  const stage = d.createElement('main');
-  const status = d.createElement('p'); status.setAttribute('role', 'status');
-  d.body.append(header, form, stage, status);
-  let marker = null;
-  let oldStyle, oldControls;
-  function restore() {
-    if (!marker) return;
-    if (marker.parentNode) marker.replaceWith(original);
-    else if (original.isConnected) original.remove();
-    if (oldStyle === null) original.removeAttribute('style'); else original.setAttribute('style', oldStyle);
-    original.controls = oldControls;
-    marker = null;
+  const sources = d.createElement('div'); sources.className = 'sources';
+  const note = d.createElement('p'); note.setAttribute('role', 'status');
+  note.textContent = 'Arraste a barra para mover. Puxe as bordas para redimensionar. Aceita YouTube, Vimeo e links diretos MP4/WebM. Alguns sites bloqueiam reprodução externa.';
+  editor.append(form, sources, note);
+  function edit(show) { editor.hidden = !show; panel.classList.toggle('editing', show); if (show) input.focus(); }
+  bar.append(title, button('Link', 'Trocar vídeo ou selecionar vídeo da página', () => edit(editor.hidden)), button('×', 'Fechar painel e devolver vídeo à página', close));
+  panel.append(stage, bar, editor); root.append(panel); d.documentElement.append(host);
+  let width = Math.min(480, innerWidth - 20), height = Math.min(270, innerHeight - 20);
+  let x = Math.max(0, innerWidth - width - 24), y = Math.max(0, innerHeight - height - 24);
+  let borrowed = null, marker = null, oldStyle = null, oldControls = false, gesture = null;
+  function place() {
+    width = Math.min(Math.max(Math.min(220, innerWidth), width), innerWidth);
+    height = Math.min(Math.max(Math.min(124, innerHeight), height), innerHeight);
+    x = Math.min(Math.max(0, x), innerWidth - width); y = Math.min(Math.max(0, y), innerHeight - height);
+    Object.assign(panel.style, { left: x + 'px', top: y + 'px', width: width + 'px', height: height + 'px' });
   }
-  function clear(pauseOriginal = false) {
-    if (pauseOriginal && marker) original.pause();
-    restore();
+  place();
+  function restore(pause) {
+    if (!borrowed) return;
+    const el = borrowed, wasPlaying = el.tagName === 'VIDEO' && !el.paused;
+    if (pause && el.tagName === 'VIDEO') el.pause();
+    if (marker?.parentNode) marker.replaceWith(el); else el.remove();
+    if (oldStyle === null) el.removeAttribute('style'); else el.setAttribute('style', oldStyle);
+    if (el.tagName === 'VIDEO') { el.controls = oldControls; if (wasPlaying && !pause && el.isConnected) el.play().catch(() => {}); }
+    borrowed = marker = null;
+  }
+  function clear(pause = true) {
+    restore(pause);
     stage.querySelectorAll('video').forEach(v => { v.pause(); v.removeAttribute('src'); v.load(); });
     stage.replaceChildren();
   }
-  function useOriginal() {
+  function borrow(el) {
+    if (!el.isConnected) { note.textContent = 'Esse player foi removido pela página. Feche e ative o favorito novamente.'; edit(true); return; }
     clear();
-    if (!original || !original.isConnected) {
-      const empty = d.createElement('div'); empty.className = 'empty'; empty.textContent = 'Cole um link acima ou inicie um vídeo na aba e clique novamente no favorito.'; stage.append(empty);
-      status.textContent = 'Arraste a janela pela barra superior. Redimensione pelas bordas.';
-      return;
-    }
-    oldStyle = original.getAttribute('style'); oldControls = original.controls;
-    marker = original.ownerDocument.createComment('video-flutuante');
-    original.before(marker);
-    original.removeAttribute('style'); original.controls = true;
-    stage.append(original);
-    source.href = location.href;
-    status.textContent = 'Vídeo da aba • mantenha a aba de origem aberta. Mova pela barra e redimensione pelas bordas.';
+    borrowed = el; oldStyle = el.getAttribute('style'); oldControls = el.controls;
+    marker = el.ownerDocument.createComment('video-flutuante-origem'); el.before(marker);
+    const playing = el.tagName === 'VIDEO' && !el.paused;
+    el.removeAttribute('style'); if (el.tagName === 'VIDEO') el.controls = true;
+    stage.append(el); if (playing) el.play().catch(() => {});
+    edit(false);
   }
-  form.addEventListener('submit', event => {
-    event.preventDefault();
+  candidates.forEach((el, i) => sources.append(button('Vídeo ' + (i + 1), 'Usar vídeo ' + (i + 1) + ' desta página', () => borrow(el))));
+  function close() { clear(false); window.removeEventListener('resize', place); host.remove(); }
+  panel.addEventListener('keydown', e => { if (e.key === 'Escape') { e.stopPropagation(); if (!editor.hidden && stage.firstChild && !stage.querySelector('.empty')) edit(false); else close(); } });
+  form.addEventListener('submit', e => {
+    e.preventDefault();
     let url;
     try { url = new URL(input.value); if (!['https:', 'http:'].includes(url.protocol)) throw Error(); }
-    catch (_) { status.textContent = 'Informe um link válido começando com https:// ou http://.'; return; }
-    clear(true);
-    source.href = url.href;
-    const host = url.hostname.replace(/^www\./, '');
-    let embed;
-    if (['youtube.com', 'm.youtube.com', 'youtu.be', 'youtube-nocookie.com'].includes(host)) {
-      const id = host === 'youtu.be' ? url.pathname.split('/')[1] : url.searchParams.get('v') || url.pathname.match(/\/(?:shorts|embed|live)\/([^/]+)/)?.[1];
-      if (id && /^[\w-]{11}$/.test(id)) embed = 'https://www.youtube.com/embed/' + id;
-    } else if (host === 'vimeo.com') {
-      const id = url.pathname.match(/^\/(\d+)/)?.[1];
-      if (id) embed = 'https://player.vimeo.com/video/' + id;
+    catch (_) { note.textContent = 'Informe um link http:// ou https:// válido.'; return; }
+    const hostname = url.hostname.replace(/^www\./, '');
+    let embed = null;
+    if (['youtube.com', 'm.youtube.com', 'youtu.be', 'youtube-nocookie.com'].includes(hostname)) {
+      const code = hostname === 'youtu.be' ? url.pathname.split('/')[1] : url.searchParams.get('v') || url.pathname.match(/\/(?:shorts|live|embed)\/([^/]+)/)?.[1];
+      if (code && /^[\w-]{11}$/.test(code)) embed = 'https://www.youtube.com/embed/' + code;
+    } else if (['vimeo.com', 'player.vimeo.com'].includes(hostname)) {
+      const code = url.pathname.match(/\/(\d+)(?:\/|$)/)?.[1];
+      if (code) embed = 'https://player.vimeo.com/video/' + code;
     }
-    if (/\.(mp4|webm|ogv|ogg|m4v)$/i.test(url.pathname)) {
-      const video = d.createElement('video'); video.controls = true; video.playsInline = true; video.src = url.href;
-      video.addEventListener('error', () => { status.textContent = 'Não foi possível reproduzir. Verifique o formato, o acesso ao link ou abra a origem.'; });
-      stage.append(video); status.textContent = 'Pressione reproduzir. O servidor precisa permitir o acesso ao arquivo.';
+    const direct = /\.(mp4|webm|m4v|ogv|ogg)$/i.test(url.pathname);
+    if (!embed && !direct) { note.textContent = 'Este link não identifica um player compatível. Abra a página do vídeo e ative o favorito nela, ou use um link direto MP4/WebM, YouTube ou Vimeo.'; return; }
+    clear();
+    if (direct) {
+      const v = d.createElement('video'); v.controls = true; v.playsInline = true; v.src = url.href;
+      v.addEventListener('error', () => { note.textContent = 'O vídeo não pôde ser carregado. O site pode bloquear o acesso, ou o formato não é compatível.'; edit(true); }); stage.append(v);
     } else {
-      const frame = d.createElement('iframe'); frame.src = embed || url.href; frame.title = 'Player do link'; frame.allow = 'autoplay; encrypted-media; picture-in-picture; fullscreen'; frame.allowFullscreen = true;
-      frame.setAttribute('sandbox', 'allow-scripts allow-same-origin allow-presentation allow-popups');
-      stage.append(frame);
-      status.textContent = 'Se o player não abrir, o site pode bloquear incorporação. Use “Abrir origem”, reproduza o vídeo e clique no favorito nessa aba.';
+      const iframe = d.createElement('iframe'); iframe.src = embed; iframe.title = 'Vídeo incorporado'; iframe.allow = 'autoplay; encrypted-media; fullscreen; picture-in-picture'; iframe.allowFullscreen = true; stage.append(iframe);
     }
+    note.textContent = 'Se o vídeo não abrir, o site pode bloquear incorporação. Abra o vídeo na origem e ative o favorito nessa página.';
+    edit(false);
   });
-  back.addEventListener('click', useOriginal);
-  pip.addEventListener('pagehide', () => clear(), { once: true });
-  useOriginal();
-  return 'Janela flutuante aberta. Cole um link no campo da nova janela.';
+  ['n', 's', 'e', 'w', 'ne', 'nw', 'se', 'sw'].forEach(dir => { const handle = d.createElement('div'); handle.className = 'handle ' + dir; handle.dataset.resize = dir; panel.append(handle); });
+  panel.addEventListener('pointerdown', e => {
+    const dir = e.target.dataset.resize;
+    if (e.button !== 0 || (!dir && (!bar.contains(e.target) || e.target.closest('button')))) return;
+    e.preventDefault(); e.stopPropagation();
+    gesture = { id: e.pointerId, dir, px: e.clientX, py: e.clientY, x, y, width, height };
+    panel.setPointerCapture(e.pointerId);
+  });
+  panel.addEventListener('pointermove', e => {
+    if (!gesture || e.pointerId !== gesture.id) return;
+    const g = gesture, dx = e.clientX - g.px, dy = e.clientY - g.py;
+    if (!g.dir) { x = g.x + dx; y = g.y + dy; }
+    else {
+      const minW = Math.min(220, innerWidth), minH = Math.min(124, innerHeight);
+      if (g.dir.includes('e')) width = Math.min(innerWidth - g.x, Math.max(minW, g.width + dx));
+      if (g.dir.includes('s')) height = Math.min(innerHeight - g.y, Math.max(minH, g.height + dy));
+      if (g.dir.includes('w')) { x = Math.min(g.x + g.width - minW, Math.max(0, g.x + dx)); width = g.x + g.width - x; }
+      if (g.dir.includes('n')) { y = Math.min(g.y + g.height - minH, Math.max(0, g.y + dy)); height = g.y + g.height - y; }
+    }
+    place();
+  });
+  function end(e) { if (gesture?.id === e.pointerId) { gesture = null; if (panel.hasPointerCapture(e.pointerId)) panel.releasePointerCapture(e.pointerId); } }
+  panel.addEventListener('pointerup', end); panel.addEventListener('pointercancel', end); panel.addEventListener('lostpointercapture', () => { gesture = null; });
+  window.addEventListener('resize', place);
+  if (candidates.length) borrow(candidates[0]);
+  else { const empty = d.createElement('div'); empty.className = 'empty'; empty.textContent = 'Cole um link para começar ou ative o favorito na página de um vídeo.'; stage.append(empty); edit(true); }
+  return 'Painel aberto nesta página. Passe o mouse sobre o vídeo para mover, trocar o link ou fechar.';
 }
 </script>
 <script>const bookmarkCode = 'javascript:' + encodeURIComponent('(' + videoFlutuante.toString() + ')();void(0)');
 document.querySelector('#test').addEventListener('click', async () => {
-  document.querySelector('#message').textContent = await videoFlutuante() || 'Não foi possível abrir a janela neste navegador ou nesta página.';
+  document.querySelector('#message').textContent = await videoFlutuante() || 'Não foi possível abrir o painel nesta página.';
 });
 document.querySelector('#bookmark').href = bookmarkCode;
 document.querySelector('#code').value = bookmarkCode;
+const consoleCode = '(' + videoFlutuante.toString() + ')();';
+document.querySelector('#console-code').value = consoleCode;
+document.querySelector('#copy-console').addEventListener('click', async () => {
+  try {
+    await navigator.clipboard.writeText(consoleCode);
+    document.querySelector('#message').textContent = 'Código copiado. Execute no console da página em que quer o dashboard.';
+  } catch (_) {
+    document.querySelector('#console-code').select();
+    document.querySelector('#message').textContent = 'Copie o código selecionado com Ctrl + C.';
+  }
+});
 document.querySelector('#bookmark').addEventListener('click', event => {
   event.preventDefault();
-  document.querySelector('#message').textContent = 'Arraste este botão para a barra de favoritos. Para testar a janela aqui, copie o código para um favorito e clique nele.';
+  document.querySelector('#message').textContent = 'Arraste este botão para a barra de favoritos. Para testar aqui, clique em “Testar dashboard nesta página”.';
 });
 document.querySelector('#copy').addEventListener('click', async () => {
   try {
