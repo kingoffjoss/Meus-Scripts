@@ -1,0 +1,177 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="description" content="Coloque vídeos em uma janela flutuante usando um favorito do navegador.">
+<title>Vídeo flutuante</title>
+<style>
+:root{color-scheme:dark;font-family:system-ui,sans-serif;color:#eaf0fc;background:#0b101b}*{box-sizing:border-box}body{margin:0}main{max-width:1040px;margin:auto;padding:55px 24px}nav{font-weight:700;color:#a0b8e5;margin-bottom:58px}.tag{color:#8cf0cc;letter-spacing:.13em;font-size:12px;font-weight:700}h1{font-size:clamp(38px,7vw,68px);letter-spacing:-.05em;line-height:1.06;margin:18px 0}h1 span{color:#8cf0cc}.intro{max-width:620px;font-size:18px;line-height:1.7;color:#aebdd3}.grid{display:grid;grid-template-columns:1.1fr 1fr;gap:22px;margin-top:34px}.card{background:#131d2d;border:1px solid #29374d;border-radius:20px;padding:26px}h2{font-size:20px;margin-top:0}p,li{color:#b8c6da;line-height:1.6}.bookmark,button{display:inline-block;background:#8cf0cc;color:#08251b;font-weight:700;padding:14px 18px;border:0;border-radius:10px;text-decoration:none;cursor:pointer;font-size:14px}button.secondary{background:#283a53;color:#ecf3ff;margin-top:12px}input,textarea{width:100%;background:#0b1321;border:1px solid #435773;border-radius:9px;color:#eff5ff;padding:13px;font:inherit}label{display:block;margin:16px 0 8px;color:#c7d5e9}form button{margin-top:12px}small{display:block;color:#91a3bd;line-height:1.6;margin-top:14px}textarea{height:85px;font:11px monospace;margin-top:12px}#message{min-height:24px;color:#8cf0cc}footer{margin-top:30px;color:#91a3bd;font-size:13px}a{color:#8cf0cc}:focus-visible{outline:3px solid #b9a1ff;outline-offset:4px}@media(max-width:720px){.grid{grid-template-columns:1fr}main{padding:28px 18px}nav{margin-bottom:35px}}
+</style>
+</head>
+<body><main>
+<nav>↗ &nbsp; VÍDEO FLUTUANTE</nav>
+<div class="tag">SEU VÍDEO, NO SEU CANTO</div>
+<h1>Continue assistindo.<br><span>Em qualquer canto.</span></h1>
+<p class="intro">Uma janela sobre as outras, que você pode mover e redimensionar. Use um vídeo da aba atual ou cole outro link dentro da janela.</p>
+<section class="grid">
+<div class="card"><h2>01 &nbsp; Salve nos favoritos</h2>
+<p>Arraste o botão abaixo para a barra de favoritos do Chrome ou Edge no computador.</p>
+<a class="bookmark" id="bookmark" href="#">↗ Vídeo flutuante</a>
+<small>Mostre a barra com Ctrl + Shift + B. Depois, abra uma aba com vídeo e clique no favorito salvo.</small>
+<button class="secondary" id="copy">Copiar código do favorito</button>
+<button class="secondary" id="test">Abrir janela para colar um link</button>
+<details><summary>Instalação manual</summary><p>Crie um favorito com o nome “Vídeo flutuante” e cole o código abaixo no campo URL/endereço.</p><textarea id="code" readonly aria-label="Código do favorito"></textarea></details>
+</div>
+<div class="card"><h2>02 &nbsp; Escolha o que assistir</h2>
+<p>Abra um link e clique no favorito na aba do vídeo. Para vídeos já abertos, vá direto até a aba e use o favorito.</p>
+<form id="open"><label for="url">Link do vídeo ou da página</label><input id="url" type="url" placeholder="https://www.youtube.com/watch?v=…" required><button>Abrir vídeo em outra aba ↗</button></form>
+<small>Dentro da janela flutuante, o campo “Carregar” aceita arquivos de vídeo e players incorporáveis, incluindo YouTube e Vimeo.</small>
+</div></section>
+<p id="message" role="status" aria-live="polite"></p>
+<section class="card"><h2>Feito para ficar do seu jeito</h2><p>Arraste a barra superior para mover a janela e puxe as bordas para ajustar o tamanho. Mantenha a aba de origem aberta. Fechar a janela devolve o vídeo à página.</p><p>Alguns sites bloqueiam favoritos com código, reprodução externa ou incorporação. Players protegidos e vídeos em quadros de outro domínio podem não funcionar. No navegador sem suporte à janela completa, o favorito tenta usar o Picture-in-Picture padrão.</p></section>
+<footer>Sem extensão, conta ou rastreamento. O favorito funciona na aba em que você clicar.</footer>
+</main>
+<script>/* Favorito independente: não baixa nem executa scripts externos. */
+async function videoFlutuante() {
+  const videos = [];
+  const visited = new Set();
+  function scan(root) {
+    if (visited.has(root)) return;
+    visited.add(root);
+    root.querySelectorAll('video').forEach(v => videos.push(v));
+    root.querySelectorAll('*').forEach(el => { if (el.shadowRoot) scan(el.shadowRoot); });
+    root.querySelectorAll('iframe').forEach(frame => {
+      try { if (frame.contentDocument) scan(frame.contentDocument); } catch (_) {}
+    });
+  }
+  scan(document);
+  videos.sort((a, b) => Number(!b.paused) - Number(!a.paused) || b.clientWidth * b.clientHeight - a.clientWidth * a.clientHeight);
+  const original = videos.find(v => v.readyState > 0 && v.videoWidth > 0);
+  if (!window.documentPictureInPicture) {
+    if (!original || !original.requestPictureInPicture) {
+      alert('Não foi encontrado um vídeo compatível. Inicie a reprodução e clique no favorito novamente. Use Chrome ou Edge no computador. Players em quadros de outro site podem exigir abrir o vídeo no site de origem.');
+      return;
+    }
+    try { await original.requestPictureInPicture(); return 'Janela Picture-in-Picture aberta.'; }
+    catch (_) { alert('O navegador ou este site bloqueou a janela flutuante. Tente o controle Picture-in-Picture do próprio player.'); }
+    return;
+  }
+  if (window.documentPictureInPicture.window) {
+    window.documentPictureInPicture.window.focus();
+    return 'A janela flutuante já está aberta.';
+  }
+  let pip;
+  try { pip = await window.documentPictureInPicture.requestWindow({ width: 560, height: 390 }); }
+  catch (_) { alert('Não foi possível abrir a janela. Clique no favorito diretamente na aba do vídeo e permita o recurso no navegador.'); return; }
+  const d = pip.document;
+  d.documentElement.lang = 'pt-BR';
+  d.title = 'Vídeo flutuante';
+  const style = d.createElement('style');
+  style.textContent = '*{box-sizing:border-box}body{margin:0;background:#0c111b;color:#edf2fc;font:13px system-ui;height:100vh;display:flex;flex-direction:column}header{padding:10px 12px;display:flex;align-items:center;gap:8px;border-bottom:1px solid #293345}strong{flex:1}button,a{color:#e9f1ff;background:#253449;border:1px solid #425675;border-radius:7px;padding:7px 10px;cursor:pointer;text-decoration:none;font:inherit}form{display:flex;gap:6px;padding:8px}input{min-width:0;flex:1;border:1px solid #425675;border-radius:7px;background:#151e2d;color:white;padding:9px;font:inherit}main{flex:1;min-height:0;display:flex;align-items:center;justify-content:center;background:#000}main>video,main>iframe{width:100%!important;height:100%!important;position:static!important;object-fit:contain!important;transform:none!important;margin:0!important;max-width:none!important;max-height:none!important;border:0}p{margin:0;padding:9px 12px;color:#b8c5da;line-height:1.4}.empty{text-align:center;padding:25px}';
+  d.head.append(style);
+  const header = d.createElement('header');
+  const title = d.createElement('strong'); title.textContent = '↗ Vídeo flutuante';
+  const source = d.createElement('a'); source.textContent = 'Abrir origem'; source.href = location.href; source.target = '_blank'; source.rel = 'noopener noreferrer';
+  const back = d.createElement('button'); back.textContent = 'Vídeo da aba'; back.type = 'button';
+  header.append(title, back, source);
+  const form = d.createElement('form');
+  const input = d.createElement('input'); input.type = 'url'; input.placeholder = 'Cole um link de vídeo ou página'; input.required = true; input.setAttribute('aria-label', 'Link do vídeo');
+  const load = d.createElement('button'); load.textContent = 'Carregar'; load.type = 'submit';
+  form.append(input, load);
+  const stage = d.createElement('main');
+  const status = d.createElement('p'); status.setAttribute('role', 'status');
+  d.body.append(header, form, stage, status);
+  let marker = null;
+  let oldStyle, oldControls;
+  function restore() {
+    if (!marker) return;
+    if (marker.parentNode) marker.replaceWith(original);
+    else if (original.isConnected) original.remove();
+    if (oldStyle === null) original.removeAttribute('style'); else original.setAttribute('style', oldStyle);
+    original.controls = oldControls;
+    marker = null;
+  }
+  function clear(pauseOriginal = false) {
+    if (pauseOriginal && marker) original.pause();
+    restore();
+    stage.querySelectorAll('video').forEach(v => { v.pause(); v.removeAttribute('src'); v.load(); });
+    stage.replaceChildren();
+  }
+  function useOriginal() {
+    clear();
+    if (!original || !original.isConnected) {
+      const empty = d.createElement('div'); empty.className = 'empty'; empty.textContent = 'Cole um link acima ou inicie um vídeo na aba e clique novamente no favorito.'; stage.append(empty);
+      status.textContent = 'Arraste a janela pela barra superior. Redimensione pelas bordas.';
+      return;
+    }
+    oldStyle = original.getAttribute('style'); oldControls = original.controls;
+    marker = original.ownerDocument.createComment('video-flutuante');
+    original.before(marker);
+    original.removeAttribute('style'); original.controls = true;
+    stage.append(original);
+    source.href = location.href;
+    status.textContent = 'Vídeo da aba • mantenha a aba de origem aberta. Mova pela barra e redimensione pelas bordas.';
+  }
+  form.addEventListener('submit', event => {
+    event.preventDefault();
+    let url;
+    try { url = new URL(input.value); if (!['https:', 'http:'].includes(url.protocol)) throw Error(); }
+    catch (_) { status.textContent = 'Informe um link válido começando com https:// ou http://.'; return; }
+    clear(true);
+    source.href = url.href;
+    const host = url.hostname.replace(/^www\./, '');
+    let embed;
+    if (['youtube.com', 'm.youtube.com', 'youtu.be', 'youtube-nocookie.com'].includes(host)) {
+      const id = host === 'youtu.be' ? url.pathname.split('/')[1] : url.searchParams.get('v') || url.pathname.match(/\/(?:shorts|embed|live)\/([^/]+)/)?.[1];
+      if (id && /^[\w-]{11}$/.test(id)) embed = 'https://www.youtube.com/embed/' + id;
+    } else if (host === 'vimeo.com') {
+      const id = url.pathname.match(/^\/(\d+)/)?.[1];
+      if (id) embed = 'https://player.vimeo.com/video/' + id;
+    }
+    if (/\.(mp4|webm|ogv|ogg|m4v)$/i.test(url.pathname)) {
+      const video = d.createElement('video'); video.controls = true; video.playsInline = true; video.src = url.href;
+      video.addEventListener('error', () => { status.textContent = 'Não foi possível reproduzir. Verifique o formato, o acesso ao link ou abra a origem.'; });
+      stage.append(video); status.textContent = 'Pressione reproduzir. O servidor precisa permitir o acesso ao arquivo.';
+    } else {
+      const frame = d.createElement('iframe'); frame.src = embed || url.href; frame.title = 'Player do link'; frame.allow = 'autoplay; encrypted-media; picture-in-picture; fullscreen'; frame.allowFullscreen = true;
+      frame.setAttribute('sandbox', 'allow-scripts allow-same-origin allow-presentation allow-popups');
+      stage.append(frame);
+      status.textContent = 'Se o player não abrir, o site pode bloquear incorporação. Use “Abrir origem”, reproduza o vídeo e clique no favorito nessa aba.';
+    }
+  });
+  back.addEventListener('click', useOriginal);
+  pip.addEventListener('pagehide', () => clear(), { once: true });
+  useOriginal();
+  return 'Janela flutuante aberta. Cole um link no campo da nova janela.';
+}
+</script>
+<script>const bookmarkCode = 'javascript:' + encodeURIComponent('(' + videoFlutuante.toString() + ')();void(0)');
+document.querySelector('#test').addEventListener('click', async () => {
+  document.querySelector('#message').textContent = await videoFlutuante() || 'Não foi possível abrir a janela neste navegador ou nesta página.';
+});
+document.querySelector('#bookmark').href = bookmarkCode;
+document.querySelector('#code').value = bookmarkCode;
+document.querySelector('#bookmark').addEventListener('click', event => {
+  event.preventDefault();
+  document.querySelector('#message').textContent = 'Arraste este botão para a barra de favoritos. Para testar a janela aqui, copie o código para um favorito e clique nele.';
+});
+document.querySelector('#copy').addEventListener('click', async () => {
+  try {
+    await navigator.clipboard.writeText(bookmarkCode);
+    document.querySelector('#message').textContent = 'Código copiado! Cole no campo URL de um novo favorito.';
+  } catch (_) {
+    document.querySelector('details').open = true;
+    document.querySelector('#code').select();
+    document.querySelector('#message').textContent = 'Copie o código selecionado com Ctrl + C.';
+  }
+});
+document.querySelector('#open').addEventListener('submit', event => {
+  event.preventDefault();
+  let url;
+  try { url = new URL(document.querySelector('#url').value); if (!['https:', 'http:'].includes(url.protocol)) throw Error(); }
+  catch (_) { document.querySelector('#message').textContent = 'Use um link começando com https:// ou http://.'; return; }
+  window.open(url.href, '_blank', 'noopener,noreferrer');
+  document.querySelector('#message').textContent = 'Na aba do vídeo, inicie a reprodução e clique no favorito “Vídeo flutuante”. Se a aba não abriu, permita pop-ups para esta página.';
+});
+</script>
+</body></html>
